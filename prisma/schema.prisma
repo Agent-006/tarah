@@ -10,6 +10,266 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id               String          @id @default(uuid())
+  email            String          @unique
+  password         String
+  firstName        String?
+  lastName         String?
+  fullName         String?         @default("")
+  phone            String?
+  verificationCode String?         @unique
+  role             Role            @default(CUSTOMER)
+  addresses        Address[]
+  paymentMethods   PaymentMethod[]
+  orders           Order[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  street     String
+  city       String
+  state      String
+  postalCode String
+  country    String   @default("India")
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  Order      Order[]
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique
+  description String?
+  parentId    String?
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]  @relation("ProductCategories")
+  imageUrl    String?
+  featured    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Product {
+  id          String             @id @default(uuid())
+  name        String
+  slug        String             @unique
+  description String
+  basePrice   Decimal
+  categories  Category[]         @relation("ProductCategories")
+  variants    ProductVariant[]
+  attributes  ProductAttribute[]
+  images      ProductImage[]
+  inventory   Inventory?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  published   Boolean            @default(false)
+  featured    Boolean            @default(false)
+}
+
+model ProductVariant {
+  id          String             @id @default(uuid())
+  productId   String
+  product     Product            @relation(fields: [productId], references: [id])
+  name        String
+  sku         String             @unique
+  priceOffset Decimal            @default(0)
+  attributes  VariantAttribute[]
+  images      ProductImage[]
+  inventory   Inventory?
+  createdAt   DateTime           @default(now())
+  OrderItem   OrderItem[]
+}
+
+model ProductAttribute {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  value     String
+}
+
+model VariantAttribute {
+  id        String         @id @default(uuid())
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  name      String
+  value     String
+}
+
+model ProductImage {
+  id        String          @id @default(uuid())
+  productId String?
+  product   Product?        @relation(fields: [productId], references: [id])
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+  url       String
+  altText   String?
+  order     Int             @default(0)
+  isPrimary Boolean         @default(false)
+}
+
+model Inventory {
+  id                String          @id @default(uuid())
+  productId         String?         @unique
+  product           Product?        @relation(fields: [productId], references: [id])
+  variantId         String?         @unique
+  variant           ProductVariant? @relation(fields: [variantId], references: [id])
+  stock             Int             @default(0)
+  lowStockThreshold Int             @default(5)
+  updatedAt         DateTime        @updatedAt
+}
+
+model Order {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  items         OrderItem[]
+  totalAmount   Decimal
+  subtotal      Decimal
+  taxAmount     Decimal
+  shippingFee   Decimal
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  addressId     String
+  address       Address       @relation(fields: [addressId], references: [id])
+  transactions  Transaction[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model OrderItem {
+  id        String         @id @default(uuid())
+  orderId   String
+  order     Order          @relation(fields: [orderId], references: [id])
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  quantity  Int
+  price     Decimal
+}
+
+model PaymentMethod {
+  id            String            @id @default(uuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id])
+  type          PaymentMethodType
+  provider      PaymentProvider
+  cardLast4     String?           @db.VarChar(4)
+  cardBrand     String?
+  upiId         String?
+  isDefault     Boolean           @default(false)
+  providerToken String            @unique
+  createdAt     DateTime          @default(now())
+  expiresAt     DateTime?
+  Transaction   Transaction[]
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  orderId         String
+  order           Order             @relation(fields: [orderId], references: [id])
+  amount          Decimal
+  currency        String            @default("INR")
+  paymentMethodId String?
+  paymentMethod   PaymentMethod?    @relation(fields: [paymentMethodId], references: [id])
+  provider        PaymentProvider
+  providerId      String
+  status          TransactionStatus
+  type            TransactionType
+  metadata        Json?
+  createdAt       DateTime          @default(now())
+  refunds         Refund[]
+}
+
+model Refund {
+  id               String        @id @default(uuid())
+  transactionId    String
+  transaction      Transaction   @relation(fields: [transactionId], references: [id])
+  amount           Decimal
+  reason           RefundReason?
+  status           RefundStatus  @default(PENDING)
+  providerRefundId String?
+  createdAt        DateTime      @default(now())
+  processedAt      DateTime?
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  PARTIALLY_REFUNDED
+  FULLY_REFUNDED
+  FAILED
+}
+
+enum PaymentMethodType {
+  CREDIT_CARD
+  DEBIT_CARD
+  UPI
+  NETBANKING
+  WALLET
+  COD
+}
+
+enum PaymentProvider {
+  STRIPE
+  RAZORPAY
+  PAYPAL
+  CCAVENUE
+  CASH_ON_DELIVERY
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum TransactionType {
+  AUTHORIZE
+  CAPTURE
+  REFUND
+  CHARGE
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+}
+
+enum RefundReason {
+  CUSTOMER_REQUEST
+  DEFECTIVE_PRODUCT
+  WRONG_ITEM
+  LATE_DELIVERY
 }
