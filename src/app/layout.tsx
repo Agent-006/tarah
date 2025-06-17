@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
+import AuthProvider from "@/providers/AuthProvider";
 
 // const IvyMode = Geist_Mono({
 //   variable: "--font-ivy-mode",
@@ -24,7 +26,12 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={`antialiased`}>{children}</body>
+            <body className={`antialiased`}>
+                <AuthProvider>
+                    {children}
+                </AuthProvider>
+                <Toaster />
+            </body>
         </html>
     );
 }

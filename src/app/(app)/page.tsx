@@ -12,13 +12,14 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { ChevronLeft, ChevronRight, Heart, Quote } from "lucide-react";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import InstagramSection from "@/components/InstagramSection";
 import Footer from "@/components/Footer";
 import ProductCarousel from "@/components/ProductCarousel";
+import { useCartStore } from "@/store/cartStore";
 
 const ph = [
     { path: "/assets/p1.jpg", description: "Exclusive Collection" },
@@ -52,6 +53,10 @@ export default function Home() {
     const [value, setValue] = useState(" ");
 
     const plugin = React.useRef(Autoplay({ delay: 2000 }));
+
+    useEffect(() => {
+        useCartStore.getState().initializeCart();
+    }, []);
 
     return (
         <>

@@ -8,4 +8,4 @@ const resetPasswordPage = () => {
   )
 }
 
-export default resetPasswordPage
+export default resetPasswordPage;

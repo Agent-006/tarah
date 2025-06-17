@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -28,6 +27,8 @@ model User {
   addresses        Address[]
   paymentMethods   PaymentMethod[]
   orders           Order[]
+  wishlistItems    WishlistItem[]
+  cart             Cart[]
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 }
@@ -46,6 +47,43 @@ model Address {
   Order      Order[]
 }
 
+model WishlistItem {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@id([userId, productId])
+  @@unique([userId, productId])
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([userId])
+}
+
+model CartItem {
+  id        String         @id @default(uuid())
+  cartId    String
+  cart      Cart           @relation(fields: [cartId], references: [id])
+  productId String
+  product   Product        @relation(fields: [productId], references: [id])
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  quantity  Int            @default(1)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([cartId, productId, variantId])
+}
+
 model Category {
   id          String     @id @default(uuid())
   name        String
@@ -62,20 +100,23 @@ model Category {
 }
 
 model Product {
-  id          String             @id @default(uuid())
-  name        String
-  slug        String             @unique
-  description String
-  basePrice   Decimal
-  categories  Category[]         @relation("ProductCategories")
-  variants    ProductVariant[]
-  attributes  ProductAttribute[]
-  images      ProductImage[]
-  inventory   Inventory?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  published   Boolean            @default(false)
-  featured    Boolean            @default(false)
+  id              String             @id @default(uuid())
+  name            String
+  slug            String             @unique
+  description     String
+  basePrice       Decimal
+  discountedPrice Decimal?           @default(0)
+  categories      Category[]         @relation("ProductCategories")
+  variants        ProductVariant[]
+  attributes      ProductAttribute[]
+  images          ProductImage[]
+  inventory       Inventory?
+  wishlistItems   WishlistItem[]
+  cartItems       CartItem[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  published       Boolean            @default(false)
+  featured        Boolean            @default(false)
 }
 
 model ProductVariant {
@@ -88,6 +129,7 @@ model ProductVariant {
   attributes  VariantAttribute[]
   images      ProductImage[]
   inventory   Inventory?
+  cartItems   CartItem[]
   createdAt   DateTime           @default(now())
   OrderItem   OrderItem[]
 }

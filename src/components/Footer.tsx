@@ -4,7 +4,7 @@ import { Instagram, Facebook, MessageCircle, Twitter } from "lucide-react"; // U
 
 const Footer = () => {
     return (
-        <div className="relative bg-secondary border-t border-foreground text-primary text-sm">
+        <div className="relative bg-secondary text-primary text-sm">
             {/* Main Footer Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col md:flex-row justify-between gap-10 relative z-10">
                 {/* Left Column: Contact Info */}
