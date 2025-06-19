@@ -3,59 +3,94 @@ import prisma from "@/lib/db";
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
-    const size = searchParams.get("size");
-    const inStockOnly = searchParams.get("inStockOnly") === "true";
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "8");
     
     try {
-        const whereClause: any = {
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '8');
+        const size = searchParams.get('size');
+        const inStockOnly = searchParams.get('inStockOnly') === 'true';
+        const category = searchParams.get('category');
+        
+        
+        const where: any = {
             published: true,
-            variants: {
-                some: {
-                    inventory: {
-                        stock: inStockOnly ? { gt: 0 } : undefined
-                    }
-                }
-            }
-        };
+        }
 
-        if (size) {
-            whereClause.variants.some.attributes = {
+        // Category filter
+        if (category) {
+            where.categories = {
                 some: {
-                    name: "size",
-                    value: size
+                    name: category
                 }
             };
         }
 
-        const product = await prisma.product.findMany({
-            where: whereClause,
-            include: {
-                variants: {
-                    include: {
-                        inventory: true,
-                        attributes: true,
-                        images: {
-                            orderBy: { order: "asc" },
-                            take: 1
+        // Size filter if provided
+        if (size) {
+            where.variants = {
+                some: {
+                    attributes: {
+                        some: {
+                            name: 'size',
+                            value: size
+                        }
+                    }
+                }
+            };
+        }
+
+        // In-stock filter
+        if (inStockOnly) {
+            where.OR = [
+                {
+                    inventory: {
+                        stock: {
+                            gt: 0
                         }
                     }
                 },
-                categories: true,
-                images: {
-                    orderBy: { order: "asc" },
-                    take: 1
+                {
+                    variants: {
+                        some: {
+                            inventory: {
+                                stock: {
+                                    gt: 0
+                                }
+                            }
+                        }
+                    }
                 }
-            },
-            skip: (page - 1) * limit,
-            take: limit,
-        });
+            ];
+        }
 
-        const totalCount = await prisma.product.count({ where: whereClause });
+        const [products, totalCount] = await Promise.all([
+            prisma.product.findMany({
+                where,
+                include: {
+                    images: true,
+                    variants: {
+                        include: {
+                            attributes: true,
+                            inventory: true,
+                            images: true
+                        }
+                    },
+                    categories: true,
+                    inventory: true
+                },
+                skip: (page - 1) * limit,
+                take: limit,
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            }),
+            prisma.product.count({
+                where
+            })
+        ]);
 
         return NextResponse.json({
-            products: product,
+            products,
             totalPages: Math.ceil(totalCount / limit),
             currentPage: page
         });

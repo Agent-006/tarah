@@ -1,6 +1,5 @@
 "use client";
 
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -11,12 +10,15 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { profileSchema, TProfileSchema } from "@/schemas/userSchema/profileSchema";
+import {
+    profileSchema,
+    TProfileSchema,
+} from "@/schemas/userSchema/profileSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useProfileStore } from "@/store/profileStore";
+import { useProfileStore } from "@/store/user/profileStore";
 import { Loader2 } from "lucide-react";
 
 const ProfileDetails = () => {
@@ -33,10 +35,8 @@ const ProfileDetails = () => {
         },
     });
 
-    // Reset form with fetched profile data
     useEffect(() => {
         const { firstName, lastName, fullName, email, phone } = profile;
-
         if (profile) {
             form.reset({
                 firstName: firstName || "",
@@ -59,24 +59,47 @@ const ProfileDetails = () => {
     };
 
     return (
-        <div>
-            <h1 className="text-2xl font-semibold mb-8">Profile Details</h1>
+        <div className="w-full bg-white p-8 rounded-md">
+            <h1 className="text-xl font-medium mb-6">Edit Your Profile</h1>
 
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-6"
+                    className="space-y-8"
                 >
+                    {/* Name & Address Fields */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                             control={form.control}
                             name="firstName"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>First Name</FormLabel>
+                                    <FormLabel className="text-sm text-gray-700">
+                                        First Name
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="First Name"
+                                            className="h-10"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="lastName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-sm text-gray-700">
+                                        Last Name
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Last Name"
+                                            className="h-10"
                                             {...field}
                                         />
                                     </FormControl>
@@ -87,13 +110,16 @@ const ProfileDetails = () => {
 
                         <FormField
                             control={form.control}
-                            name="lastName"
+                            name="phone"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Last Name</FormLabel>
+                                    <FormLabel className="text-sm text-gray-700">
+                                        Phone Number
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
-                                            placeholder="Last Name"
+                                            placeholder="Enter your full address"
+                                            className="h-10"
                                             {...field}
                                         />
                                     </FormControl>
@@ -107,10 +133,13 @@ const ProfileDetails = () => {
                             name="fullName"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Full Name</FormLabel>
+                                    <FormLabel className="text-sm text-gray-700">
+                                        Full Name
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
-                                            placeholder="Full Name"
+                                            placeholder="Enter your full address"
+                                            className="h-10"
                                             {...field}
                                         />
                                     </FormControl>
@@ -123,11 +152,14 @@ const ProfileDetails = () => {
                             control={form.control}
                             name="email"
                             render={({ field }) => (
-                                <FormItem className="col-span-2">
-                                    <FormLabel>Email</FormLabel>
+                                <FormItem className="col-span-1 md:col-span-2">
+                                    <FormLabel className="text-sm text-gray-700">
+                                        Email
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="Email"
+                                            className="h-10"
                                             {...field}
                                             disabled
                                         />
@@ -136,26 +168,33 @@ const ProfileDetails = () => {
                                 </FormItem>
                             )}
                         />
+                    </div>
 
-                        <FormField
-                            control={form.control}
-                            name="phone"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Phone</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            placeholder="Phone number"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                    {/* Password Section */}
+                    <div className="pt-2 space-y-4">
+                        <h2 className="text-sm font-semibold text-gray-900">
+                            Password Changes
+                        </h2>
+
+                        <Input
+                            placeholder="Current Password"
+                            type="password"
+                            className="h-10"
+                        />
+                        <Input
+                            placeholder="New Password"
+                            type="password"
+                            className="h-10"
+                        />
+                        <Input
+                            placeholder="Confirm New Password"
+                            type="password"
+                            className="h-10"
                         />
                     </div>
 
-                    <div className="flex gap-4 pt-2">
+                    {/* Button Group */}
+                    <div className="flex justify-end gap-4 pt-2">
                         <Button
                             type="button"
                             variant="outline"
@@ -164,13 +203,10 @@ const ProfileDetails = () => {
                         >
                             Cancel
                         </Button>
-                        <Button 
-                            type="submit" 
-                            disabled={isLoading}  
-                        >
+                        <Button type="submit" disabled={isLoading}>
                             {isLoading ? (
                                 <>
-                                    <Loader2 className="mr-2 animate-spin" />
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Saving...
                                 </>
                             ) : (

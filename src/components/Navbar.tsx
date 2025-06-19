@@ -28,12 +28,30 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useCartStore } from "@/store/cartStore";
+import { useCartStore } from "@/store/user/cartStore";
+import { useRouter, usePathname } from "next/navigation";
+import { useProductStore } from "@/store/product/productsStore";
 
 const Navbar = () => {
+    const router = useRouter();
+    const pathname = usePathname();
+    const { fetchProducts } = useProductStore();
     const cartQuantity = useCartStore((state) =>
         state.items.reduce((total, item) => total + item.quantity, 0)
     );
+
+    const handleCategoryClick = (category: string) => {
+        if (pathname === "/products") {
+            // If already on products page, just update the category filter
+            fetchProducts({
+                page: 1,
+                category,
+            });
+        } else {
+            // If not on products page, navigate to it with the category filter
+            router.push(`/products?category=${encodeURIComponent(category)}`);
+        }
+    };
 
     return (
         <>
@@ -60,34 +78,35 @@ const Navbar = () => {
                                     Categories
                                 </h4>
                                 <ul className="space-y-2">
-                                    <li>
-                                        <Link href="/docs">New Arrivals</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/docs">
-                                            Jewellery & Accessories
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/docs">Indian</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/docs">Western</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="#">Plus Size - Indian</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="#">
-                                            Plus Size - Western
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/docs">Night Dress</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/docs">माँ + Beti</Link>
-                                    </li>
+                                    {[
+                                        "New Arrivals",
+                                        "Jewellery & Accessories",
+                                        "Indian",
+                                        "Western",
+                                        "Plus Size - Indian",
+                                        "Plus Size - Western",
+                                        "Night Dress",
+                                        "माँ + Beti",
+                                    ].map((category) => (
+                                        <li key={category}>
+                                            <div
+                                                className="cursor-pointer"
+                                                onClick={() => {
+                                                    handleCategoryClick(
+                                                        category
+                                                    );
+                                                    // Close drawer after selection
+                                                    document
+                                                        .getElementById(
+                                                            "drawer-close"
+                                                        )
+                                                        ?.click();
+                                                }}
+                                            >
+                                                {category}
+                                            </div>
+                                        </li>
+                                    ))}
                                 </ul>
 
                                 <hr className="my-4" />
@@ -213,19 +232,27 @@ const Navbar = () => {
                 <NavigationMenu viewport={false}>
                     <NavigationMenuList>
                         {[
-                            "New Arrivals",
-                            "Jewellery & Accessories",
-                            "Indian",
-                            "Western",
-                            "Night Dress",
-                            "माँ + Beti",
-                        ].map((label, i) => (
+                            { label: "New Arrivals", category: "New Arrivals" },
+                            {
+                                label: "Jewellery & Accessories",
+                                category: "Jewellery & Accessories",
+                            },
+                            { label: "Indian", category: "Indian" },
+                            { label: "Western", category: "Western" },
+                            { label: "Night Dress", category: "Night Dress" },
+                            { label: "माँ + Beti", category: "माँ + Beti" },
+                        ].map((item, i) => (
                             <NavigationMenuItem key={i}>
                                 <NavigationMenuLink
                                     asChild
                                     className={navigationMenuTriggerStyle()}
+                                    onClick={() =>
+                                        handleCategoryClick(item.category)
+                                    }
                                 >
-                                    <Link href="/docs">{label}</Link>
+                                    <div className="cursor-pointer">
+                                        {item.label}
+                                    </div>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
                         ))}
@@ -238,10 +265,28 @@ const Navbar = () => {
                                 <ul className="grid w-[200px] gap-4">
                                     <li>
                                         <NavigationMenuLink asChild>
-                                            <Link href="#">Indian</Link>
+                                            <div
+                                                className="cursor-pointer p-2"
+                                                onClick={() =>
+                                                    handleCategoryClick(
+                                                        "Plus Size - Indian"
+                                                    )
+                                                }
+                                            >
+                                                Indian
+                                            </div>
                                         </NavigationMenuLink>
                                         <NavigationMenuLink asChild>
-                                            <Link href="#">Western</Link>
+                                            <div
+                                                className="cursor-pointer p-2"
+                                                onClick={() =>
+                                                    handleCategoryClick(
+                                                        "Plus Size - Western"
+                                                    )
+                                                }
+                                            >
+                                                Western
+                                            </div>
                                         </NavigationMenuLink>
                                     </li>
                                 </ul>

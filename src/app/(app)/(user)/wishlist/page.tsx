@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Heart } from "lucide-react";
+import { Heart, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useWishlistStore } from "@/store/wishlistStore";
+import { useWishlistStore } from "@/store/user/wishlistStore";
 
 export default function WishlistPage() {
     const { data: session } = useSession();
@@ -37,7 +37,15 @@ export default function WishlistPage() {
     if (isLoading) {
         return (
             <div className="container mx-auto py-8 text-center">
-                Loading your wishlist...
+                <div className="flex flex-col items-center justify-center space-y-4">
+                    <Loader2 className="animate-spin w-12 h-12 text-primary" />
+                    <p className="text-xl font-medium text-gray-700">
+                        Loading your wishlist...
+                    </p>
+                    <p className="text-sm text-gray-500">
+                        We're gathering your favorite items
+                    </p>
+                </div>
             </div>
         );
     }

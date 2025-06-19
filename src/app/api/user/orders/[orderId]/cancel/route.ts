@@ -1,0 +1,49 @@
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
+import prisma from "@/lib/db";
+
+export async function PATCH(
+    request: Request,
+    { params }: { params: { orderId: string } }
+) {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json(
+            { error: "Unauthorized" },
+            { status: 401 }
+        );
+    }
+
+    try {
+        const order = await prisma.order.update({
+            where: {
+                id: params.orderId,
+                userId: session.user.id,
+                status: "PENDING", // Only allow cancellation for pending orders
+            },
+            data: {
+                status: "CANCELLED",
+                updatedAt: new Date(),
+            },
+        });
+
+        if (!order) {
+            return NextResponse.json(
+                { error: "Order not found or cannot be cancelled" },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json(
+            { message: "Order cancelled successfully" },
+            { status: 200 }
+        );
+    } catch (error) {
+        return NextResponse.json(
+            { error: "Failed to cancel order" },
+            { status: 500 }
+        );
+    }
+}

@@ -4,7 +4,7 @@ import {
     addressSchema,
     TAddressSchema,
 } from "@/schemas/userSchema/addressSchema";
-import { useAddressStore } from "@/store/addressStore";
+import { useAddressStore } from "@/store/user/addressStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -100,8 +100,8 @@ const AddressBook = () => {
     };
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-8">
+        <>
+            <div className="flex justify-between items-center p-8">
                 <h1 className="text-2xl font-semibold">Address Book</h1>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
@@ -325,7 +325,7 @@ const AddressBook = () => {
                     )}
                 </TableBody>
             </Table>
-        </div>
+        </>
     );
 };
 

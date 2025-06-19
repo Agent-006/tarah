@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useCartStore } from "@/store/cartStore";
+import { useCartStore } from "@/store/user/cartStore";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import Link from "next/link";

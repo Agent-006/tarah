@@ -19,7 +19,7 @@ import TestimonialCarousel from "@/components/TestimonialCarousel";
 import InstagramSection from "@/components/InstagramSection";
 import Footer from "@/components/Footer";
 import ProductCarousel from "@/components/ProductCarousel";
-import { useCartStore } from "@/store/cartStore";
+import { useCartStore } from "@/store/user/cartStore";
 
 const ph = [
     { path: "/assets/p1.jpg", description: "Exclusive Collection" },
@@ -55,7 +55,9 @@ export default function Home() {
     const plugin = React.useRef(Autoplay({ delay: 2000 }));
 
     useEffect(() => {
-        useCartStore.getState().initializeCart();
+        if (localStorage.getItem("token")) {
+            useCartStore.getState().initializeCart();
+        }
     }, []);
 
     return (
