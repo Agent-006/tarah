@@ -1,38 +1,101 @@
 import { z } from 'zod';
 
-export const adminProductsSchema = z.object({
+export const adminProductImageSchema = z.object({
+    url: z
+        .string()
+        .url(),
+    altText: z
+        .string()
+        .optional(),
+    isPrimary: z
+        .boolean()
+        .default(false),
+    order: z
+        .number()
+        .int()
+        .default(0)
+});
+
+export const adminVariantAttributeSchema = z.object({
     name: z
         .string()
-        .min(1, { message: 'Product name is required' })
-        .max(150, { message: 'Product name must not exceed 100 characters' }),
+        .min(1, { message: 'Attribute name is required' }),
+    value: z
+        .string()
+        .min(1, { message: 'Attribute value is required' })
+});
+
+export const adminInventorySchema = z.object({
+    stock: z
+        .number()
+        .min(0, { message: 'Stock must be a non-negative number' }),
+    lowStockThreshold: z
+        .number()
+        .int()
+        .min(0, { message: 'Low stock threshold must be a non-negative number' })
+        .default(5)
+});
+
+export const adminProductVariantSchema = z.object({
+    id: z
+        .string()
+        .optional(),
+    name: z
+        .string()
+        .min(1, { message: 'Variant name is required' }),
+    sku: z
+        .string()
+        .min(1, { message: 'SKU is required' }),
+    priceOffset: z
+        .number()
+        .default(0),
+    attributes: z
+        .array(adminVariantAttributeSchema)
+        .default([]),
+    images: z
+        .array(adminProductImageSchema)
+        .min(1, { message: 'At least one variant image is required' }),
+    inventory: adminInventorySchema,
+});
+
+export const adminProductsSchema = z.object({
+    id: z
+        .string()
+        .optional(),
+    name: z
+        .string()
+        .min(1, { message: 'Product name is required' }),
     slug: z
         .string()
-        .min(1, { message: 'Slug is required' })
-        .max(100, { message: 'Slug must not exceed 100 characters' })
-        .regex(/^[a-z0-9]+(?:-[a-z0-9?]+)*$/, {
-            message: 'Slug must be lowercase and can only contain letters, numbers, hyphens, and question marks',
-        }),
+        .min(1, { message: 'Slug is required' }),
     description: z
         .string()
-        .min(1, { message: 'Description is required' })
-        .max(500, { message: 'Description must not exceed 500 characters' }),
+        .min(1, { message: 'Description is required' }),
     basePrice: z
         .number()
-        .min(0, { message: 'Base price must be a positive number' })
-        .max(100000, { message: 'Base price must not exceed 100000' }),
+        .min(0, { message: 'Base price must be a positive number' }),
     discountedPrice: z
         .number()
-        .min(0, { message: 'Discounted price must be a positive number' })
-        .max(100000, { message: 'Discounted price must not exceed 100000' })
+        .min(0)
         .optional(),
-    published: z.boolean().default(false),
-    featured: z.boolean().default(false),
-    images: z
-        .array(
-            z.string()
-        )
-        .min(1, { message: 'At least one image is required' })
-        .max(10, { message: 'A maximum of 10 images is allowed' }),
-})
+    categories: z
+        .array(z.string())
+        .min(1, { message: 'At least one category is required' }),
+    variants: z
+        .array(adminProductVariantSchema)
+        .min(1, { message: 'At least one variant is required' }),
+    attributes: z
+        .array(z.object({
+            name: z.string().min(1),
+            value: z.string().min(1)
+        }))
+        .default([]),
+    published: z
+        .boolean()
+        .default(false),
+    featured: z
+        .boolean()
+        .default(false),
+});
 
 export type TAdminProductsSchema = z.infer<typeof adminProductsSchema>;

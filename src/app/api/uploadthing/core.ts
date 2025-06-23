@@ -1,3 +1,4 @@
+// app/api/uploadthing/core.ts
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import { getServerSession } from "next-auth";
@@ -14,17 +15,18 @@ export const ourFileRouter = {
     })
         .middleware(async ({ req }) => {
         const session = await getServerSession(authOptions);
-
         if (!session?.user || session.user.role !== "ADMIN") {
             throw new UploadThingError("Unauthorized");
         }
-
         return { userId: session.user.id };
         })
         .onUploadComplete(async ({ metadata, file }) => {
         console.log("Upload complete for userId:", metadata.userId);
-        return { uploadedBy: metadata.userId };
-    }),
+        return { 
+            uploadedBy: metadata.userId,
+            fileKey: file.key // Important for deletion
+        };
+        }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

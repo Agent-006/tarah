@@ -37,7 +37,7 @@ export const authOptions: NextAuthOptions = {
                     id: user.id,
                     email: user.email,
                     name: user.fullName,
-                    role: user.role,
+                    role: user.role || 'CUSTOMER',
                 }
             }
         })
@@ -61,12 +61,25 @@ export const authOptions: NextAuthOptions = {
                 token.role = user.role;
             }
 
+            console.log("JWT Token:", token);
+            // Ensure the token has the necessary properties
             return token;
+        }
+    },
+    cookies: {
+        sessionToken: {
+            name: `next-auth.session-token`,
+            options: {
+                httpOnly: true,
+                sameSite: "lax",
+                path: '/',
+                secure: false
+            }
         }
     },
     pages: {
         signIn: "/admin/sign-in",
-        error: "/admin/sign-in", // Error code passed in query string
+        // error: "/admin/sign-in", // Error code passed in query string
     },
     session: {
         strategy: "jwt",

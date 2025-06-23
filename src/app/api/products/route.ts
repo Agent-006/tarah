@@ -11,16 +11,17 @@ export async function GET(request: Request) {
         const inStockOnly = searchParams.get('inStockOnly') === 'true';
         const category = searchParams.get('category');
         
-        
         const where: any = {
             published: true,
         }
 
-        // Category filter
+        // Fixed category filter
         if (category) {
             where.categories = {
                 some: {
-                    name: category
+                    category: {
+                        name: category
+                    }
                 }
             };
         }
@@ -75,7 +76,11 @@ export async function GET(request: Request) {
                             images: true
                         }
                     },
-                    categories: true,
+                    categories: {
+                        include: {
+                            category: true
+                        }
+                    },
                     inventory: true
                 },
                 skip: (page - 1) * limit,
@@ -95,6 +100,7 @@ export async function GET(request: Request) {
             currentPage: page
         });
     } catch (error) {
+        console.error("Error fetching products:", error);
         return NextResponse.json(
             { error: "Failed to fetch products" },
             { status: 500 }

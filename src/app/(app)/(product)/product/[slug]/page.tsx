@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 import ProductCarousel from "@/components/ProductCarousel";
 import { useSession } from "next-auth/react";
 import { useCartStore } from "@/store/user/cartStore";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useWishlistStore } from "@/store/user/wishlistStore";
 import axios from "axios";
 import { toast } from "sonner";
@@ -72,6 +72,8 @@ interface Product {
 }
 
 export default function ProductDetailPage() {
+    const router = useRouter();
+    
     const { slug } = useParams();
     const { data: session } = useSession();
     const { addItem } = useCartStore();
@@ -226,7 +228,7 @@ export default function ProductDetailPage() {
     const handleBuyNow = async () => {
         await handleAddToCart();
         // Redirect to cart or checkout page
-        // router.push("/checkout");
+        router.push("/cart");
     };
 
     const handleWishlistToggle = async () => {
@@ -234,6 +236,7 @@ export default function ProductDetailPage() {
 
         setIsWishlistProcessing(true);
         try {
+            console.log(isInWishlist(product.id));
             if (isInWishlist(product.id)) {
                 await removeFromWishlist(product.id);
                 toast.success("Removed from wishlist");

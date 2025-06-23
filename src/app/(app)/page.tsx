@@ -54,11 +54,11 @@ export default function Home() {
 
     const plugin = React.useRef(Autoplay({ delay: 2000 }));
 
-    useEffect(() => {
-        if (localStorage.getItem("token")) {
-            useCartStore.getState().initializeCart();
-        }
-    }, []);
+    // useEffect(() => {
+    //     if (localStorage.getItem("token")) {
+    //         useCartStore.getState().initializeCart();
+    //     }
+    // }, []);
 
     return (
         <>

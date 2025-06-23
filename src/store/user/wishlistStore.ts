@@ -23,7 +23,7 @@ interface WishlistStore {
     error: string | null;
     fetchWishlist: () => Promise<void>;
     addToWishlist: (productId: string) => Promise<void>;
-    removeFromWishlist: (itemId: string) => Promise<void>;
+    removeFromWishlist: (productId: string) => Promise<void>;
     isInWishlist: (productId: string) => boolean;
 }
 

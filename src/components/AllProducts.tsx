@@ -22,9 +22,9 @@ interface AllProductPageProps {
 const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [showAvailableOnly, setShowAvailableOnly] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState<typeof initialCategory | null>(
-        null
-    );
+    const [selectedCategory, setSelectedCategory] = useState<
+        typeof initialCategory | null
+    >(null);
 
     const {
         products,
@@ -152,14 +152,15 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                     );
 
                                     const firstCategory =
-                                        product.categories?.[0]?.name || "";
+                                        (product.categories as any)?.[0]
+                                            ?.category?.name || "";
 
-                                    const sizeAttribiute =
+                                    const sizeAttribute =
                                         product.variants?.[0]?.attributes?.find(
                                             (attr) => attr.name === "size"
                                         );
 
-                                    const size = sizeAttribiute?.value || "N/A";
+                                    const size = sizeAttribute?.value || "N/A";
 
                                     return (
                                         <div
@@ -190,7 +191,7 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                             </Button>
                                             {/* product imgae with link */}
                                             <Link
-                                                href={`/products/${product.slug}`}
+                                                href={`/product/${product.slug}`}
                                             >
                                                 <div className="relative overflow-hidden rounded-lg shadow-2xl hover:shadow-primary/50 transition-shadow duration-300">
                                                     {primaryImage && (
@@ -230,20 +231,25 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                                 </h3>
                                                 <div className="text-sm text-primary">
                                                     {product.discountedPrice &&
-                                                        product.discountedPrice >
-                                                            0 && (
+                                                        Number(
+                                                            product.discountedPrice
+                                                        ) > 0 && (
                                                             <span className="line-through mr-2 text-primary/40">
                                                                 ₹
-                                                                {product.basePrice.toFixed(
-                                                                    2
-                                                                )}
+                                                                {Number(
+                                                                    product.basePrice
+                                                                ).toFixed(2)}
                                                             </span>
                                                         )}
                                                     <span className="font-medium">
                                                         ₹
                                                         {(
-                                                            product.discountedPrice ||
-                                                            product.basePrice
+                                                            Number(
+                                                                product.discountedPrice
+                                                            ) ||
+                                                            Number(
+                                                                product.basePrice
+                                                            )
                                                         ).toFixed(2)}
                                                     </span>
                                                 </div>

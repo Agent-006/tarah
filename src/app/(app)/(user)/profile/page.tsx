@@ -28,7 +28,7 @@ const ProfilePage = () => {
             fetchProfile();
             fetchAddresses();
         } else if (status === "unauthenticated") {
-            router.push("/login");
+            router.push("/sign-in");
         }
     }, [status, fetchProfile, fetchAddresses, router]);
 

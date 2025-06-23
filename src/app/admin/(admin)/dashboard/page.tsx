@@ -3,22 +3,12 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect } from "react";
-import { format } from "date-fns";
-import { useAdminProductStore } from "@/store/admin/adminProductStore";
-import { useAdminOrderStore } from "@/store/admin/adminOrderStore";
 import { OverviewChart } from "@/components/admin/overview-chart";
 import { RecentSales } from "@/components/admin/recent-sales";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { useAdminOrderStore } from "@/store/admin/adminOrderStore";
+import { useAdminProductStore } from "@/store/admin/adminProductStore";
 
-export default async function AdminDashboard() {
-
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user || session.user.role !== "ADMIN") {
-        redirect("/admin/sign-in");
-    }
+export default function AdminDashboard() {
     
     const { orders, fetchOrders } = useAdminOrderStore();
     const { products, fetchProducts } = useAdminProductStore();
@@ -36,6 +26,7 @@ export default async function AdminDashboard() {
     const totalOrders = orders.length;
 
     return (
+        // <div>DashboardPage</div>
         <div className="space-y-6">
             <h1 className="text-2xl font-bold">Dashboard</h1>
 

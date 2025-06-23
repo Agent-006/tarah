@@ -85,18 +85,18 @@ model CartItem {
 }
 
 model Category {
-  id          String     @id @default(uuid())
+  id          String            @id @default(uuid())
   name        String
-  slug        String     @unique
+  slug        String            @unique
   description String?
   parentId    String?
-  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children    Category[] @relation("CategoryHierarchy")
-  products    Product[]  @relation("ProductCategories")
+  parent      Category?         @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[]        @relation("CategoryHierarchy")
+  products    ProductCategory[]
   imageUrl    String?
-  featured    Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  featured    Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 }
 
 model Product {
@@ -106,7 +106,7 @@ model Product {
   description     String
   basePrice       Decimal
   discountedPrice Decimal?           @default(0)
-  categories      Category[]         @relation("ProductCategories")
+  categories      ProductCategory[]
   variants        ProductVariant[]
   attributes      ProductAttribute[]
   images          ProductImage[]
@@ -117,6 +117,17 @@ model Product {
   updatedAt       DateTime           @updatedAt
   published       Boolean            @default(false)
   featured        Boolean            @default(false)
+}
+
+model ProductCategory {
+  productId  String
+  categoryId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  assignedAt DateTime @default(now())
+  assignedBy String?
+
+  @@id([productId, categoryId])
 }
 
 model ProductVariant {

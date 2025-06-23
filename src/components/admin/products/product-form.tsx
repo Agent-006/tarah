@@ -1,3 +1,4 @@
+// components/admin/products/product-form.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -24,59 +25,148 @@ import { Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ImageUpload } from "../image-upload";
 import { useUploadThing } from "@/lib/uploadthing";
+import { useCategories } from "@/hooks/use-categories";
+import axios from "axios";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { VariantForm } from "./variant-form";
 
-export function ProductForm({
-    initialData,
-    onSubmit,
-}: {
-    initialData?: Partial<TAdminProductsSchema>;
-    onSubmit: (value: TAdminProductsSchema) => Promise<void>;
-}) {
+interface ProductFormProps {
+    initialData?: TAdminProductsSchema;
+    onSubmit: (data: TAdminProductsSchema) => Promise<void>;
+}
+
+export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
     const router = useRouter();
-    const [uploading, setUploading] = useState(false);
+    const [uploading, setUploading] = useState<{
+        variantIndex: number;
+        imageIndex: number;
+    } | null>(null);
     const { startUpload } = useUploadThing("imageUploader");
+
+    const { data: categories = [], isLoading: categoriesLoading } =
+        useCategories();
 
     const form = useForm<TAdminProductsSchema>({
         resolver: zodResolver(
             adminProductsSchema
         ) as Resolver<TAdminProductsSchema>,
-        defaultValues: {
+        defaultValues: initialData || {
+            name: "",
+            slug: "",
+            description: "",
+            basePrice: 0,
+            discountedPrice: undefined,
+            categories: [],
+            attributes: [],
+            variants: [
+                {
+                    name: "Default",
+                    sku: "",
+                    priceOffset: 0,
+                    attributes: [],
+                    images: [
+                        { url: "", altText: "", isPrimary: true, order: 0 },
+                        { url: "", altText: "", isPrimary: false, order: 1 },
+                        { url: "", altText: "", isPrimary: false, order: 2 },
+                        { url: "", altText: "", isPrimary: false, order: 3 },
+                    ],
+                    inventory: {
+                        stock: 0,
+                        lowStockThreshold: 5,
+                    },
+                },
+            ],
             published: false,
             featured: false,
-            ...initialData,
-            images: initialData?.images || [],
         },
     });
 
-    const handleImageUpload = async (files: File[]) => {
-        setUploading(true);
+    const handleImageUpload = async (
+        files: File[],
+        variantIndex: number,
+        imageIndex: number
+    ) => {
+        setUploading({ variantIndex, imageIndex });
         try {
             const res = await startUpload(files);
-            if (res) {
-                const newUrls = res.map((file) => file.url);
-                const currentUrls = form.getValues("images") || [];
-                form.setValue("images", [...currentUrls, ...newUrls]);
-                toast.success("Images uploaded successfully!");
+            if (res && res[0]) {
+                const currentVariants = [...form.getValues("variants")];
+                currentVariants[variantIndex].images[imageIndex] = {
+                    ...currentVariants[variantIndex].images[imageIndex],
+                    url: res[0].url,
+                    // Add alt text if you want
+                    altText:
+                        files[0].name.split(".")[0] ||
+                        `Variant Image ${imageIndex + 1}`,
+                };
+                form.setValue("variants", currentVariants);
+                toast.success("Image uploaded successfully!");
             }
         } catch (error) {
             console.error("Image upload failed:", error);
             toast.error("Image upload failed. Please try again.");
         } finally {
-            setUploading(false);
+            setUploading(null);
         }
     };
 
-    const removeImage = (url: string) => {
-        form.setValue(
-            "images",
-            form.getValues().images.filter((img) => img !== url)
-        );
+    const removeImage = async (variantIndex: number, imageIndex: number) => {
+        try {
+            const currentVariants = [...form.getValues("variants")];
+            const imageToRemove =
+                currentVariants[variantIndex].images[imageIndex];
+
+            if (imageToRemove.url) {
+                // Extract file key from URL
+                const url = new URL(imageToRemove.url);
+                const fileKey = url.pathname.split("/").pop() || "";
+
+                // Call our deletion endpoint
+                await axios.post("/api/delete-image", { fileKey });
+
+                // Update local state
+                currentVariants[variantIndex].images[imageIndex] = {
+                    ...imageToRemove,
+                    url: "",
+                };
+
+                form.setValue("variants", currentVariants);
+                toast.success("Image removed successfully!");
+            }
+        } catch (error) {
+            console.error("Failed to remove image:", error);
+            toast.error("Failed to remove image. Please try again.");
+        }
+    };
+
+    const handleSubmit = async (data: TAdminProductsSchema) => {
+        try {
+            await onSubmit(data);
+            toast.success(
+                initialData
+                    ? "Product updated successfully!"
+                    : "Product created successfully!"
+            );
+            router.push("/admin/products");
+        } catch (error) {
+            toast.error("Failed to save product. Please try again.");
+            console.error(error);
+        }
     };
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className="space-y-6"
+            >
+                {form.formState.errors.root && (
+                    <div className="text-red-500 text-sm">
+                        {form.formState.errors.root.message}
+                    </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Product Basic Fields */}
                     <FormField
                         control={form.control}
                         name="name"
@@ -140,9 +230,12 @@ export function ProductForm({
                                         type="number"
                                         placeholder="0.00"
                                         {...field}
+                                        value={field.value || ""}
                                         onChange={(e) =>
                                             field.onChange(
-                                                parseFloat(e.target.value)
+                                                e.target.value === ""
+                                                    ? undefined
+                                                    : parseFloat(e.target.value)
                                             )
                                         }
                                     />
@@ -163,12 +256,46 @@ export function ProductForm({
                                         type="number"
                                         placeholder="0.00"
                                         {...field}
+                                        value={field.value || ""}
                                         onChange={(e) =>
                                             field.onChange(
-                                                parseFloat(e.target.value)
+                                                e.target.value === ""
+                                                    ? undefined
+                                                    : parseFloat(e.target.value)
                                             )
                                         }
                                     />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="categories"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Categories</FormLabel>
+                                <FormControl>
+                                    {categoriesLoading ? (
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            <span>Loading categories...</span>
+                                        </div>
+                                    ) : (
+                                        <MultiSelect
+                                            options={categories.map(
+                                                (category) => ({
+                                                    value: category.id,
+                                                    label: category.name,
+                                                })
+                                            )}
+                                            selected={field.value}
+                                            onChange={field.onChange}
+                                            placeholder="Select categories..."
+                                        />
+                                    )}
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -212,31 +339,11 @@ export function ProductForm({
                     />
                 </div>
 
-                <FormField
-                    control={form.control}
-                    name="images"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Product Images</FormLabel>
-                            <FormControl>
-                                <ImageUpload
-                                    value={field.value}
-                                    onUpload={(urls) => field.onChange(urls)}
-                                    onRemove={(url) => {
-                                        const newUrls = field.value.filter(
-                                            (u) => u !== url
-                                        );
-                                        field.onChange(newUrls);
-                                    }}
-                                    disabled={
-                                        uploading ||
-                                        form.formState.isSubmitting
-                                    }
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
+                {/* Variants Section */}
+                <VariantForm
+                    onImageUpload={handleImageUpload}
+                    onImageRemove={removeImage}
+                    uploading={uploading}
                 />
 
                 <div className="flex justify-end space-x-4">

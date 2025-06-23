@@ -97,7 +97,7 @@ export default function WishlistPage() {
                                 </button>
 
                                 <Link
-                                    href={`/products/${product.slug}`}
+                                    href={`/product/${product.slug}`}
                                     className="block mb-3"
                                 >
                                     <div className="relative aspect-square overflow-hidden rounded-lg">
@@ -120,7 +120,7 @@ export default function WishlistPage() {
                                 </Link>
 
                                 <div className="mt-2">
-                                    <Link href={`/products/${product.slug}`}>
+                                    <Link href={`/product/${product.slug}`}>
                                         <h3 className="font-medium text-lg hover:underline">
                                             {product.name}
                                         </h3>
@@ -131,24 +131,27 @@ export default function WishlistPage() {
                                         </p>
                                     )}
                                     <div className="mt-2">
-                                        {product.discountedPrice ? (
+                                        {Number(product.discountedPrice) ? (
                                             <>
                                                 <span className="line-through text-gray-500 mr-2">
                                                     ₹
-                                                    {product.basePrice.toFixed(
-                                                        2
-                                                    )}
+                                                    {Number(
+                                                        product.basePrice
+                                                    ).toFixed(2)}
                                                 </span>
                                                 <span className="font-bold text-primary">
                                                     ₹
-                                                    {product.discountedPrice.toFixed(
-                                                        2
-                                                    )}
+                                                    {Number(
+                                                        product.discountedPrice
+                                                    ).toFixed(2)}
                                                 </span>
                                             </>
                                         ) : (
                                             <span className="font-bold text-primary">
-                                                ₹{product.basePrice.toFixed(2)}
+                                                ₹
+                                                {Number(
+                                                    product.basePrice
+                                                ).toFixed(2)}
                                             </span>
                                         )}
                                     </div>
