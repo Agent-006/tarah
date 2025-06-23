@@ -61,7 +61,7 @@ const Navbar = () => {
             </div>
 
             {/* Navbar */}
-            <div className="relative flex items-center justify-between p-4 md:justify-center">
+            <div className="relative bg-secondary flex items-center justify-between p-4 md:justify-center">
                 {/* Hamburger Drawer - Small devices only */}
                 <div className="block md:hidden">
                     <Drawer>
@@ -73,10 +73,10 @@ const Navbar = () => {
                                 <DrawerTitle>Menu</DrawerTitle>
                             </DrawerHeader>
 
-                            <div className="space-y-4">
-                                <h4 className="text-lg font-semibold">
+                            <div className="space-y-4 bg-secondary p-4">
+                                {/* <h4 className="text-lg font-semibold">
                                     Categories
-                                </h4>
+                                </h4> */}
                                 <ul className="space-y-2">
                                     {[
                                         "New Arrivals",
@@ -212,7 +212,7 @@ const Navbar = () => {
                         <Link href="/wishlist">
                             <Heart />
                         </Link>
-                        <Link href="/cart">
+                        <Link className="relative" href="/cart">
                             <ShoppingCart />
                             {cartQuantity > 0 && (
                                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
@@ -228,7 +228,7 @@ const Navbar = () => {
             </div>
 
             {/* Navigation Menu - Desktop only */}
-            <div className="w-full hidden md:flex items-center justify-center z-10">
+            <div className="w-full bg-secondary hidden md:flex items-center justify-center z-10">
                 <NavigationMenu viewport={false}>
                     <NavigationMenuList>
                         {[

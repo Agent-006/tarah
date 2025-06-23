@@ -72,11 +72,11 @@ model Cart {
 model CartItem {
   id        String         @id @default(uuid())
   cartId    String
-  cart      Cart           @relation(fields: [cartId], references: [id])
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productId String
-  product   Product        @relation(fields: [productId], references: [id])
+  product   Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
   variantId String
-  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
   quantity  Int            @default(1)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
@@ -133,7 +133,7 @@ model ProductCategory {
 model ProductVariant {
   id          String             @id @default(uuid())
   productId   String
-  product     Product            @relation(fields: [productId], references: [id])
+  product     Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
   name        String
   sku         String             @unique
   priceOffset Decimal            @default(0)
@@ -148,7 +148,7 @@ model ProductVariant {
 model ProductAttribute {
   id        String  @id @default(uuid())
   productId String
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   name      String
   value     String
 }
@@ -156,7 +156,7 @@ model ProductAttribute {
 model VariantAttribute {
   id        String         @id @default(uuid())
   variantId String
-  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
   name      String
   value     String
 }
@@ -164,9 +164,9 @@ model VariantAttribute {
 model ProductImage {
   id        String          @id @default(uuid())
   productId String?
-  product   Product?        @relation(fields: [productId], references: [id])
+  product   Product?        @relation(fields: [productId], references: [id], onDelete: Cascade)
   variantId String?
-  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
   url       String
   altText   String?
   order     Int             @default(0)
@@ -176,9 +176,9 @@ model ProductImage {
 model Inventory {
   id                String          @id @default(uuid())
   productId         String?         @unique
-  product           Product?        @relation(fields: [productId], references: [id])
+  product           Product?        @relation(fields: [productId], references: [id], onDelete: Cascade)
   variantId         String?         @unique
-  variant           ProductVariant? @relation(fields: [variantId], references: [id])
+  variant           ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
   stock             Int             @default(0)
   lowStockThreshold Int             @default(5)
   updatedAt         DateTime        @updatedAt
@@ -187,7 +187,7 @@ model Inventory {
 model Order {
   id            String        @id @default(uuid())
   userId        String
-  user          User          @relation(fields: [userId], references: [id])
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   items         OrderItem[]
   totalAmount   Decimal
   subtotal      Decimal
@@ -196,7 +196,7 @@ model Order {
   status        OrderStatus   @default(PENDING)
   paymentStatus PaymentStatus @default(PENDING)
   addressId     String
-  address       Address       @relation(fields: [addressId], references: [id])
+  address       Address       @relation(fields: [addressId], references: [id], onDelete: Cascade)
   transactions  Transaction[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -205,9 +205,9 @@ model Order {
 model OrderItem {
   id        String         @id @default(uuid())
   orderId   String
-  order     Order          @relation(fields: [orderId], references: [id])
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   variantId String
-  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
   quantity  Int
   price     Decimal
 }
@@ -215,7 +215,7 @@ model OrderItem {
 model PaymentMethod {
   id            String            @id @default(uuid())
   userId        String
-  user          User              @relation(fields: [userId], references: [id])
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   type          PaymentMethodType
   provider      PaymentProvider
   cardLast4     String?           @db.VarChar(4)
@@ -231,11 +231,11 @@ model PaymentMethod {
 model Transaction {
   id              String            @id @default(uuid())
   orderId         String
-  order           Order             @relation(fields: [orderId], references: [id])
+  order           Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
   amount          Decimal
   currency        String            @default("INR")
   paymentMethodId String?
-  paymentMethod   PaymentMethod?    @relation(fields: [paymentMethodId], references: [id])
+  paymentMethod   PaymentMethod?    @relation(fields: [paymentMethodId], references: [id], onDelete: Cascade)
   provider        PaymentProvider
   providerId      String
   status          TransactionStatus
@@ -248,7 +248,7 @@ model Transaction {
 model Refund {
   id               String        @id @default(uuid())
   transactionId    String
-  transaction      Transaction   @relation(fields: [transactionId], references: [id])
+  transaction      Transaction   @relation(fields: [transactionId], references: [id], onDelete: Cascade)
   amount           Decimal
   reason           RefundReason?
   status           RefundStatus  @default(PENDING)

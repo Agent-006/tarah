@@ -2,39 +2,69 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
+import { motion } from "framer-motion";
+
+const images = [
+    "/assets/insta1.jpg",
+    "/assets/insta2.jpg",
+    "/assets/insta3.jpg",
+    "/assets/insta4.jpg",
+    "/assets/insta5.jpg",
+    "/assets/insta6.jpg",
+];
 
 const InstagramSection = () => {
     return (
         <div className="bg-primary text-secondary py-20 px-4 text-center relative overflow-hidden">
-            {/* Background pattern */}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 opacity-20 -z-0"/>
-            
+            {/* Animated Background pattern */}
+            <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 opacity-20 -z-0"
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 0.2, scale: 1 }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+            />
+
             <div className="relative z-10">
-                <h2 className="text-3xl md:text-5xl font-serif mb-6">
+                <motion.h2
+                    className="text-3xl md:text-5xl font-serif mb-6"
+                    initial={{ y: 40, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.7, delay: 0.1 }}
+                >
                     Follow Products And Discounts On Instagram
-                </h2>
-                <a 
-                    href="https://instagram.com" 
+                </motion.h2>
+                <motion.a
+                    href="https://instagram.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 mb-12 px-6 py-3 bg-secondary/10 backdrop-blur-sm rounded-full hover:bg-secondary/20 transition-all duration-300"
+                    className="inline-flex items-center gap-2 mb-12 px-6 py-3 bg-secondary/10 backdrop-blur-sm hover:bg-secondary/20 transition-all duration-300 rounded-full shadow-md hover:scale-105"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
                 >
-                    <Instagram className="w-5 h-5" />
+                    <Instagram className="w-5 h-5 animate-pulse" />
                     <span className="text-sm font-medium">@tarahbymeena</span>
-                </a>
+                </motion.a>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 max-w-6xl mx-auto mb-20">
-                    {[
-                        "/assets/insta1.jpg",
-                        "/assets/insta2.jpg",
-                        "/assets/insta3.jpg",
-                        "/assets/insta4.jpg",
-                        "/assets/insta5.jpg",
-                        "/assets/insta6.jpg",
-                    ].map((src, idx) => (
-                        <div 
+                <motion.div
+                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 max-w-6xl mx-auto mb-20"
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={{
+                        visible: { transition: { staggerChildren: 0.12 } },
+                        hidden: {},
+                    }}
+                >
+                    {images.map((src, idx) => (
+                        <motion.div
                             key={idx}
-                            className="relative group overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                            className="relative group overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
+                            variants={{
+                                hidden: { opacity: 0, y: 30 },
+                                visible: { opacity: 1, y: 0 },
+                            }}
+                            whileHover={{ scale: 1.05, zIndex: 2 }}
                         >
                             <Image
                                 src={src}
@@ -43,12 +73,24 @@ const InstagramSection = () => {
                                 height={300}
                                 className="object-cover w-full h-full transform transition-all duration-500 group-hover:scale-110"
                             />
-                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </div>
+                            <motion.div
+                                className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+                                initial={false}
+                                whileHover={{ opacity: 1 }}
+                            >
+                                <Instagram className="text-white w-8 h-8 opacity-80" />
+                            </motion.div>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
 
-                <div className="max-w-2xl mx-auto bg-secondary/10 backdrop-blur-sm p-8 rounded-xl shadow-lg">
+                <motion.div
+                    className="max-w-2xl mx-auto bg-secondary/10 backdrop-blur-sm p-8 shadow-lg"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, delay: 0.2 }}
+                >
                     <h3 className="text-3xl md:text-4xl font-serif mb-3">
                         Subscribe Newsletter
                     </h3>
@@ -60,16 +102,16 @@ const InstagramSection = () => {
                         <Input
                             type="email"
                             placeholder="Enter your email"
-                            className="bg-secondary text-primary p-5 rounded-lg border-none focus:ring-2 focus:ring-secondary/50"
+                            className="bg-secondary rounded-none text-primary p-5 border-none focus:ring-2 focus:ring-secondary/50 shadow"
                         />
                         <Button
                             type="submit"
-                            className="bg-secondary text-primary font-semibold px-8 py-5 rounded-lg hover:bg-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+                            className="bg-secondary rounded-none text-primary font-semibold px-8 py-5 hover:bg-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
                         >
                             Subscribe Now
                         </Button>
                     </form>
-                </div>
+                </motion.div>
             </div>
         </div>
     );

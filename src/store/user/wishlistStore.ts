@@ -64,7 +64,7 @@ export const useWishlistStore = create<WishlistStore>((set, get) => ({
 
     removeFromWishlist: async (productId) => {
         try {
-            await axios.delete("api/user/wishlist", { data: { productId } });
+            await axios.delete("/api/user/wishlist", { data: { productId } });
             set((state) => ({
                 items: state.items.filter(item => item.product.id !== productId)
             }));

@@ -160,7 +160,7 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                             (attr) => attr.name === "size"
                                         );
 
-                                    const size = sizeAttribute?.value || "N/A";
+                                    const size = sizeAttribute?.value || null;
 
                                     return (
                                         <div
@@ -189,11 +189,11 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                                     }`}
                                                 />
                                             </Button>
-                                            {/* product imgae with link */}
+                                            {/* product image with link */}
                                             <Link
                                                 href={`/product/${product.slug}`}
                                             >
-                                                <div className="relative overflow-hidden rounded-lg shadow-2xl hover:shadow-primary/50 transition-shadow duration-300">
+                                                <div className="relative overflow-hidden shadow-2xl hover:shadow-primary/50 transition-shadow duration-300">
                                                     {primaryImage && (
                                                         <Image
                                                             src={
@@ -205,7 +205,7 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                                             }
                                                             width={260}
                                                             height={340}
-                                                            className="rounded-lg w-full h-[340px] object-cover transform transition-all duration-500 group-hover:scale-105"
+                                                            className="object-cover transform transition-all duration-500 group-hover:scale-105"
                                                         />
                                                     )}
                                                     <div className="absolute inset-0 bg-primary/10 group-hover:bg-primary/20 transition-all duration-300"></div>
@@ -220,7 +220,7 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                             </Link>
 
                                             {/* product info */}
-                                            <div className="p-3 space-y-2 bg-secondary/10 backdrop-blur-sm rounded-lg mt-3 shadow-lg">
+                                            <div className="p-3 space-y-2 bg-secondary/10 backdrop-blur-sm mt-3 shadow-lg">
                                                 {firstCategory && (
                                                     <p className="text-xs font-medium text-primary/80">
                                                         {firstCategory}
@@ -229,6 +229,11 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                                 <h3 className="text-md font-semibold text-primary leading-snug">
                                                     {product.name}
                                                 </h3>
+                                                {size && (
+                                                    <div className="text-xs text-primary/70">
+                                                        Size: <span className="font-medium">{size}</span>
+                                                    </div>
+                                                )}
                                                 <div className="text-sm text-primary">
                                                     {product.discountedPrice &&
                                                         Number(
