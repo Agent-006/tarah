@@ -79,6 +79,15 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
       published: false,
       featured: false,
     },
+    mode: "onChange", // This will show validation errors as you type
+  });
+
+  // Debug form state
+  console.log("Form state:", {
+    isValid: form.formState.isValid,
+    errors: form.formState.errors,
+    hasInitialData: !!initialData,
+    currentValues: form.getValues(),
   });
 
   // Auto-generate slug from name
@@ -134,7 +143,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
   };
 
   const handleSubmit = async (data: TAdminProductsSchema) => {
-      console.log("from form", data);
+    console.log("from form", data);
     try {
       setIsSubmitting(true);
       await onSubmit(data);
@@ -152,7 +161,15 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form
+        onSubmit={(e) => {
+          console.log("Form submitted");
+          console.log("Form errors:", form.formState.errors);
+          console.log("Form values:", form.getValues());
+          form.handleSubmit(handleSubmit)(e);
+        }}
+        className="space-y-8"
+      >
         {/* Basic Product Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
@@ -222,15 +239,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
               <FormItem>
                 <FormLabel>Base Price</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    type="number"
-                    step="1"
-                    placeholder="0"
-                    onChange={(e) =>
-                      field.onChange(parseFloat(e.target.value) || 0)
-                    }
-                  />
+                  <Input {...field} type="number" step="1" placeholder="0" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -244,15 +253,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
               <FormItem>
                 <FormLabel>Discounted Price (Optional)</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    type="number"
-                    step="1"
-                    placeholder="0"
-                    onChange={(e) =>
-                      field.onChange(parseFloat(e.target.value) || 0)
-                    }
-                  />
+                  <Input {...field} type="number" step="1" placeholder="0" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -325,6 +326,18 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
           />
         </div>
 
+        {/* Debug: Show form errors if any */}
+        {Object.keys(form.formState.errors).length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <h4 className="text-red-800 font-semibold mb-2">
+              Form Validation Errors:
+            </h4>
+            <pre className="text-red-700 text-sm overflow-auto">
+              {JSON.stringify(form.formState.errors, null, 2)}
+            </pre>
+          </div>
+        )}
+
         {/* Variants Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Product Variants</h3>
@@ -341,6 +354,11 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
             type="submit"
             disabled={isSubmitting}
             className="min-w-[120px]"
+            onClick={() => {
+              console.log("Submit button clicked");
+              console.log("Form valid:", form.formState.isValid);
+              console.log("Form errors:", form.formState.errors);
+            }}
           >
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {initialData ? "Update Product" : "Create Product"}
