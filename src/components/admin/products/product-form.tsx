@@ -3,19 +3,19 @@
 
 import { Button } from "@/components/ui/button";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    adminProductsSchema,
-    TAdminProductsSchema,
+  adminProductsSchema,
+  TAdminProductsSchema,
 } from "@/schemas/adminSchema/adminProductsSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -31,346 +31,331 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { VariantForm } from "./variant-form";
 
 interface ProductFormProps {
-    initialData?: TAdminProductsSchema;
-    onSubmit: (data: TAdminProductsSchema) => Promise<void>;
+  initialData?: TAdminProductsSchema;
+  onSubmit: (data: TAdminProductsSchema) => Promise<void>;
 }
 
 export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
-    const router = useRouter();
-    const [uploading, setUploading] = useState<{
-        variantIndex: number;
-        imageIndex: number;
-    } | null>(null);
-    const { startUpload } = useUploadThing("imageUploader");
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingVariant, setUploadingVariant] = useState<{
+    variantIndex: number;
+    imageIndex: number;
+  } | null>(null);
 
-    const { data: categories = [], isLoading: categoriesLoading } =
-        useCategories();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { startUpload } = useUploadThing("imageUploader");
 
-    const form = useForm<TAdminProductsSchema>({
-        resolver: zodResolver(
-            adminProductsSchema
-        ) as Resolver<TAdminProductsSchema>,
-        defaultValues: initialData || {
-            name: "",
-            slug: "",
-            description: "",
-            basePrice: 0,
-            discountedPrice: undefined,
-            categories: [],
-            attributes: [],
-            variants: [
-                {
-                    name: "Default",
-                    sku: "",
-                    priceOffset: 0,
-                    attributes: [],
-                    images: [
-                        { url: "", altText: "", isPrimary: true, order: 0 },
-                        { url: "", altText: "", isPrimary: false, order: 1 },
-                        { url: "", altText: "", isPrimary: false, order: 2 },
-                        { url: "", altText: "", isPrimary: false, order: 3 },
-                    ],
-                    inventory: {
-                        stock: 0,
-                        lowStockThreshold: 5,
-                    },
-                },
-            ],
-            published: false,
-            featured: false,
+  const form = useForm<TAdminProductsSchema>({
+    resolver: zodResolver(
+      adminProductsSchema
+    ) as Resolver<TAdminProductsSchema>,
+    defaultValues: initialData || {
+      name: "",
+      slug: "",
+      description: "",
+      basePrice: 0,
+      discountedPrice: 0,
+      categories: [],
+      variants: [
+        {
+          name: "",
+          sku: "",
+          priceOffset: 0,
+          attributes: [],
+          images: [
+            { url: "", altText: "", isPrimary: true, order: 0 },
+            { url: "", altText: "", isPrimary: false, order: 1 },
+            { url: "", altText: "", isPrimary: false, order: 2 },
+            { url: "", altText: "", isPrimary: false, order: 3 },
+          ],
+          inventory: {
+            stock: 0,
+            lowStockThreshold: 5,
+          },
         },
-    });
+      ],
+      attributes: [],
+      published: false,
+      featured: false,
+    },
+  });
 
-    const handleImageUpload = async (
-        files: File[],
-        variantIndex: number,
-        imageIndex: number
-    ) => {
-        setUploading({ variantIndex, imageIndex });
-        try {
-            const res = await startUpload(files);
-            if (res && res[0]) {
-                const currentVariants = [...form.getValues("variants")];
-                currentVariants[variantIndex].images[imageIndex] = {
-                    ...currentVariants[variantIndex].images[imageIndex],
-                    url: res[0].url,
-                    // Add alt text if you want
-                    altText:
-                        files[0].name.split(".")[0] ||
-                        `Variant Image ${imageIndex + 1}`,
-                };
-                form.setValue("variants", currentVariants);
-                toast.success("Image uploaded successfully!");
-            }
-        } catch (error) {
-            console.error("Image upload failed:", error);
-            toast.error("Image upload failed. Please try again.");
-        } finally {
-            setUploading(null);
-        }
+  // Auto-generate slug from name
+  const handleNameChange = (name: string) => {
+    if (!initialData) {
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+      form.setValue("slug", slug);
+    }
+  };
+
+  const handleImageUpload = async (
+    files: File[],
+    variantIndex: number,
+    imageIndex: number
+  ) => {
+    if (!files.length) return;
+
+    try {
+      setUploadingVariant({ variantIndex, imageIndex });
+      const uploadedFiles = await startUpload(files);
+
+      if (uploadedFiles && uploadedFiles[0]) {
+        const currentVariants = form.getValues("variants");
+        currentVariants[variantIndex].images[imageIndex] = {
+          ...currentVariants[variantIndex].images[imageIndex],
+          url: uploadedFiles[0].url,
+        };
+        form.setValue("variants", currentVariants);
+        toast.success("Image uploaded successfully");
+      }
+    } catch (error) {
+      toast.error("Failed to upload image");
+      console.error("Upload error:", error);
+    } finally {
+      setUploadingVariant(null);
+    }
+  };
+
+  const handleImageRemove = async (
+    variantIndex: number,
+    imageIndex: number
+  ) => {
+    const currentVariants = form.getValues("variants");
+    currentVariants[variantIndex].images[imageIndex] = {
+      ...currentVariants[variantIndex].images[imageIndex],
+      url: "",
     };
+    form.setValue("variants", currentVariants);
+    toast.success("Image removed");
+  };
 
-    const removeImage = async (variantIndex: number, imageIndex: number) => {
-        try {
-            const currentVariants = [...form.getValues("variants")];
-            const imageToRemove =
-                currentVariants[variantIndex].images[imageIndex];
+  const handleSubmit = async (data: TAdminProductsSchema) => {
+      console.log("from form", data);
+    try {
+      setIsSubmitting(true);
+      await onSubmit(data);
+    } catch (error) {
+      toast.error("Failed to save product");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-            if (imageToRemove.url) {
-                // Extract file key from URL
-                const url = new URL(imageToRemove.url);
-                const fileKey = url.pathname.split("/").pop() || "";
+  const categoryOptions = categories.map((category) => ({
+    value: category.id,
+    label: category.name,
+  }));
 
-                // Call our deletion endpoint
-                await axios.post("/api/delete-image", { fileKey });
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+        {/* Basic Product Information */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Product Name</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="Enter product name"
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleNameChange(e.target.value);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-                // Update local state
-                currentVariants[variantIndex].images[imageIndex] = {
-                    ...imageToRemove,
-                    url: "",
-                };
+          <FormField
+            control={form.control}
+            name="slug"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Slug</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="product-slug"
+                    disabled={!!initialData}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-                form.setValue("variants", currentVariants);
-                toast.success("Image removed successfully!");
-            }
-        } catch (error) {
-            console.error("Failed to remove image:", error);
-            toast.error("Failed to remove image. Please try again.");
-        }
-    };
-
-    const handleSubmit = async (data: TAdminProductsSchema) => {
-        try {
-            await onSubmit(data);
-            toast.success(
-                initialData
-                    ? "Product updated successfully!"
-                    : "Product created successfully!"
-            );
-            router.push("/admin/products");
-        } catch (error) {
-            toast.error("Failed to save product. Please try again.");
-            console.error(error);
-        }
-    };
-
-    return (
-        <Form {...form}>
-            <form
-                onSubmit={form.handleSubmit(handleSubmit)}
-                className="space-y-6"
-            >
-                {form.formState.errors.root && (
-                    <div className="text-red-500 text-sm">
-                        {form.formState.errors.root.message}
-                    </div>
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Product Basic Fields */}
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Product Name</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Enter product name"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="slug"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Slug</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="product-slug"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                            <FormItem className="md:col-span-2">
-                                <FormLabel>Description</FormLabel>
-                                <FormControl>
-                                    <Textarea
-                                        placeholder="Product description"
-                                        rows={5}
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="basePrice"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Base Price</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        type="number"
-                                        placeholder="0.00"
-                                        {...field}
-                                        value={field.value || ""}
-                                        onChange={(e) =>
-                                            field.onChange(
-                                                e.target.value === ""
-                                                    ? undefined
-                                                    : parseFloat(e.target.value)
-                                            )
-                                        }
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="discountedPrice"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Discounted Price</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        type="number"
-                                        placeholder="0.00"
-                                        {...field}
-                                        value={field.value || ""}
-                                        onChange={(e) =>
-                                            field.onChange(
-                                                e.target.value === ""
-                                                    ? undefined
-                                                    : parseFloat(e.target.value)
-                                            )
-                                        }
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="categories"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Categories</FormLabel>
-                                <FormControl>
-                                    {categoriesLoading ? (
-                                        <div className="flex items-center gap-2">
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                            <span>Loading categories...</span>
-                                        </div>
-                                    ) : (
-                                        <MultiSelect
-                                            options={categories.map(
-                                                (category) => ({
-                                                    value: category.id,
-                                                    label: category.name,
-                                                })
-                                            )}
-                                            selected={field.value}
-                                            onChange={field.onChange}
-                                            placeholder="Select categories..."
-                                        />
-                                    )}
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="published"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                <div className="space-y-0.5">
-                                    <FormLabel>Published</FormLabel>
-                                </div>
-                                <FormControl>
-                                    <Switch
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                    />
-                                </FormControl>
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="featured"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                <div className="space-y-0.5">
-                                    <FormLabel>Featured</FormLabel>
-                                </div>
-                                <FormControl>
-                                    <Switch
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                    />
-                                </FormControl>
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-                {/* Variants Section */}
-                <VariantForm
-                    onImageUpload={handleImageUpload}
-                    onImageRemove={removeImage}
-                    uploading={uploading}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  {...field}
+                  placeholder="Enter product description"
+                  rows={4}
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-                <div className="flex justify-end space-x-4">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => router.push("/admin/products")}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        type="submit"
-                        disabled={form.formState.isSubmitting}
-                    >
-                        {form.formState.isSubmitting ? (
-                            <span className="flex items-center">
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Processing...
-                            </span>
-                        ) : initialData ? (
-                            "Update Product"
-                        ) : (
-                            "Create Product"
-                        )}
-                    </Button>
+        {/* Pricing */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="basePrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Base Price</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="number"
+                    step="1"
+                    placeholder="0"
+                    onChange={(e) =>
+                      field.onChange(parseFloat(e.target.value) || 0)
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="discountedPrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Discounted Price (Optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="number"
+                    step="1"
+                    placeholder="0"
+                    onChange={(e) =>
+                      field.onChange(parseFloat(e.target.value) || 0)
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Categories */}
+        <FormField
+          control={form.control}
+          name="categories"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Categories</FormLabel>
+              <FormControl>
+                <MultiSelect
+                  options={categoryOptions}
+                  selected={field.value}
+                  onChange={field.onChange}
+                  placeholder="Select categories"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Product Settings */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="published"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Published</FormLabel>
+                  <div className="text-sm text-muted-foreground">
+                    Make this product visible to customers
+                  </div>
                 </div>
-            </form>
-        </Form>
-    );
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="featured"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Featured</FormLabel>
+                  <div className="text-sm text-muted-foreground">
+                    Show this product in featured sections
+                  </div>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Variants Section */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Product Variants</h3>
+          <VariantForm
+            onImageUpload={handleImageUpload}
+            onImageRemove={handleImageRemove}
+            uploading={uploadingVariant}
+          />
+        </div>
+
+        {/* Form Actions */}
+        <div className="flex items-center gap-4 pt-6">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="min-w-[120px]"
+          >
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {initialData ? "Update Product" : "Create Product"}
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
 }

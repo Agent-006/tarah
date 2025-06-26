@@ -18,8 +18,8 @@ type SerializedProduct = {
     name: string;
     slug: string;
     description: string;
-    basePrice: string; // Now a string
-    discountedPrice: string | undefined; // Now a string or undefined
+    basePrice: number; // Now a string
+    discountedPrice: number | undefined; // Now a string or undefined
     published: boolean;
     featured: boolean;
     variants: { id: string }[];
