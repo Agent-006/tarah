@@ -29,8 +29,7 @@ export default function EditProductPage({
       if (!product) {
         toast.error("Product not found");
         router.push("/admin/products");
-      }
-      else{
+      } else {
         toast.success("Product loaded successfully");
       }
     } catch (error) {
@@ -43,7 +42,6 @@ export default function EditProductPage({
   };
 
   useEffect(() => {
-    console.log("useEffect", id);
     loadProduct();
   }, []);
 
@@ -53,6 +51,7 @@ export default function EditProductPage({
         name: data.name,
         slug: data.slug,
         description: data.description,
+        coverImage: data.coverImage || [], // Include cover image in update
         basePrice: data.basePrice,
         discountedPrice: data.discountedPrice || undefined,
         published: data.published,
@@ -75,8 +74,8 @@ export default function EditProductPage({
             lowStockThreshold: variant.inventory.lowStockThreshold,
           },
         })),
+        attributes: data.attributes || [], // Also include attributes
       };
-      console.log(productData);
       await updateProduct(id, productData);
       toast.success("Product updated successfully");
       router.push("/admin/products");

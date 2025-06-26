@@ -6,6 +6,12 @@ interface Product {
   name: string;
   slug: string;
   description: string;
+  coverImage: {
+    url: string;
+    altText?: string;
+    isPrimary: boolean;
+    order: number;
+  }[];
   basePrice: number;
   discountedPrice: number | undefined;
   published: boolean;
@@ -117,7 +123,6 @@ export const useAdminProductStore = create<AdminProductStore>((set) => ({
           "Content-Type": "application/json",
         },
       });
-
       // Update local state
       set((state) => ({
         products: state.products.map((p) => (p.id === id ? response.data : p)),

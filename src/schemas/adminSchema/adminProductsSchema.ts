@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const adminProductImageSchema = z.object({
-  url: z.string().url(),
+  url: z.string(), // Allow empty strings, we'll filter them out later
   altText: z.string().optional(),
   isPrimary: z.boolean().default(false),
   order: z.number().int().default(0),
@@ -38,11 +38,7 @@ export const adminProductVariantSchema = z.object({
     .refine((val) => !isNaN(val), { message: "Price offset must be a number" })
     .default(0),
   attributes: z.array(adminVariantAttributeSchema).default([]),
-  images: z
-    .array(adminProductImageSchema)
-    .refine((images) => images.some((img) => img.url && img.url.length > 0), {
-      message: "At least one variant image with URL is required",
-    }),
+  images: z.array(adminProductImageSchema).default([]),
   inventory: adminInventorySchema,
 });
 
@@ -51,6 +47,12 @@ export const adminProductsSchema = z.object({
   name: z.string().min(1, { message: "Product name is required" }),
   slug: z.string().min(1, { message: "Slug is required" }),
   description: z.string().min(1, { message: "Description is required" }),
+  coverImage: z
+    .array(adminProductImageSchema)
+    .min(1, { message: "Cover image is required" })
+    .refine((images) => images.some((img) => img.url && img.url.length > 0), {
+      message: "Cover image URL is required",
+    }),
   basePrice: z
     .union([z.string(), z.number()])
     .transform((val) => (typeof val === "string" ? parseFloat(val) : val))
@@ -64,9 +66,7 @@ export const adminProductsSchema = z.object({
       message: "Discounted price must be a positive number",
     })
     .optional(),
-  categories: z
-    .array(z.string())
-    .min(1, { message: "At least one category is required" }),
+  categories: z.array(z.string()).default([]),
   variants: z
     .array(adminProductVariantSchema)
     .min(1, { message: "At least one variant is required" }),

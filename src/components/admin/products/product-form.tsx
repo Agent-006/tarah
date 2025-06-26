@@ -42,6 +42,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
     variantIndex: number;
     imageIndex: number;
   } | null>(null);
+  const [uploadingCoverImage, setUploadingCoverImage] = useState(false);
 
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { startUpload } = useUploadThing("imageUploader");
@@ -54,6 +55,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
       name: "",
       slug: "",
       description: "",
+      coverImage: [],
       basePrice: 0,
       discountedPrice: 0,
       categories: [],
@@ -79,15 +81,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
       published: false,
       featured: false,
     },
-    mode: "onChange", // This will show validation errors as you type
-  });
-
-  // Debug form state
-  console.log("Form state:", {
-    isValid: form.formState.isValid,
-    errors: form.formState.errors,
-    hasInitialData: !!initialData,
-    currentValues: form.getValues(),
+    mode: "onSubmit", // Change to onSubmit to avoid immediate validation
   });
 
   // Auto-generate slug from name
@@ -99,6 +93,44 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
         .replace(/(^-|-$)/g, "");
       form.setValue("slug", slug);
     }
+  };
+
+  const handleCoverImageUpload = async (files: File[]) => {
+    if (!files.length) return;
+
+    try {
+      setUploadingCoverImage(true);
+      const uploadedFiles = await startUpload(files);
+
+      if (uploadedFiles && uploadedFiles[0]) {
+        const newImage = {
+          url: uploadedFiles[0].url,
+          altText: form.getValues("name") || "Product cover image",
+          isPrimary: true,
+          order: 0,
+        };
+
+        // Put the new image at the first position
+        const currentCoverImages = form.getValues("coverImage") || [];
+        const updatedCoverImages = [newImage, ...currentCoverImages.slice(1)];
+
+        form.setValue("coverImage", updatedCoverImages);
+        toast.success("Cover image uploaded successfully");
+      }
+    } catch (error) {
+      toast.error("Failed to upload cover image");
+      console.error("Upload error:", error);
+    } finally {
+      setUploadingCoverImage(false);
+    }
+  };
+
+  const handleCoverImageRemove = async () => {
+    const currentCoverImages = form.getValues("coverImage") || [];
+    // Remove the first image (cover image)
+    const updatedCoverImages = currentCoverImages.slice(1);
+    form.setValue("coverImage", updatedCoverImages);
+    toast.success("Cover image removed");
   };
 
   const handleImageUpload = async (
@@ -143,7 +175,6 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
   };
 
   const handleSubmit = async (data: TAdminProductsSchema) => {
-    console.log("from form", data);
     try {
       setIsSubmitting(true);
       await onSubmit(data);
@@ -163,9 +194,6 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
     <Form {...form}>
       <form
         onSubmit={(e) => {
-          console.log("Form submitted");
-          console.log("Form errors:", form.formState.errors);
-          console.log("Form values:", form.getValues());
           form.handleSubmit(handleSubmit)(e);
         }}
         className="space-y-8"
@@ -226,6 +254,59 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
                 />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Cover Image */}
+        <FormField
+          control={form.control}
+          name="coverImage"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Cover Image *</FormLabel>
+              <FormControl>
+                <ImageUpload
+                  value={
+                    field.value && field.value[0]?.url
+                      ? [field.value[0].url]
+                      : []
+                  }
+                  onChange={(urls) => {
+                    if (urls.length > 0) {
+                      const newImage = {
+                        url: urls[0],
+                        altText:
+                          form.getValues("name") || "Product cover image",
+                        isPrimary: true,
+                        order: 0,
+                      };
+                      // Put the new image at the first position
+                      const currentImages = field.value || [];
+                      const updatedImages = [
+                        newImage,
+                        ...currentImages.slice(1),
+                      ];
+                      field.onChange(updatedImages);
+                    } else {
+                      // Remove the first image if no URL
+                      const currentImages = field.value || [];
+                      const updatedImages = currentImages.slice(1);
+                      field.onChange(updatedImages);
+                    }
+                  }}
+                  onRemove={handleCoverImageRemove}
+                  disabled={uploadingCoverImage}
+                  maxFiles={1}
+                  onFilesSelected={handleCoverImageUpload}
+                />
+              </FormControl>
+              <FormMessage />
+              <p className="text-sm text-muted-foreground">
+                Upload a cover image for this product. This will be displayed as
+                the main product image.{" "}
+                <span className="text-red-500">*Required</span>
+              </p>
             </FormItem>
           )}
         />
@@ -355,9 +436,6 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
             disabled={isSubmitting}
             className="min-w-[120px]"
             onClick={() => {
-              console.log("Submit button clicked");
-              console.log("Form valid:", form.formState.isValid);
-              console.log("Form errors:", form.formState.errors);
             }}
           >
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

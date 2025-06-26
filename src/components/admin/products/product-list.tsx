@@ -23,7 +23,7 @@ type SerializedProduct = {
     published: boolean;
     featured: boolean;
     variants: { id: string }[];
-    images: { url: string }[];
+    coverImage: { url: string }[];
 };
 
 export const columns: ColumnDef<SerializedProduct>[] = [
@@ -32,9 +32,9 @@ export const columns: ColumnDef<SerializedProduct>[] = [
         header: "Name",
         cell: ({ row }) => (
             <div className="flex items-center gap-4">
-                {row.original.images[0]?.url && (
+                {row.original.coverImage[0]?.url && (
                     <img
-                        src={row.original.images[0].url}
+                        src={row.original.coverImage[0].url}
                         alt={row.original.name}
                         className="h-10 w-10 rounded-md object-cover"
                     />
