@@ -21,7 +21,8 @@ export default function EditProductPage({
     const [loading, setLoading] = useState(true);
 
     // Unwrap params using React.use()
-    const { id } = usePromise(params);
+    const { id, slug } = usePromise(params);
+    
 
     useEffect(() => {
         const loadProduct = async () => {

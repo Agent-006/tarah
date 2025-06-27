@@ -1,20 +1,26 @@
 import { create } from "zustand";
 import axios from "axios";
 
+interface ProductVariant {
+    id: string;
+    attributes: { name: string; value: string }[];
+    inventory?: { stock: number };
+    images?: { url: string }[]; 
+}
+
+interface Product {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    images: { url: string }[];
+    variants: ProductVariant[];
+    basePrice: number;
+    discountedPrice?: number;
+}
 interface WishlistItem {
     id: string;
-    product: {
-        id: string,
-        name: string;
-        slug: string;
-        images: { url: string }[];
-        variants: {
-            attributes: { name: string; value: string }[];
-            inventory?: { stock: number };
-        }[];
-        basePrice: number;
-        discountedPrice?: number;
-    };
+    product: Product;
 }
 
 interface WishlistStore {

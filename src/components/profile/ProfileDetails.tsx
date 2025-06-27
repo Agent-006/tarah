@@ -59,7 +59,7 @@ const ProfileDetails = () => {
     };
 
     return (
-        <div className="w-full bg-white p-8 rounded-md">
+        <div className="w-full bg-secondary p-8 rounded-md border border-gray-200  shadow-xl">
             <h1 className="text-xl font-medium mb-6">Edit Your Profile</h1>
 
             <Form {...form}>
@@ -80,7 +80,7 @@ const ProfileDetails = () => {
                                     <FormControl>
                                         <Input
                                             placeholder="First Name"
-                                            className="h-10"
+                                            className="h-10 rounded-none"
                                             {...field}
                                         />
                                     </FormControl>
@@ -99,7 +99,7 @@ const ProfileDetails = () => {
                                     <FormControl>
                                         <Input
                                             placeholder="Last Name"
-                                            className="h-10"
+                                            className="h-10 rounded-none"
                                             {...field}
                                         />
                                     </FormControl>
@@ -119,7 +119,7 @@ const ProfileDetails = () => {
                                     <FormControl>
                                         <Input
                                             placeholder="Enter your full address"
-                                            className="h-10"
+                                            className="h-10 rounded-none"
                                             {...field}
                                         />
                                     </FormControl>
@@ -139,7 +139,7 @@ const ProfileDetails = () => {
                                     <FormControl>
                                         <Input
                                             placeholder="Enter your full address"
-                                            className="h-10"
+                                            className="h-10 rounded-none"
                                             {...field}
                                         />
                                     </FormControl>
@@ -159,7 +159,7 @@ const ProfileDetails = () => {
                                     <FormControl>
                                         <Input
                                             placeholder="Email"
-                                            className="h-10"
+                                            className="h-10 rounded-none"
                                             {...field}
                                             disabled
                                         />
@@ -179,17 +179,17 @@ const ProfileDetails = () => {
                         <Input
                             placeholder="Current Password"
                             type="password"
-                            className="h-10"
+                            className="h-10 rounded-none"
                         />
                         <Input
                             placeholder="New Password"
                             type="password"
-                            className="h-10"
+                            className="h-10 rounded-none"
                         />
                         <Input
                             placeholder="Confirm New Password"
                             type="password"
-                            className="h-10"
+                            className="h-10 rounded-none"
                         />
                     </div>
 

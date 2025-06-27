@@ -41,7 +41,7 @@ const ProfilePage = () => {
     }
 
     return (
-        <div className="bg-white text-gray-900 min-h-screen">
+        <div className="bg-secondary text-gray-900 min-h-screen">
             <main className="max-w-7xl mx-auto px-4 py-10">
                 <Tabs
                     value={activeTab}

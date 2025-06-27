@@ -3,11 +3,6 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import AuthProvider from "@/providers/AuthProvider";
 
-// const IvyMode = Geist_Mono({
-//   variable: "--font-ivy-mode",
-//   subsets: ["latin"],
-// });
-
 export const metadata: Metadata = {
     title: "Tarah By Meena",
     description: "Threads of Tradition",

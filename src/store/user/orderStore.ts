@@ -1,39 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
-
-interface OrderItem {
-    id: string;
-    variant: {
-        id: string;
-        name: string;
-        product: {
-            name: string;
-            images: {
-                url: string;
-            }[];
-        };
-        images: {
-            url: string;
-        }[];
-    };
-    quantity: number;
-    price: number;
-}
-
-interface Order {
-    id: string;
-    status: string;
-    paymentStatus: string;
-    totalAmount: number;
-    createdAt: string;
-    items: OrderItem[];
-    address?: {
-        street: string;
-        city: string;
-        state: string;
-        postalCode: string;
-    };
-}
+import { CheckoutOrder, CheckoutFormValues } from "@/types/checkout";
 
 interface Refund {
     id: string;
@@ -56,12 +23,13 @@ interface Refund {
 }
 
 interface OrderStore {
-    orders: Order[];
+    orders: CheckoutOrder[];
     returns: Refund[];
     isLoading: boolean;
     error: string | null;
     fetchOrders: () => Promise<void>;
     fetchReturns: () => Promise<void>;
+    createOrder: (values: CheckoutFormValues) => Promise<CheckoutOrder>;
     cancelOrder: (orderId: string) => Promise<void>;
     requestReturn: (orderId: string, itemId: string, reason: string) => Promise<void>;
 }
@@ -82,6 +50,29 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
                 error: axios.isAxiosError(error)
                     ? error.response?.data?.message || error.message
                     : "Failed to fetch orders",
+            });
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    createOrder: async () => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await axios.post("/api/user/orders");
+
+            if (response.status !== 201) {
+                throw new Error("Failed to create order");
+            }
+
+            const order = response.data;
+            set((state) => ({ orders: [order, ...state.orders] }));
+            return order;
+        } catch (error) {
+            set({
+                error: axios.isAxiosError(error)
+                    ? error.response?.data?.message || error.message
+                    : "Failed to create order",
             });
         } finally {
             set({ isLoading: false });

@@ -244,12 +244,15 @@ export default function ProductDetailPage() {
     const handleAddToCart = async () => {
         if (!product || !selectedVariant) return;
 
+        console.log(product);
+
         setIsAddingToCart(true);
         try {
             await addItem({
                 productId: product.id,
                 variantId: selectedVariant.id,
                 name: product.name,
+                slug: product.slug,
                 price:
                     Number(product.discountedPrice || product.basePrice) +
                     Number(selectedVariant.priceOffset || 0),
@@ -326,10 +329,10 @@ export default function ProductDetailPage() {
 
     return (
         <>
-            <section className="flex flex-col justify-around md:flex-row gap-6 py-20 bg-secondary shadow-md">
+            <section className="flex flex-col justify-around md:flex-row gap-6 px-5 py-20 bg-secondary shadow-md">
                 {/* Left Side - Images */}
                 <div className="flex gap-4 justify-center">
-                    <div className="w-full max-w-[400px] aspect-[3/4] relative overflow-hidden border">
+                    <div className="w-full max-w-[350px] md:max-w-[400px] aspect-[3/4] relative overflow-hidden border">
                         {activeImage && (
                             <Image
                                 src={activeImage}
@@ -391,7 +394,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Right Side - Product Info */}
-                <div className="space-y-8 w-lg p-8 bg-secondary border-2 shadow-lg transition-all duration-300">
+                <div className="space-y-8 w-md md:w-lg p-8 bg-secondary border-2 shadow-lg transition-all duration-300">
                     {/* Product Title & Wishlist */}
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-bold tracking-tight text-gray-900">

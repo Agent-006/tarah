@@ -9,7 +9,7 @@ export default async function ProductsPage() {
     const products = await prisma.product.findMany({
         include: {
             variants: { select: { id: true } },
-            images: { take: 1 },
+            coverImage: { take: 1 },
         },
         orderBy: { createdAt: "desc" },
     });

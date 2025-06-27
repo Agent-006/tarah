@@ -21,6 +21,7 @@ import Link from "next/link";
 // First, define the CartItem type based on your store's CartItem
 type CartItemType = {
     id: string;
+    slug: string;
     productId: string;
     variantId: string;
     name: string;
@@ -47,6 +48,7 @@ interface CartItemProps {
 interface OrderSummaryProps {
     subtotal: number;
     discount: number;
+    discountApplied: boolean;
     delivery: number;
     total: number;
     promoCode: string;
@@ -61,19 +63,25 @@ const CartItem = ({
     handleRemove,
     handleQuantityChange,
 }: CartItemProps) => (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 border p-4 rounded-lg">
-        <Image
-            src={item.image}
-            alt={item.name}
-            width={80}
-            height={80}
-            className="rounded"
-        />
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 border p-4">
+        <Link href={`/product/${item.slug}`} className="flex-shrink-0">
+            <Image
+                src={item.image || "/assets/insta1.png"}
+                alt={item.name}
+                width={80}
+                height={80}
+                className="rounded"
+            />
+        </Link>
         <div className="flex-1">
-            <h2 className="font-semibold text-lg">{item.name}</h2>
+            <Link href={`/product/${item.slug}`} className="block mb-2">
+                <h2 className="font-semibold text-lg hover:underline transition-all duration-200">
+                    {item.name}
+                </h2>
+            </Link>
             <p className="text-sm text-gray-500">Size: {item.size}</p>
             <p className="text-sm text-gray-500">Color: {item.color}</p>
-            <p className="text-lg font-medium mt-1">${item.price.toFixed(2)}</p>
+            <p className="text-lg font-medium mt-1">₹{item.price.toFixed(2)}</p>
         </div>
         <div className="flex items-center gap-3">
             <Button
@@ -83,6 +91,7 @@ const CartItem = ({
                     handleQuantityChange(item.productId, item.variantId, -1)
                 }
                 disabled={isProcessing || item.quantity <= 1}
+                className="rounded-none"
             >
                 {isProcessing ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -98,6 +107,7 @@ const CartItem = ({
                     handleQuantityChange(item.productId, item.variantId, 1)
                 }
                 disabled={isProcessing}
+                className="rounded-none"
             >
                 {isProcessing ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -125,6 +135,7 @@ const CartItem = ({
 const OrderSummary = ({
     subtotal,
     discount,
+    discountApplied,
     delivery,
     total,
     promoCode,
@@ -135,7 +146,7 @@ const OrderSummary = ({
         <h2 className="text-xl font-semibold">Order Summary</h2>
         <div className="flex justify-between">
             <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>₹{subtotal.toFixed(2)}</span>
         </div>
         {discount > 0 && (
             <div className="flex justify-between">
@@ -145,21 +156,24 @@ const OrderSummary = ({
         )}
         <div className="flex justify-between">
             <span>Delivery</span>
-            <span>${delivery.toFixed(2)}</span>
+            <span>₹{delivery.toFixed(2)}</span>
         </div>
         <div className="flex justify-between font-bold text-lg border-t pt-3">
             <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+            <span>₹{total.toFixed(2)}</span>
         </div>
         <div className="flex gap-2">
             <Input
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
                 placeholder="Add promo code"
+                className="rounded-none flex-1"
             />
-            <Button onClick={handleApplyPromo}>Apply</Button>
+            <Button className="rounded-none" onClick={handleApplyPromo}>
+                {discountApplied ? "Applied" : "Apply"}
+            </Button>
         </div>
-        <Button className="w-full" asChild>
+        <Button className="w-full rounded-none" asChild>
             <Link href="/checkout">Proceed to Checkout</Link>
         </Button>
     </>
@@ -178,6 +192,8 @@ const CartPage = () => {
         updateQuantity,
         clearCart,
     } = useCartStore();
+
+    console.log(items);
 
     const [promoCode, setPromoCode] = useState("");
     const [discountApplied, setDiscountApplied] = useState(false);
@@ -275,7 +291,7 @@ const CartPage = () => {
             <div className="max-w-7xl mx-auto px-4 py-10 text-center">
                 <h1 className="text-3xl font-semibold mb-6">Your cart</h1>
                 <p className="mb-4">Please sign in to view your cart</p>
-                <Button asChild>
+                <Button className="rounded-none" asChild>
                     <Link href="/auth/signin">Sign In</Link>
                 </Button>
             </div>
@@ -287,7 +303,9 @@ const CartPage = () => {
             <div className="max-w-7xl mx-auto px-4 py-10 text-center">
                 <h1 className="text-3xl font-semibold mb-6">Your cart</h1>
                 <p className="text-red-500 mb-4">{error}</p>
-                <Button onClick={syncWithDatabase}>Retry</Button>
+                <Button className="rounded-none" onClick={syncWithDatabase}>
+                    Retry
+                </Button>
             </div>
         );
     }
@@ -309,22 +327,28 @@ const CartPage = () => {
     }
 
     return (
-        <div className="bg-white text-gray-900 min-h-screen flex flex-col">
+        <div className="bg-secondary text-gray-900 min-h-screen flex flex-col">
             {/* Mobile Cart Sheet */}
             <div className="lg:hidden px-4 mt-4">
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button variant="outline" className="w-full">
+                        <Button
+                            variant="outline"
+                            className="w-full rounded-none bg-primary text-secondary transition-colors duration-200"
+                        >
                             View Cart Summary ({items.length} items)
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="bottom" className="p-6 space-y-4">
                         <SheetHeader>
-                            <SheetTitle>Cart Summary</SheetTitle>
+                            <SheetTitle className="text-xl text-center font-semibold">
+                                Cart Summary
+                            </SheetTitle>
                         </SheetHeader>
                         <OrderSummary
                             subtotal={subtotal}
                             discount={discount}
+                            discountApplied={discountApplied}
                             delivery={delivery}
                             total={total}
                             promoCode={promoCode}
@@ -345,6 +369,7 @@ const CartPage = () => {
                             variant="outline"
                             onClick={handleRefreshCart}
                             disabled={isProcessing}
+                            className="bg-secondary rounded-none"
                         >
                             {isProcessing ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -353,8 +378,8 @@ const CartPage = () => {
                             )}
                         </Button>
                         <Button
-                            variant="ghost"
-                            className="text-red-500"
+                            variant="outline"
+                            className="bg-secondary text-red-500 rounded-none"
                             onClick={handleClearCart}
                             disabled={isProcessing}
                         >
@@ -382,10 +407,11 @@ const CartPage = () => {
                     </div>
 
                     {/* Order Summary - Desktop */}
-                    <div className="hidden lg:block lg:w-1/3 border rounded-lg p-6 space-y-4 bg-gray-50 h-fit sticky top-4">
+                    <div className="hidden lg:block lg:w-1/3 border p-6 space-y-4 bg-secondary h-fit sticky top-4">
                         <OrderSummary
                             subtotal={subtotal}
                             discount={discount}
+                            discountApplied={discountApplied}
                             delivery={delivery}
                             total={total}
                             promoCode={promoCode}

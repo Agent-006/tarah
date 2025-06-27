@@ -16,3 +16,21 @@ export const formatCurrency = (value: string | number | { toString(): string }) 
     minimumFractionDigits: 2,
   }).format(amount);
 };
+
+export function formatDate(dateString: string | Date) {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    }).format(date);
+}
+
+export function generateSlug(title: string) {
+    return title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/--+/g, "-")
+        .trim();
+}

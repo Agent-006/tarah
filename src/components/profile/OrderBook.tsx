@@ -89,7 +89,6 @@ const OrderBook = () => {
                                     <div className="relative w-20 h-20">
                                         <Image
                                             src={
-                                                item.variant.images[0]?.url ||
                                                 item.variant.product.images[0]
                                                     ?.url ||
                                                 "/placeholder-product.jpg"

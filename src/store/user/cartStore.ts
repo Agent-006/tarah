@@ -4,6 +4,7 @@ import axios from 'axios';
 
 type CartItem = {
     id: string;
+    slug: string;
     productId: string;
     variantId: string;
     name: string;
@@ -47,12 +48,14 @@ export const useCartStore = create<CartState> () (
 
                     const transformedItems = dbItems.map((item: any) => ({
                         id: item.id,
+                        slug: item.product.slug,
                         productId: item.productId,
                         variantId: item.variantId,
                         name: item.product.name,
                         price: Number(item.product.discountedPrice || item.product.basePrice),
-                        size: item.variant.attributes.find((a: any) => a.name === 'size')?.value || '',
-                        color: item.variant.attributes.find((a: any) => a.name === 'color')?.value || '',
+                        size: item.variant.attributes.find((a: any) => a.name === 'Size')?.value || '',
+                        color: item.variant.attributes.find((a: any) => a.name === 'Color')?.value || '',
+                        image: item.variant.images?.[0]?.url || item.product.images?.[0]?.url || '',
                         quantity: item.quantity,
                     }));
 

@@ -107,13 +107,17 @@ const Footer = () => {
                     <div>
                         <h4 className="font-semibold mb-2">Other Links</h4>
                         <ul className="space-y-1 text-gray-700">
-                            {["Blogs", "Contact Us", "Visit Us"].map((item) => (
-                                <li key={item}>
+                            {[
+                                { label: "Blogs", href: "/blogs" },
+                                { label: "Contact Us", href: "/contact" },
+                                { label: "Visit Us", href: "/visit" },
+                            ].map((item) => (
+                                <li key={item.label}>
                                     <Link
-                                        href="#"
+                                        href={item.href}
                                         className="hover:text-primary transition"
                                     >
-                                        {item}
+                                        {item.label}
                                     </Link>
                                 </li>
                             ))}
