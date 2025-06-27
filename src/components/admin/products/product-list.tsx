@@ -109,7 +109,7 @@ function ProductActions({ product }: { product: SerializedProduct }) {
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => router.push(`/admin/products/${product.slug}`)}
+                    onClick={() => router.push(`/admin/products/review/${product.id}`)}
                 >
                     <Eye className="h-4 w-4" />
                 </Button>

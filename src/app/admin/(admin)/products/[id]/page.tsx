@@ -108,9 +108,14 @@ export default function EditProductPage({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Edit Product</h1>
-        <Button asChild variant="outline">
-          <Link href="/admin/products">Back to Products</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="default">
+            <Link href={`/admin/products/view/${id}`}>Review Product</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/admin/products">Back to Products</Link>
+          </Button>
+        </div>
       </div>
       <ProductForm initialData={product} onSubmit={handleSubmit} />
     </div>

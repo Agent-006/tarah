@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/form";
 import { Plus, Trash } from "lucide-react";
 import { ImageUpload } from "../image-upload";
+import { ProductAttributeForm } from "./variant-attribute-form";
 import { TAdminProductsSchema } from "@/schemas/adminSchema/adminProductsSchema";
 
 interface VariantFormProps {
@@ -167,6 +168,8 @@ export const VariantForm: React.FC<VariantFormProps> = ({
                 )}
               />
             </div>
+            {/* <h4 className="font-medium text-sm">Variant Atributes</h4>
+            <ProductAttributeForm control={control} /> */}
 
             {/* Variant Images */}
             <div className="space-y-4">
