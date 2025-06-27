@@ -109,7 +109,7 @@ model Product {
   categories      ProductCategory[]
   variants        ProductVariant[]
   attributes      ProductAttribute[]
-  images          ProductImage[]
+  coverImage      ProductImage[]
   inventory       Inventory?
   wishlistItems   WishlistItem[]
   cartItems       CartItem[]

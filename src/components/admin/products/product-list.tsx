@@ -18,12 +18,12 @@ type SerializedProduct = {
     name: string;
     slug: string;
     description: string;
-    basePrice: string; // Now a string
-    discountedPrice: string | undefined; // Now a string or undefined
+    basePrice: number; // Now a string
+    discountedPrice: number | undefined; // Now a string or undefined
     published: boolean;
     featured: boolean;
     variants: { id: string }[];
-    images: { url: string }[];
+    coverImage: { url: string }[];
 };
 
 export const columns: ColumnDef<SerializedProduct>[] = [
@@ -32,9 +32,9 @@ export const columns: ColumnDef<SerializedProduct>[] = [
         header: "Name",
         cell: ({ row }) => (
             <div className="flex items-center gap-4">
-                {row.original.images[0]?.url && (
+                {row.original.coverImage[0]?.url && (
                     <img
-                        src={row.original.images[0].url}
+                        src={row.original.coverImage[0].url}
                         alt={row.original.name}
                         className="h-10 w-10 rounded-md object-cover"
                     />
@@ -109,7 +109,7 @@ function ProductActions({ product }: { product: SerializedProduct }) {
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => router.push(`/admin/products/${product.slug}`)}
+                    onClick={() => router.push(`/admin/products/review/${product.id}`)}
                 >
                     <Eye className="h-4 w-4" />
                 </Button>
