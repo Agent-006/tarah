@@ -19,14 +19,8 @@ export default function EditProductPage({
   const { fetchProduct, updateProduct, product } = useAdminProductStore();
   const [loading, setLoading] = useState(true);
 
-<<<<<<< HEAD
-    // Unwrap params using React.use()
-    const { id, slug } = usePromise(params);
-    
-=======
   // Unwrap params using React.use()
   const { id } = usePromise(params);
->>>>>>> 80d321301e5abfc5d51185b3ef78dc9586b0d8d1
 
   const loadProduct = async () => {
     try {
