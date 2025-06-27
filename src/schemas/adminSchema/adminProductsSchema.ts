@@ -1,101 +1,85 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const adminProductImageSchema = z.object({
-    url: z
-        .string()
-        .url(),
-    altText: z
-        .string()
-        .optional(),
-    isPrimary: z
-        .boolean()
-        .default(false),
-    order: z
-        .number()
-        .int()
-        .default(0)
+  url: z.string(), // Allow empty strings, we'll filter them out later
+  altText: z.string().optional(),
+  isPrimary: z.boolean().default(false),
+  order: z.number().int().default(0),
 });
 
 export const adminVariantAttributeSchema = z.object({
-    name: z
-        .string()
-        .min(1, { message: 'Attribute name is required' }),
-    value: z
-        .string()
-        .min(1, { message: 'Attribute value is required' })
+  name: z.string().min(1, { message: "Attribute name is required" }),
+  value: z.string().min(1, { message: "Attribute value is required" }),
 });
 
 export const adminInventorySchema = z.object({
-    stock: z
-        .number()
-        .min(0, { message: 'Stock must be a non-negative number' }),
-    lowStockThreshold: z
-        .number()
-        .int()
-        .min(0, { message: 'Low stock threshold must be a non-negative number' })
-        .default(5)
+  stock: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === "string" ? parseInt(val) : val))
+    .refine((val) => !isNaN(val) && val >= 0, {
+      message: "Stock must be a non-negative number",
+    }),
+  lowStockThreshold: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === "string" ? parseInt(val) : val))
+    .refine((val) => !isNaN(val) && val >= 0, {
+      message: "Low stock threshold must be a non-negative number",
+    })
+    .default(5),
 });
 
 export const adminProductVariantSchema = z.object({
-    id: z
-        .string()
-        .optional(),
-    name: z
-        .string()
-        .min(1, { message: 'Variant name is required' }),
-    sku: z
-        .string()
-        .min(1, { message: 'SKU is required' }),
-    priceOffset: z
-        .number()
-        .default(0),
-    attributes: z
-        .array(adminVariantAttributeSchema)
-        .default([]),
-    images: z
-        .array(adminProductImageSchema)
-        .min(1, { message: 'At least one variant image is required' }),
-    inventory: adminInventorySchema,
+  id: z.string().optional(),
+  name: z.string().min(1, { message: "Variant name is required" }),
+  sku: z.string().min(1, { message: "SKU is required" }),
+  priceOffset: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === "string" ? parseFloat(val) : val))
+    .refine((val) => !isNaN(val), { message: "Price offset must be a number" })
+    .default(0),
+  attributes: z.array(adminVariantAttributeSchema).default([]),
+  images: z.array(adminProductImageSchema).default([]),
+  inventory: adminInventorySchema,
 });
 
 export const adminProductsSchema = z.object({
-    id: z
-        .string()
-        .optional(),
-    name: z
-        .string()
-        .min(1, { message: 'Product name is required' }),
-    slug: z
-        .string()
-        .min(1, { message: 'Slug is required' }),
-    description: z
-        .string()
-        .min(1, { message: 'Description is required' }),
-    basePrice: z
-        .number()
-        .min(0, { message: 'Base price must be a positive number' }),
-    discountedPrice: z
-        .number()
-        .min(0)
-        .optional(),
-    categories: z
-        .array(z.string())
-        .min(1, { message: 'At least one category is required' }),
-    variants: z
-        .array(adminProductVariantSchema)
-        .min(1, { message: 'At least one variant is required' }),
-    attributes: z
-        .array(z.object({
-            name: z.string().min(1),
-            value: z.string().min(1)
-        }))
-        .default([]),
-    published: z
-        .boolean()
-        .default(false),
-    featured: z
-        .boolean()
-        .default(false),
+  id: z.string().optional(),
+  name: z.string().min(1, { message: "Product name is required" }),
+  slug: z.string().min(1, { message: "Slug is required" }),
+  description: z.string().min(1, { message: "Description is required" }),
+  coverImage: z
+    .array(adminProductImageSchema)
+    .min(1, { message: "Cover image is required" })
+    .refine((images) => images.some((img) => img.url && img.url.length > 0), {
+      message: "Cover image URL is required",
+    }),
+  basePrice: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === "string" ? parseFloat(val) : val))
+    .refine((val) => !isNaN(val) && val >= 0, {
+      message: "Base price must be a positive number",
+    }),
+  discountedPrice: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === "string" ? parseFloat(val) : val))
+    .refine((val) => !isNaN(val) && val >= 0, {
+      message: "Discounted price must be a positive number",
+    })
+    .optional(),
+  categories: z.array(z.string()).default([]),
+  variants: z
+    .array(adminProductVariantSchema)
+    .min(1, { message: "At least one variant is required" }),
+  attributes: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        value: z.string().min(1),
+      })
+    )
+    .default([]),
+  published: z.boolean().default(false),
+  featured: z.boolean().default(false),
 });
 
 export type TAdminProductsSchema = z.infer<typeof adminProductsSchema>;
