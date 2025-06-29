@@ -25,7 +25,7 @@ export async function GET() {
                             include: {
                                 product: {
                                     include: {
-                                        images: true,
+                                        coverImage: true,
                                     }
                                 },
                                 images: true
@@ -52,7 +52,7 @@ export async function GET() {
                     name: item.variant.name,
                     product: {
                         name: item.variant.product.name,
-                        images: item.variant.product.images.map(img => ({ url: img.url }))
+                        images: item.variant.product.coverImage.map(img => ({ url: img.url }))
                         },
                     images: item.variant.images.map(img => ({ url: img.url }))
                 },

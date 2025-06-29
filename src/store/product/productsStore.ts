@@ -9,7 +9,7 @@ interface Product {
     basePrice: number;
     discountedPrice?: number;
     variants?: Variant[];
-    images?: ProductImage[];
+    coverImage?: ProductImage[];
     categories?: Category[];
     status?: 'available' | 'soldout'; 
 }
@@ -59,6 +59,7 @@ export const useProductStore = create<ProductStore>((set) => ({
     error: null,
     totalPages: 1,
     currentPage: 1,
+    
     fetchProducts: async (params) => {
         set({ isLoading: true, error: null });
 

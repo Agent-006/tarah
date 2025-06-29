@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, PaymentProvider, TransactionStatus, TransactionType, OrderStatus, PaymentStatus } from '@prisma/client';
 import { hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -528,6 +528,247 @@ async function main() {
   //   });
 
   //   console.log(`Created product: ${createdProduct.name}`);
+  // }
+
+  // const customer = await prisma.user.findUnique({
+  //   where: { email: 'sagarghosh0610@gmail.com' }
+  // });
+
+  // if (!customer) {
+  //   throw new Error('Required users not found in database');
+  // }
+
+  // // Get some existing products with their variants
+  // const products = await prisma.product.findMany({
+  //   include: {
+  //     variants: {
+  //       include: {
+  //         inventory: true
+  //       }
+  //     }
+  //   },
+  //   take: 5 // Get first 5 products for demo
+  // });
+
+  // if (products.length === 0) {
+  //   throw new Error('No products found in database');
+  // }
+
+  // // Create sample addresses for the customer
+  // const addresses = await Promise.all([
+  //   prisma.address.create({
+  //     data: {
+  //       userId: customer.id,
+  //       street: '123 Fashion Street',
+  //       city: 'Mumbai',
+  //       state: 'Maharashtra',
+  //       postalCode: '400001',
+  //       country: 'India',
+  //       isDefault: true
+  //     }
+  //   }),
+  //   prisma.address.create({
+  //     data: {
+  //       userId: customer.id,
+  //       street: '456 Style Avenue',
+  //       city: 'Bangalore',
+  //       state: 'Karnataka',
+  //       postalCode: '560001',
+  //       country: 'India',
+  //       isDefault: false
+  //     }
+  //   })
+  // ]);
+
+  // // Create sample payment methods
+  // const paymentMethods = await Promise.all([
+  //   prisma.paymentMethod.create({
+  //     data: {
+  //       userId: customer.id,
+  //       type: 'DEBIT_CARD',
+  //       provider: PaymentProvider.RAZORPAY,
+  //       cardLast4: '4242',
+  //       cardBrand: 'VISA',
+  //       isDefault: true,
+  //       providerToken: 'card_' + Math.random().toString(36).substring(2, 15)
+  //     }
+  //   }),
+  //   prisma.paymentMethod.create({
+  //     data: {
+  //       userId: customer.id,
+  //       type: 'UPI',
+  //       provider: 'RAZORPAY',
+  //       upiId: 'customer@upi',
+  //       isDefault: false,
+  //       providerToken: 'upi_' + Math.random().toString(36).substring(2, 15)
+  //     }
+  //   })
+  // ]);
+
+  // // Create sample orders with different statuses
+  // const orders = [
+  //   // Completed order
+  //   {
+  //     userId: customer.id,
+  //     totalAmount: 7498.00,
+  //     subtotal: 6998.00,
+  //     taxAmount: 500.00,
+  //     shippingFee: 0,
+  //     status: OrderStatus.DELIVERED,
+  //     paymentStatus: PaymentStatus.CAPTURED,
+  //     addressId: addresses[0].id,
+  //     paymentMethodId: paymentMethods[0].id,
+  //     items: [
+  //       {
+  //         variantId: products[0].variants[0].id, // First variant of first product
+  //         quantity: 1,
+  //         price: 4999.00
+  //       },
+  //       {
+  //         variantId: products[1].variants[0].id, // First variant of second product
+  //         quantity: 1,
+  //         price: 1999.00
+  //       }
+  //     ],
+  //     transactions: [
+  //       {
+  //         amount: 7498.00,
+  //         currency: 'INR',
+  //         provider: PaymentProvider.RAZORPAY,
+  //         providerId: 'pay_' + Math.random().toString(36).substring(2, 15),
+  //         status: TransactionStatus.SUCCESS,
+  //         type: TransactionType.CHARGE
+  //       }
+  //     ],
+  //     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+  //     updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+  //   },
+  //   // Processing order
+  //   {
+  //     userId: customer.id,
+  //     totalAmount: 3499.00,
+  //     subtotal: 3499.00,
+  //     taxAmount: 0,
+  //     shippingFee: 0,
+  //     status: OrderStatus.PROCESSING,
+  //     paymentStatus: PaymentStatus.AUTHORIZED,
+  //     addressId: addresses[1].id,
+  //     paymentMethodId: paymentMethods[1].id,
+  //     items: [
+  //       {
+  //         variantId: products[2].variants[0].id,
+  //         quantity: 1,
+  //         price: 3499.00
+  //       }
+  //     ],
+  //     transactions: [
+  //       {
+  //         amount: 3499.00,
+  //         currency: 'INR',
+  //         provider: PaymentProvider.RAZORPAY,
+  //         providerId: 'pay_' + Math.random().toString(36).substring(2, 15),
+  //         status: TransactionStatus.PENDING,
+  //         type: TransactionType.AUTHORIZE
+  //       }
+  //     ],
+  //     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
+  //   },
+  //   // Cancelled order
+  //   {
+  //     userId: customer.id,
+  //     totalAmount: 2499.00,
+  //     subtotal: 2499.00,
+  //     taxAmount: 0,
+  //     shippingFee: 0,
+  //     status: OrderStatus.CANCELLED,
+  //     paymentStatus: PaymentStatus.FULLY_REFUNDED,
+  //     addressId: addresses[0].id,
+  //     paymentMethodId: paymentMethods[0].id,
+  //     items: [
+  //       {
+  //         variantId: products[3].variants[0].id,
+  //         quantity: 1,
+  //         price: 2499.00
+  //       }
+  //     ],
+  //     transactions: [
+  //       {
+  //         amount: 2499.00,
+  //         currency: 'INR',
+  //         provider: PaymentProvider.RAZORPAY,
+  //         providerId: 'pay_' + Math.random().toString(36).substring(2, 15),
+  //         status: TransactionStatus.REFUNDED,
+  //         type: TransactionType.CHARGE
+  //       },
+  //       {
+  //         amount: 2499.00,
+  //         currency: 'INR',
+  //         provider: PaymentProvider.RAZORPAY,
+  //         providerId: 'ref_' + Math.random().toString(36).substring(2, 15),
+  //         status: TransactionStatus.SUCCESS,
+  //         type: TransactionType.REFUND
+  //         // Removed reason: 'CUSTOMER_REQUEST' as it is not a valid field for Transaction
+  //       }
+  //     ],
+  //     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+  //     updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000) // 4 days ago
+  //   },
+  //   // Shipped order
+  //   {
+  //     userId: customer.id,
+  //     totalAmount: 1299.00,
+  //     subtotal: 999.00,
+  //     taxAmount: 300.00,
+  //     shippingFee: 0,
+  //     status: OrderStatus.SHIPPED,
+  //     paymentStatus: PaymentStatus.CAPTURED,
+  //     addressId: addresses[1].id,
+  //     paymentMethodId: paymentMethods[1].id,
+  //     items: [
+  //       {
+  //         variantId: products[4].variants[0].id,
+  //         quantity: 1,
+  //         price: 999.00
+  //       }
+  //     ],
+  //     transactions: [
+  //       {
+  //         amount: 1299.00,
+  //         currency: 'INR',
+  //         provider: PaymentProvider.RAZORPAY,
+  //         providerId: 'pay_' + Math.random().toString(36).substring(2, 15),
+  //         status: TransactionStatus.SUCCESS,
+  //         type: TransactionType.CHARGE
+  //       }
+  //     ],
+  //     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+  //     updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) // 1 day ago
+  //   }
+  // ];
+
+  // // Create the orders
+  // for (const orderData of orders) {
+  //   const { items, transactions, paymentMethodId, ...order } = orderData;
+  //   // Remove paymentMethodId from order creation data
+  //   const createdOrder = await prisma.order.create({
+  //     data: {
+  //       ...order,
+  //       items: {
+  //         create: items
+  //       },
+  //       transactions: {
+  //         create: transactions
+  //       }
+  //     },
+  //     include: {
+  //       items: true,
+  //       transactions: true
+  //     }
+  //   });
+
+  //   console.log(`Created order #${createdOrder.id} with status ${createdOrder.status}`);
+  //   console.log(`- Items: ${createdOrder.items.map(i => `${i.quantity}x ₹${i.price}`).join(', ')}`);
+  //   console.log(`- Total: ₹${createdOrder.totalAmount}`);
   // }
   
   console.log('✅ Categories seeded successfully!');

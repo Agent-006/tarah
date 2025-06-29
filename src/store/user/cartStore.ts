@@ -55,7 +55,7 @@ export const useCartStore = create<CartState> () (
                         price: Number(item.product.discountedPrice || item.product.basePrice),
                         size: item.variant.attributes.find((a: any) => a.name === 'Size')?.value || '',
                         color: item.variant.attributes.find((a: any) => a.name === 'Color')?.value || '',
-                        image: item.variant.images?.[0]?.url || item.product.images?.[0]?.url || '',
+                        image: item.variant.images?.[0]?.url || item.product.coverImage?.[0]?.url || '',
                         quantity: item.quantity,
                     }));
 

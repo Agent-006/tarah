@@ -136,7 +136,7 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                         <>
                             <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {products.map((product) => {
-                                    const primaryImage = product.images?.[0] ||
+                                    const primaryImage = product.coverImage?.[0] ||
                                         product.variants?.[0]?.images?.[0] || {
                                             url: "/assets/family.jpg",
                                             altText: product.name,

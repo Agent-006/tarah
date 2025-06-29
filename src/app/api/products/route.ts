@@ -68,7 +68,7 @@ export async function GET(request: Request) {
             prisma.product.findMany({
                 where,
                 include: {
-                    images: true,
+                    coverImage: true,
                     variants: {
                         include: {
                             attributes: true,

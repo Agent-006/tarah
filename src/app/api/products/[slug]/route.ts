@@ -18,7 +18,7 @@ export async function GET(
                         images: true,
                     }
                 },
-                images: true,
+                coverImage: true,
                 categories: true,
                 inventory: true,
             }

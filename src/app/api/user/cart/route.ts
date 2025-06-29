@@ -24,7 +24,7 @@ export async function GET() {
                     include: {
                         product: {
                             include: {
-                                images: true
+                                coverImage: true
                             }
                         },
                         variant: {

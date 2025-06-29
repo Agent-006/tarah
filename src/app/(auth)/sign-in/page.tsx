@@ -4,7 +4,7 @@ import Image from "next/image";
 
 const SignInPage = () => {
     return (
-        <div className="h-screen grid grid-cols-1 lg:grid-cols-2">
+        <div className="h-screen grid grid-cols-1 lg:grid-cols-2 p-6">
             {/* Form Section */}
             <div className="flex flex-col justify-center px-8 py-12 max-w-md w-full mx-auto">
                 <div className="space-y-6">
@@ -21,11 +21,11 @@ const SignInPage = () => {
             {/* Image Section */}
             <div className="hidden lg:block overflow-hidden">
                 <Image
-                    src="/assets/family.jpg" // Replace with actual path
+                    src="/assets/login_signup_model2.jpg" // Replace with actual path
                     alt="Sign In Visual"
                     width={800}
                     height={1000}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-md shadow-lg"
                 />
             </div>
         </div>

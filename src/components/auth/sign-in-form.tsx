@@ -124,12 +124,28 @@ const SignInForm = () => {
                     <div className="flex-1 h-px bg-gray-300" />
                 </div>
 
-                <p className="text-center text-sm text-muted-foreground mt-2">
-                    Don't have an account?{" "}
-                    <a href="/sign-up" className="font-medium underline">
-                        Register Now
-                    </a>
-                </p>
+                <div className="space-y-2 mt-4">
+                    <p className="text-center text-sm text-muted-foreground">
+                        Don&apos;t have an account?{" "}
+                        <a
+                            href="/sign-up"
+                            className="font-medium underline text-primary hover:text-primary/80 transition-colors"
+                        >
+                            Register Now
+                        </a>
+                    </p>
+
+                    
+                    <p className="text-center text-sm text-muted-foreground">
+                        Forgot your password?{" "}
+                        <a
+                            href="/forgot-password"
+                            className="font-medium underline text-primary hover:text-primary/80 transition-colors"
+                        >
+                            Reset Password
+                        </a>
+                    </p>
+                </div>
             </form>
         </Form>
     );

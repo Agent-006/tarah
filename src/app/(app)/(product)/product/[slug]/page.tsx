@@ -17,27 +17,6 @@ import Link from "next/link";
 import { ProductError } from "@/components/error/ProductError";
 import { ProductSkeleton } from "@/components/ProductSkeleton";
 
-// const product = {
-//     title: "Red With Floral Printed Maslin Co-Ord Set",
-//     basePrice: 1590,
-//     images: [
-//         "/assets/product1.png",
-//         "/assets/product2.png",
-//         "/assets/product3.png",
-//         "/assets/product4.png",
-//         "/assets/product5.png",
-//     ],
-//     colors: [
-//         { name: "Red", value: "#ff0000", price: 1590 },
-//         { name: "Grey", value: "#cccccc", price: 1490 },
-//         { name: "Black", value: "#000000", price: 1690 },
-//         { name: "Green", value: "#b2dfdb", price: 1590 },
-//         { name: "White", value: "#ffffff", price: 1490 },
-//         { name: "Blue", value: "#c5cae9", price: 1550 },
-//     ],
-//     sizes: ["XS", "S", "M", "L", "XL", "2X"],
-// };
-
 interface Category {
     id: string;
     name: string;
@@ -74,7 +53,7 @@ interface Product {
     basePrice: string;
     discountedPrice?: string;
     variants: ProductVariant[];
-    images: {
+    coverImage: {
         id: string;
         url: string;
         altText?: string;
@@ -105,8 +84,7 @@ export default function ProductDetailPage() {
     const [product, setProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [selectedVariant, setSelectedVariant] =
-        useState<ProductVariant | null>(null);
+    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [activeImage, setActiveImage] = useState<string | null>(null);
     const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -128,7 +106,7 @@ export default function ProductDetailPage() {
                 setProduct(response.data);
                 console.log("Fetched product data:", response.data);
                 setSelectedVariant(response.data.variants[0]);
-                setActiveImage(response.data.images[0]?.url || null);
+                setActiveImage(response.data.variants[0]?.images[0]?.url || null);
             } catch (error) {
                 setError(
                     axios.isAxiosError(error)
@@ -144,28 +122,7 @@ export default function ProductDetailPage() {
         fetchWishlist();
     }, [slug, fetchWishlist]);
 
-    useEffect(() => {
-        if (product?.categories?.length) {
-            const fetchCategories = async () => {
-                try {
-                    const categoryPromises = product.categories.map((cat) =>
-                        axios
-                            .get(`/api/categories/${cat.categoryId}`)
-                            .then((res) => res.data)
-                            .catch(() => ({
-                                id: cat.categoryId,
-                                name: cat.categoryId,
-                            }))
-                    );
-                    const categoryData = await Promise.all(categoryPromises);
-                    setCategories(categoryData);
-                } catch (error) {
-                    console.error("Failed to fetch categories", error);
-                }
-            };
-            fetchCategories();
-        }
-    }, [product]);
+    console.log(product);
 
     // Get available colors from variants
     const colors =
@@ -264,7 +221,7 @@ export default function ProductDetailPage() {
                     selectedVariant.attributes.find(
                         (attr) => attr.name === "Color"
                     )?.value || "",
-                image: selectedVariant.images[0]?.url || product.images[0]?.url,
+                image: selectedVariant.images[0]?.url || product.coverImage[0]?.url,
                 quantity,
             });
 
@@ -344,11 +301,10 @@ export default function ProductDetailPage() {
                         )}
                     </div>
                     <div className="flex flex-col gap-3 overflow-auto max-h-[500px]">
-                        {product.images
-                            .sort((a, b) => (a.order || 0) - (b.order || 0))
+                        {/* {product.variants[0].images
                             .map((img) => (
                                 <div
-                                    key={img.id}
+                                    key={img.url}
                                     onClick={() => setActiveImage(img.url)}
                                     className={`relative w-[60px] h-[80px] border overflow-hidden cursor-pointer ${
                                         img.url === activeImage
@@ -365,14 +321,10 @@ export default function ProductDetailPage() {
                                             img.url === activeImage
                                                 ? "border-primary"
                                                 : "border-transparent"
-                                        } ${
-                                            img.isPrimary
-                                                ? "ring-2 ring-blue-500"
-                                                : ""
                                         }`}
                                     />
                                 </div>
-                            ))}
+                            ))} */}
                         {selectedVariant?.images.map((img, index) => (
                             <Image
                                 key={`variant-${index}`}
@@ -495,20 +447,6 @@ export default function ProductDetailPage() {
                     <p className="text-base text-gray-700 leading-relaxed">
                         {product.description}
                     </p>
-
-                    {/* Categories */}
-                    {/* {categories.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                            {categories.map((cat) => (
-                                <span
-                                    key={cat.id}
-                                    className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium"
-                                >
-                                    {cat.name}
-                                </span>
-                            ))}
-                        </div>
-                    )} */}
 
                     {/* Colors */}
                     {colors.length > 0 && (

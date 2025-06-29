@@ -20,7 +20,7 @@ export async function GET(request: Request) {
             include: {
                 product: {
                     include: {
-                        images: true,
+                        coverImage: true,
                         variants: {
                             include: {
                                 inventory: true,
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
             include: {
                 product: {
                     include: {
-                    images: true,
+                    coverImage: true,
                     variants: true
                     }
                 }
