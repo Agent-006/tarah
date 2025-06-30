@@ -32,7 +32,7 @@ export async function GET(request: Request) {
                 some: {
                     attributes: {
                         some: {
-                            name: 'size',
+                            name: 'Size',
                             value: size
                         }
                     }

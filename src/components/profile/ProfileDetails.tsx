@@ -27,16 +27,20 @@ const ProfileDetails = () => {
     const form = useForm<TProfileSchema>({
         resolver: zodResolver(profileSchema),
         defaultValues: {
-            firstName: "",
-            lastName: "",
-            fullName: "",
-            email: "",
-            phone: "",
+            firstName: profile.firstName || "",
+            lastName: profile.lastName || "",
+            fullName: profile.fullName || "",
+            email: profile.email || "",
+            phone: profile.phone || "",
+            // currentPassword: "", // Optional for update operations
+            // newPassword: "", // Optional for update operations
+            // confirmPassword: "", // Optional for update operations
         },
     });
 
     useEffect(() => {
         const { firstName, lastName, fullName, email, phone } = profile;
+
         if (profile) {
             form.reset({
                 firstName: firstName || "",
@@ -44,14 +48,19 @@ const ProfileDetails = () => {
                 fullName: fullName || "",
                 email: email || "",
                 phone: phone || "",
+                // currentPassword: "", // Optional for update operations
+                // newPassword: "", // Optional for update operations
+                // confirmPassword: "", // Optional for update operations
             });
         }
     }, [profile, form]);
 
     const onSubmit = async (data: TProfileSchema) => {
         try {
-            await updateProfile(data);
-            toast.success("Profile updated successfully!");
+            const response = await updateProfile(data);
+            toast.success(
+                `${response?.message || "Profile updated successfully!"}`
+            );
         } catch (error) {
             toast.error("Failed to update profile. Please try again.");
             console.error("Profile update error:", error);
@@ -88,6 +97,7 @@ const ProfileDetails = () => {
                                 </FormItem>
                             )}
                         />
+
                         <FormField
                             control={form.control}
                             name="lastName"
@@ -171,27 +181,63 @@ const ProfileDetails = () => {
                     </div>
 
                     {/* Password Section */}
-                    <div className="pt-2 space-y-4">
+                    {/* <div className="pt-2 space-y-4">
                         <h2 className="text-sm font-semibold text-gray-900">
                             Password Changes
                         </h2>
 
-                        <Input
-                            placeholder="Current Password"
-                            type="password"
-                            className="h-10 rounded-none"
+                        <FormField
+                            control={form.control}
+                            name="currentPassword"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Current Password"
+                                            type="password"
+                                            className="h-10 rounded-none"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                        <Input
-                            placeholder="New Password"
-                            type="password"
-                            className="h-10 rounded-none"
+                        <FormField
+                            control={form.control}
+                            name="newPassword"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="New Password"
+                                            type="password"
+                                            className="h-10 rounded-none"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                        <Input
-                            placeholder="Confirm New Password"
-                            type="password"
-                            className="h-10 rounded-none"
+                        <FormField
+                            control={form.control}
+                            name="confirmPassword"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Confirm Password"
+                                            type="password"
+                                            className="h-10 rounded-none"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                    </div>
+                    </div> */}
 
                     {/* Button Group */}
                     <div className="flex justify-end gap-4 pt-2">

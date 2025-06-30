@@ -13,7 +13,7 @@ interface Product {
     name: string;
     slug: string;
     description: string;
-    images: { url: string }[];
+    coverImage: { url: string }[];
     variants: ProductVariant[];
     basePrice: number;
     discountedPrice?: number;

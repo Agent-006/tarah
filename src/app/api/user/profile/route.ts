@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/db";
+import bcrypt from "bcryptjs";
 
 // This route handles fetching the user's profile information.
 export async function GET() {
@@ -51,8 +52,47 @@ export async function PUT(request: Request) {
     }
 
     try {
-        const { firstName, lastName, fullName, address, phone } = await request.json();
+        const { firstName, lastName, fullName, phone, newPassword } = await request.json();
 
+        // If the user provided a new password, you would handle that here.
+        // if (newPassword) {
+        //     const hashedPassword = await bcrypt.hash(newPassword, 12);
+        //     const isPasswordUpdatedUser = await prisma.user.update({
+        //         where: { id: session.user.id },
+        //         data: {
+        //             firstName,
+        //             lastName,
+        //             fullName,
+        //             phone,
+        //             password: hashedPassword,
+        //         },
+        //         select: {
+        //             id: true,
+        //             email: true,
+        //             firstName: true,
+        //             lastName: true,
+        //             fullName: true,
+        //             phone: true,
+        //         },
+        //     });
+
+        //     if (!isPasswordUpdatedUser) {
+        //         return NextResponse.json(
+        //             { 
+        //                 updatedUser: isPasswordUpdatedUser,
+        //                 message: "Failed to update password" 
+        //             },
+        //             { status: 400 }
+        //         );
+        //     }
+
+        //     // Optionally, you can return a message indicating the password was updated successfully.
+        //     return NextResponse.json(
+        //         { message: "Profile and password updated successfully" },
+        //         { status: 200 }
+        //     );
+        // }
+        
         const updatedUser = await prisma.user.update({
             where: { id: session.user.id },
             data: {
@@ -75,9 +115,15 @@ export async function PUT(request: Request) {
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
 
-        return NextResponse.json(updatedUser, {
+        return NextResponse.json(
+            {
+                updatedUser, 
+                message: "Profile updated successfully!"
+            }, 
+            {
             status: 200
-        });
+            }
+        );
     } catch (error) {
         return NextResponse.json(
             { message: "Internal Server Error" },

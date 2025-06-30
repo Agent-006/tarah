@@ -1,8 +1,29 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { Instagram, Facebook, MessageCircle, Twitter } from "lucide-react"; // Using lucide-react
+import { Instagram, Facebook, MessageCircle, Twitter } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { useProductStore } from "@/store/product/productsStore";
 
 const Footer = () => {
+    const router = useRouter();
+    const pathname = usePathname();
+
+    const { fetchProducts } = useProductStore();
+
+    const handleCategoryClick = (category: string) => {
+        if (pathname === "/products") {
+            fetchProducts({
+                page: 1,
+                category,
+            });
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+            router.push(`/products?category=${encodeURIComponent(category)}`);
+        }
+    };
+
     return (
         <div className="relative bg-secondary text-primary text-sm">
             {/* Main Footer Content */}
@@ -61,21 +82,40 @@ const Footer = () => {
                         <h4 className="font-semibold mb-2">Quick Links</h4>
                         <ul className="space-y-1 text-gray-700">
                             {[
-                                "New Arrivals",
-                                "Jewels & Accessories",
-                                "Indian",
-                                "Western",
-                                "Indian Western",
-                                "Night Dress",
-                                "माँ + Beti",
+                                {
+                                    label: "New Arrivals",
+                                    category: "New Arrivals",
+                                },
+                                {
+                                    label: "Jewellery & Accessories",
+                                    category: "Jewellery & Accessories",
+                                },
+                                { label: "Indian", category: "Indian" },
+                                { label: "Western", category: "Western" },
+                                {
+                                    label: "Plus Size - Indian",
+                                    category: "Plus Size - Indian",
+                                },
+                                {
+                                    label: "Plus Size - Western",
+                                    category: "Plus Size - Western",
+                                },
+                                {
+                                    label: "Night Dress",
+                                    category: "Night Dress",
+                                },
+                                { label: "माँ + Beti", category: "माँ + Beti" },
                             ].map((item) => (
-                                <li key={item}>
-                                    <Link
-                                        href="#"
-                                        className="hover:text-primary transition"
+                                <li key={item.category}>
+                                    <button
+                                        type="button"
+                                        className="hover:text-primary transition bg-transparent border-0 p-0 m-0 text-left cursor-pointer"
+                                        onClick={() =>
+                                            handleCategoryClick(item.category)
+                                        }
                                     >
-                                        {item}
-                                    </Link>
+                                        {item.label}
+                                    </button>
                                 </li>
                             ))}
                         </ul>
@@ -109,8 +149,8 @@ const Footer = () => {
                         <ul className="space-y-1 text-gray-700">
                             {[
                                 { label: "Blogs", href: "/blogs" },
-                                { label: "Contact Us", href: "/contact" },
-                                { label: "Visit Us", href: "/visit" },
+                                { label: "Contact Us", href: "#" },
+                                { label: "Visit Us", href: "#" },
                             ].map((item) => (
                                 <li key={item.label}>
                                     <Link

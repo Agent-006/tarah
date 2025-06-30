@@ -27,8 +27,7 @@ type CartItemInput = {
 
 export default function WishlistPage() {
     const { data: session } = useSession();
-    const { items, isLoading, error, fetchWishlist, removeFromWishlist } =
-        useWishlistStore();
+    const { items, isLoading, error, fetchWishlist, removeFromWishlist } = useWishlistStore();
 
     const [addingToCart, setAddingToCart] = useState<Record<string, boolean>>(
         {}
@@ -94,7 +93,7 @@ export default function WishlistPage() {
                     {items.map((item, index) => {
                         const product = item.product;
                         console.log("Product:", product);
-                        const primaryImage = product.images[0];
+                        const primaryImage = product.coverImage[0];
                         const inStock = product.variants.some(
                             (v) => v.inventory?.stock && v.inventory.stock > 0
                         );

@@ -95,6 +95,7 @@ const OrderBook = () => {
                                             }
                                             alt={item.variant.product.name}
                                             fill
+                                            sizes="(max-width: 768px) 80px, 80px"
                                             className="rounded-md object-cover"
                                         />
                                     </div>

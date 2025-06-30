@@ -42,14 +42,20 @@ const Navbar = () => {
 
     const handleCategoryClick = (category: string) => {
         if (pathname === "/products") {
-            // If already on products page, just update the category filter
             fetchProducts({
                 page: 1,
                 category,
             });
         } else {
-            // If not on products page, navigate to it with the category filter
             router.push(`/products?category=${encodeURIComponent(category)}`);
+        }
+    };
+
+    const closeDrawer = () => {
+        const openDialog = document.querySelector('[role="dialog"]');
+        if (openDialog) {
+            const escEvent = new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, which: 27, bubbles: true });
+            openDialog.dispatchEvent(escEvent);
         }
     };
 
@@ -68,16 +74,33 @@ const Navbar = () => {
                         <DrawerTrigger asChild>
                             <Menu className="w-6 h-6" />
                         </DrawerTrigger>
-                        <DrawerContent className="p-4 h-full">
-                            <DrawerHeader className="hidden">
+                        <DrawerContent className="p-4 h-screen">
+                            <DrawerHeader className="">
                                 <DrawerTitle>Menu</DrawerTitle>
                             </DrawerHeader>
 
-                            <div className="space-y-4 bg-secondary p-4">
+                            <div className="space-y-4 p-4 h-[900px] overflow-y-auto">
                                 {/* <h4 className="text-lg font-semibold">
                                     Categories
                                 </h4> */}
                                 <ul className="space-y-2">
+                                    {/* All Products Mobile Nav Item */}
+                                    <li key="all-products">
+                                        <div
+                                            className="cursor-pointer"
+                                            onClick={() => {
+                                                if (pathname === "/products") {
+                                                    fetchProducts({ page: 1 });
+                                                } else {
+                                                    router.push("/products");
+                                                }
+                                                closeDrawer();
+                                            }}
+                                        >
+                                            All Products
+                                        </div>
+                                    </li>
+                                    {/* Category Mobile Nav Items */}
                                     {[
                                         "New Arrivals",
                                         "Jewellery & Accessories",
@@ -95,12 +118,7 @@ const Navbar = () => {
                                                     handleCategoryClick(
                                                         category
                                                     );
-                                                    // Close drawer after selection
-                                                    document
-                                                        .getElementById(
-                                                            "drawer-close"
-                                                        )
-                                                        ?.click();
+                                                    closeDrawer();
                                                 }}
                                             >
                                                 {category}
@@ -117,15 +135,15 @@ const Navbar = () => {
                                 <ul className="space-y-2">
                                     <li className="flex items-center gap-2">
                                         <User className="w-4 h-4" />
-                                        <Link href="/profile">Profile</Link>
+                                        <Link href="/profile" onClick={closeDrawer}>Profile</Link>
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <Heart className="w-4 h-4" />
-                                        <Link href="/wishlist">Wishlist</Link>
+                                        <Link href="/wishlist" onClick={closeDrawer}>Wishlist</Link>
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <ShoppingCart className="w-4 h-4" />
-                                        <Link href="/cart">Cart</Link>
+                                        <Link href="/cart" onClick={closeDrawer}>Cart</Link>
                                     </li>
                                 </ul>
 
@@ -169,16 +187,33 @@ const Navbar = () => {
                             alt="Logo"
                             width={100}
                             height={50}
+                            style={{ height: "auto" }}
+                            priority
                         />
                     </Link>
                 </div>
 
                 {/* Search (Desktop only) */}
-                <div className="hidden md:block absolute left-4">
+                <div className="hidden md:flex items-center gap-2 absolute left-4 bg-white rounded-none px-2 py-1 shadow-md border-[1px]">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        aria-hidden="true"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z"
+                        />
+                    </svg>
                     <Input
                         type="text"
                         placeholder="Search for products, brands and more"
-                        className="w-72 rounded-full"
+                        className="w-72 border-0 focus:ring-0 outline-none bg-transparent text-sm"
                         aria-label="Search"
                     />
                 </div>
@@ -231,6 +266,26 @@ const Navbar = () => {
             <div className="w-full bg-secondary hidden md:flex items-center justify-center z-10">
                 <NavigationMenu viewport={false}>
                     <NavigationMenuList>
+                        {/* All Products Navigation Item */}
+                        <NavigationMenuItem>
+                            <NavigationMenuLink
+                                asChild
+                                className={navigationMenuTriggerStyle()}
+                                onClick={() => {
+                                    if (pathname === "/products") {
+                                        fetchProducts({ page: 1 });
+                                    } else {
+                                        router.push("/products");
+                                    }
+                                }}
+                            >
+                                <div className="cursor-pointer">
+                                    All Products
+                                </div>
+                            </NavigationMenuLink>
+                        </NavigationMenuItem>
+
+                        {/* Category Navigation Items */}
                         {[
                             { label: "New Arrivals", category: "New Arrivals" },
                             {
@@ -242,7 +297,7 @@ const Navbar = () => {
                             { label: "Night Dress", category: "Night Dress" },
                             { label: "माँ + Beti", category: "माँ + Beti" },
                         ].map((item, i) => (
-                            <NavigationMenuItem key={i}>
+                            <NavigationMenuItem key={item.category}>
                                 <NavigationMenuLink
                                     asChild
                                     className={navigationMenuTriggerStyle()}

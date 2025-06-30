@@ -44,7 +44,7 @@ export function CheckoutForm() {
     });
 
     const [paymentMethods, setPaymentMethods] = useState<PaymentOption[]>([]);
-    const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true);
+    const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
 
     useEffect(() => {
         const fetchPaymentMethods = async () => {
@@ -62,7 +62,7 @@ export function CheckoutForm() {
             }
         };
 
-        fetchPaymentMethods();
+        // fetchPaymentMethods();
     }, []);
 
     const { handleSubmit } = form;

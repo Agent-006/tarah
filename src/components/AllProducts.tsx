@@ -136,7 +136,8 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                         <>
                             <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {products.map((product) => {
-                                    const primaryImage = product.coverImage?.[0] ||
+                                    const primaryImage = product
+                                        .coverImage?.[0] ||
                                         product.variants?.[0]?.images?.[0] || {
                                             url: "/assets/family.jpg",
                                             altText: product.name,
@@ -203,9 +204,9 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                                                 primaryImage.altText ||
                                                                 product.name
                                                             }
-                                                            width={260}
-                                                            height={340}
-                                                            className="object-cover transform transition-all duration-500 group-hover:scale-105"
+                                                            width={460}
+                                                            height={460}
+                                                            className="h-full transform transition-all duration-500 group-hover:scale-105"
                                                         />
                                                     )}
                                                     <div className="absolute inset-0 bg-primary/10 group-hover:bg-primary/20 transition-all duration-300"></div>
@@ -231,7 +232,10 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                                 </h3>
                                                 {size && (
                                                     <div className="text-xs text-primary/70">
-                                                        Size: <span className="font-medium">{size}</span>
+                                                        Size:{" "}
+                                                        <span className="font-medium">
+                                                            {size}
+                                                        </span>
                                                     </div>
                                                 )}
                                                 <div className="text-sm text-primary">
