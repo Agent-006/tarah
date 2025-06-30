@@ -168,8 +168,8 @@ export const VariantForm: React.FC<VariantFormProps> = ({
                 )}
               />
             </div>
-            {/* <h4 className="font-medium text-sm">Variant Atributes</h4>
-            <ProductAttributeForm control={control} /> */}
+            <h4 className="font-medium text-sm">Variant Atributes</h4>
+            <ProductAttributeForm control={control} />
 
             {/* Variant Images */}
             <div className="space-y-4">

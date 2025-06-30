@@ -53,7 +53,7 @@ export function RecentSales({ orders }: RecentSalesProps) {
                             {format(new Date(order.createdAt), "MMM d, yyyy")}
                         </TableCell>
                         <TableCell className="text-right">
-                            ₹{order.totalAmount.toFixed(2)}
+                            ₹{order.totalAmount}
                         </TableCell>
                     </TableRow>
                 ))}

@@ -365,7 +365,7 @@ export default function ViewProductPage({
             </CardContent>
           </Card>
 
-          {/* Categories */}
+          {/* Categories
           <Card>
             <CardHeader>
               <CardTitle>Categories</CardTitle>
@@ -383,7 +383,7 @@ export default function ViewProductPage({
                 <p className="text-gray-500 text-sm">No categories assigned</p>
               )}
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Quick Actions */}
           <Card>
