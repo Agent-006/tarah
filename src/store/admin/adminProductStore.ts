@@ -26,7 +26,7 @@ interface Product {
     name: string;
     sku: string;
     priceOffset: number;
-    attributes: {
+    variantAttributes: {
       name: string;
       value: string;
     }[];

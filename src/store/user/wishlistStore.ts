@@ -3,7 +3,7 @@ import axios from "axios";
 
 interface ProductVariant {
     id: string;
-    attributes: { name: string; value: string }[];
+    variantAttributes: { name: string; value: string }[];
     inventory?: { stock: number };
     images?: { url: string }[]; 
 }

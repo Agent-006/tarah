@@ -254,11 +254,11 @@ export default function ViewProductPage({
                   </div>
 
                   {/* Variant Attributes */}
-                  {variant.attributes && variant.attributes.length > 0 && (
+                  {variant.variantAttributes && variant.variantAttributes.length > 0 && (
                     <div>
                       <h5 className="font-medium mb-2">Attributes</h5>
                       <div className="flex flex-wrap gap-2">
-                        {variant.attributes.map((attr, attrIndex) => (
+                        {variant.variantAttributes.map((attr, attrIndex) => (
                           <Badge key={attrIndex} variant="secondary">
                             {attr.name}: {attr.value}
                           </Badge>

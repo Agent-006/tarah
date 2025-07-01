@@ -16,7 +16,7 @@ interface Product {
 
 interface Variant {
     id: string;
-    attributes: VariantAttribute[];
+    variantAttributes: VariantAttribute[];
     inventory?: {
         stock: number;
     };

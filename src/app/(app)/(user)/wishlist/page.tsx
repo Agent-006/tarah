@@ -97,10 +97,10 @@ export default function WishlistPage() {
                         const inStock = product.variants.some(
                             (v) => v.inventory?.stock && v.inventory.stock > 0
                         );
-                        const size = product.variants[0]?.attributes.find(
+                        const size = product.variants[0]?.variantAttributes.find(
                             (a) => a.name === "Size"
                         )?.value;
-                        const color = product.variants[0]?.attributes.find(
+                        const color = product.variants[0]?.variantAttributes.find(
                             (a) => a.name === "Color"
                         )?.value;
 
@@ -139,11 +139,11 @@ export default function WishlistPage() {
                                             product.basePrice
                                     ),
                                     size:
-                                        variant.attributes.find(
+                                        variant.variantAttributes.find(
                                             (a) => a.name === "Size"
                                         )?.value || "",
                                     color:
-                                        variant.attributes.find(
+                                        variant.variantAttributes.find(
                                             (a) => a.name === "Color"
                                         )?.value || "",
                                     image:

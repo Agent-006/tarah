@@ -17,7 +17,7 @@ export async function GET(request: Request) {
             include: {
               images: true,
               inventory: true,
-              attributes: true,
+              variantAttributes: true,
             },
           },
           attributes: true,
@@ -53,6 +53,7 @@ export async function GET(request: Request) {
               orderBy: { order: "asc" },
               take: 1, // Only get first image for listing
             },
+            variantAttributes: true,
           },
         },
         coverImage: true,
@@ -117,8 +118,8 @@ export async function POST(request: Request) {
             name: variant.name,
             sku: variant.sku,
             priceOffset: variant.priceOffset,
-            attributes: {
-              create: variant.attributes.map((attr) => ({
+            variantAttributes: {
+              create: variant.variantAttributes.map((attr) => ({
                 name: attr.name,
                 value: attr.value,
               })),
@@ -282,9 +283,9 @@ export async function PUT(request: Request) {
           await prisma.variantAttribute.deleteMany({
             where: { variantId: variant.id },
           });
-          if (variant.attributes.length > 0) {
+          if (variant.variantAttributes && variant.variantAttributes.length > 0) {
             await prisma.variantAttribute.createMany({
-              data: variant.attributes.map((attr) => ({
+              data: variant.variantAttributes.map((attr) => ({
                 variantId: variant.id!,
                 name: attr.name,
                 value: attr.value,
@@ -325,10 +326,10 @@ export async function PUT(request: Request) {
             data: {
               ...newVariantData,
               product: { connect: { id: validatedData.id } },
-              attributes:
-                variant.attributes.length > 0
+              variantAttributes:
+                variant.variantAttributes && variant.variantAttributes.length > 0
                   ? {
-                      create: variant.attributes.map((attr) => ({
+                      create: variant.variantAttributes.map((attr) => ({
                         name: attr.name,
                         value: attr.value,
                       })),
@@ -365,7 +366,7 @@ export async function PUT(request: Request) {
           variants: {
             include: {
               images: true,
-              attributes: true,
+              variantAttributes: true,
               inventory: true,
             },
           },

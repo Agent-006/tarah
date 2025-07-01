@@ -13,7 +13,6 @@ import { useWishlistStore } from "@/store/user/wishlistStore";
 import axios from "axios";
 import { toast } from "sonner";
 import { Heart, Loader2 } from "lucide-react";
-import Link from "next/link";
 import { ProductError } from "@/components/error/ProductError";
 import { ProductSkeleton } from "@/components/ProductSkeleton";
 
@@ -22,17 +21,19 @@ interface Category {
     name: string;
 }
 
+interface VariantAttribute {
+    id: string;
+    name: string;
+    value: string;
+    variantId: string;
+}
+
 interface ProductVariant {
     id: string;
     name: string;
     sku: string;
     priceOffset: string;
-    attributes: {
-        id: string;
-        name: string;
-        value: string;
-        variantId: string;
-    }[];
+    variantAttributes: VariantAttribute[];
     images: {
         url: string;
         altText?: string;
@@ -84,7 +85,8 @@ export default function ProductDetailPage() {
     const [product, setProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+    const [selectedVariant, setSelectedVariant] =
+        useState<ProductVariant | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [activeImage, setActiveImage] = useState<string | null>(null);
     const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -103,10 +105,17 @@ export default function ProductDetailPage() {
             try {
                 setIsLoading(true);
                 const response = await axios.get(`/api/products/${slug}`);
-                setProduct(response.data);
-                console.log("Fetched product data:", response.data);
-                setSelectedVariant(response.data.variants[0]);
-                setActiveImage(response.data.variants[0]?.images[0]?.url || null);
+                // Map variantAttributes to attributes for compatibility
+                const productData = {
+                    ...response.data,
+                    variants: response.data.variants.map((variant: any) => ({
+                        ...variant,
+                        attributes: variant.variantAttributes || [],
+                    })),
+                };
+                setProduct(productData);
+                setSelectedVariant(productData.variants[0]);
+                setActiveImage(productData.variants[0]?.images[0]?.url || null);
             } catch (error) {
                 setError(
                     axios.isAxiosError(error)
@@ -127,8 +136,8 @@ export default function ProductDetailPage() {
     // Get available colors from variants
     const colors =
         product?.variants.reduce((acc, variant) => {
-            const colorAttr = variant.attributes.find(
-                (attr) => attr.name === "Color"
+            const colorAttr = variant.variantAttributes.find(
+                (attr: VariantAttribute) => attr.name === "Color"
             );
             if (colorAttr && !acc.some((c) => c.value === colorAttr.value)) {
                 acc.push({
@@ -145,8 +154,8 @@ export default function ProductDetailPage() {
     // Get available sizes from variants
     const sizes =
         product?.variants.reduce((acc, variant) => {
-            const sizeAttr = variant.attributes.find(
-                (attr) => attr.name === "Size"
+            const sizeAttr = variant.variantAttributes.find(
+                (attr: VariantAttribute) => attr.name === "Size"
             );
             if (sizeAttr && !acc.includes(sizeAttr.value)) {
                 acc.push(sizeAttr.value);
@@ -159,8 +168,9 @@ export default function ProductDetailPage() {
 
         // find variant with matching color attribute
         const variant = product.variants.find((v) =>
-            v.attributes.some(
-                (a) => a.name === "Color" && a.value === colorValue
+            v.variantAttributes.some(
+                (a: VariantAttribute) =>
+                    a.name === "Color" && a.value === colorValue
             )
         );
 
@@ -177,19 +187,21 @@ export default function ProductDetailPage() {
         if (!product || !selectedVariant) return;
 
         // find variant with matching size and current color
-        const colorAttr = selectedVariant.attributes.find(
-            (a) => a.name === "Color"
+        const colorAttr = selectedVariant.variantAttributes.find(
+            (a: VariantAttribute) => a.name === "Color"
         );
 
         if (!colorAttr) return;
 
         const variant = product.variants.find(
             (v) =>
-                v.attributes.some(
-                    (a) => a.name === "Size" && a.value === sizeValue
+                v.variantAttributes.some(
+                    (a: VariantAttribute) =>
+                        a.name === "Size" && a.value === sizeValue
                 ) &&
-                v.attributes.some(
-                    (a) => a.name === "Color" && a.value === colorAttr.value
+                v.variantAttributes.some(
+                    (a: VariantAttribute) =>
+                        a.name === "Color" && a.value === colorAttr.value
                 )
         );
 
@@ -200,8 +212,6 @@ export default function ProductDetailPage() {
 
     const handleAddToCart = async () => {
         if (!product || !selectedVariant) return;
-
-        console.log(product);
 
         setIsAddingToCart(true);
         try {
@@ -214,14 +224,16 @@ export default function ProductDetailPage() {
                     Number(product.discountedPrice || product.basePrice) +
                     Number(selectedVariant.priceOffset || 0),
                 size:
-                    selectedVariant.attributes.find(
-                        (attr) => attr.name === "Size"
+                    selectedVariant.variantAttributes.find(
+                        (attr: VariantAttribute) => attr.name === "Size"
                     )?.value || "",
                 color:
-                    selectedVariant.attributes.find(
-                        (attr) => attr.name === "Color"
+                    selectedVariant.variantAttributes.find(
+                        (attr: VariantAttribute) => attr.name === "Color"
                     )?.value || "",
-                image: selectedVariant.images[0]?.url || product.coverImage[0]?.url,
+                image:
+                    selectedVariant.images[0]?.url ||
+                    product.coverImage[0]?.url,
                 quantity,
             });
 
@@ -273,11 +285,11 @@ export default function ProductDetailPage() {
         return null;
     }
 
-    const currentColor = selectedVariant?.attributes.find(
-        (a) => a.name === "Color"
+    const currentColor = selectedVariant?.variantAttributes.find(
+        (a: VariantAttribute) => a.name === "Color"
     )?.value;
-    const currentSize = selectedVariant?.attributes.find(
-        (a) => a.name === "Size"
+    const currentSize = selectedVariant?.variantAttributes.find(
+        (a: VariantAttribute) => a.name === "Size"
     )?.value;
     const stock = selectedVariant?.inventory?.stock || 0;
     const price =
@@ -488,12 +500,12 @@ export default function ProductDetailPage() {
                                 {sizes.map((size) => {
                                     const variant = product.variants.find(
                                         (v) =>
-                                            v.attributes.some(
+                                            v.variantAttributes.some(
                                                 (a) =>
                                                     a.name === "Size" &&
                                                     a.value === size
                                             ) &&
-                                            v.attributes.some(
+                                            v.variantAttributes.some(
                                                 (a) =>
                                                     a.name === "Color" &&
                                                     a.value === currentColor

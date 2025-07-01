@@ -37,7 +37,7 @@ export const adminProductVariantSchema = z.object({
     .transform((val) => (typeof val === "string" ? parseFloat(val) : val))
     .refine((val) => !isNaN(val), { message: "Price offset must be a number" })
     .default(0),
-  attributes: z.array(adminVariantAttributeSchema).default([]),
+  variantAttributes: z.array(adminVariantAttributeSchema).default([]),
   images: z.array(adminProductImageSchema).default([]),
   inventory: adminInventorySchema,
 });

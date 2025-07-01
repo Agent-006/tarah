@@ -157,8 +157,8 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                             ?.category?.name || "";
 
                                     const sizeAttribute =
-                                        product.variants?.[0]?.attributes?.find(
-                                            (attr) => attr.name === "size"
+                                        product.variants?.[0]?.variantAttributes?.find(
+                                            (attr) => attr.name === "Size"
                                         );
 
                                     const size = sizeAttribute?.value || null;

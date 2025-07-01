@@ -24,7 +24,7 @@ export async function GET(request: Request) {
                         variants: {
                             include: {
                                 inventory: true,
-                                attributes: true,
+                                variantAttributes: true,
                             }
                         }
                     }

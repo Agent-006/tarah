@@ -13,7 +13,7 @@ export async function GET(
             include: {
                 variants: {
                     include: {
-                        attributes: true,
+                        variantAttributes: true,
                         inventory: true,
                         images: true,
                     }

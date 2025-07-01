@@ -45,7 +45,7 @@ export async function PUT(
       // Handle variants with nested updates
       await Promise.all(
         body.variants.map(async (variant: any) => {
-          return tx.variant.upsert({
+          return tx.productVariant.upsert({
             where: { id: variant.id || '' },
             update: {
               name: variant.name,

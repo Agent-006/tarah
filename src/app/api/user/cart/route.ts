@@ -29,7 +29,7 @@ export async function GET() {
                         },
                         variant: {
                             include: {
-                                attributes: true,
+                                variantAttributes: true,
                                 inventory: true
                             }
                         }

@@ -71,7 +71,7 @@ export async function GET(request: Request) {
                     coverImage: true,
                     variants: {
                         include: {
-                            attributes: true,
+                            variantAttributes: true,
                             inventory: true,
                             images: true
                         }

@@ -141,7 +141,7 @@ model ProductVariant {
   name        String
   sku         String             @unique
   priceOffset Decimal            @default(0)
-  attributes  VariantAttribute[]
+  variantAttributes  VariantAttribute[]
   images      ProductImage[]
   inventory   Inventory?
   cartItems   CartItem[]

@@ -85,7 +85,7 @@ export const ProductAttributeForm: React.FC<ProductAttributeFormProps> = ({
                 onClick={() => append({ name: "", value: "" })}
             >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Attribute
+                Add Product Attribute
             </Button>
         </div>
     );
