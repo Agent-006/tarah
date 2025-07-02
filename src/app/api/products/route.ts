@@ -30,7 +30,7 @@ export async function GET(request: Request) {
         if (size) {
             where.variants = {
                 some: {
-                    attributes: {
+                    variantAttributes: {
                         some: {
                             name: 'Size',
                             value: size
