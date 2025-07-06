@@ -1,11 +1,12 @@
 import React from "react";
 import { Button } from "./ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 const FamilyCoupleGoals = () => {
     return (
         <section className="bg-background py-16 px-4 md:px-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-0 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
                 {/* Couple Goals */}
                 <div className="relative w-full h-[700px] md:h-[1000px] group overflow-hidden">
                     <Image
@@ -28,7 +29,12 @@ const FamilyCoupleGoals = () => {
                             size="sm"
                             className="cursor-pointer rounded-none px-6 py-4 bg-primary hover:bg-primary/90 text-secondary shadow-md transition-all duration-300 group-hover:scale-105"
                         >
-                            Shop Now
+                            <Link
+                                href="/products"
+                                className="flex items-center justify-center gap-2"
+                            >
+                                Shop Now
+                            </Link>
                         </Button>
                     </div>
                 </div>
@@ -55,7 +61,12 @@ const FamilyCoupleGoals = () => {
                             size="sm"
                             className="cursor-pointer rounded-none px-6 py-4 bg-primary hover:bg-primary/90 text-secondary shadow-md transition-all duration-300 group-hover:scale-105"
                         >
-                            Shop Now
+                            <Link
+                                href="/products"
+                                className="flex items-center justify-center gap-2"
+                            >
+                                Shop Now
+                            </Link>
                         </Button>
                     </div>
                 </div>

@@ -358,7 +358,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Right Side - Product Info */}
-                <div className="space-y-8 w-md md:w-lg p-8 bg-secondary border-2 shadow-lg transition-all duration-300">
+                <div className="space-y-8 md:w-lg p-8 bg-secondary border-2 shadow-lg transition-all duration-300">
                     {/* Product Title & Wishlist */}
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-bold tracking-tight text-gray-900">

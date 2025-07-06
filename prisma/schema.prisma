@@ -306,8 +306,8 @@ enum TransactionStatus {
   SUCCESS
   FAILED
   CANCELLED
-  REFUNDED
   PARTIALLY_REFUNDED
+  REFUNDED
 }
 
 enum TransactionType {

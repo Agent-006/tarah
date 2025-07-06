@@ -292,7 +292,7 @@ const CartPage = () => {
                 <h1 className="text-3xl font-semibold mb-6">Your cart</h1>
                 <p className="mb-4">Please sign in to view your cart</p>
                 <Button className="rounded-none" asChild>
-                    <Link href="/auth/signin">Sign In</Link>
+                    <Link href="/sign-in">Sign In</Link>
                 </Button>
             </div>
         );

@@ -27,7 +27,8 @@ type CartItemInput = {
 
 export default function WishlistPage() {
     const { data: session } = useSession();
-    const { items, isLoading, error, fetchWishlist, removeFromWishlist } = useWishlistStore();
+    const { items, isLoading, error, fetchWishlist, removeFromWishlist } =
+        useWishlistStore();
 
     const [addingToCart, setAddingToCart] = useState<Record<string, boolean>>(
         {}
@@ -78,7 +79,7 @@ export default function WishlistPage() {
     }
 
     return (
-        <div className="w-full min-h-screen flex flex-col items-center justify-start py-8 bg-secondary">
+        <div className="w-full min-h-screen flex flex-col items-center justify-start py-8 bg-secondary px-2">
             <h1 className="text-3xl font-bold mb-8">Your Wishlist</h1>
 
             {items.length === 0 ? (
@@ -89,20 +90,21 @@ export default function WishlistPage() {
                     </Button>
                 </div>
             ) : (
-                <>
+                <div className="w-full max-w-5xl space-y-6">
                     {items.map((item, index) => {
                         const product = item.product;
-                        console.log("Product:", product);
                         const primaryImage = product.coverImage[0];
                         const inStock = product.variants.some(
                             (v) => v.inventory?.stock && v.inventory.stock > 0
                         );
-                        const size = product.variants[0]?.variantAttributes.find(
-                            (a) => a.name === "Size"
-                        )?.value;
-                        const color = product.variants[0]?.variantAttributes.find(
-                            (a) => a.name === "Color"
-                        )?.value;
+                        const size =
+                            product.variants[0]?.variantAttributes.find(
+                                (a) => a.name === "Size"
+                            )?.value;
+                        const color =
+                            product.variants[0]?.variantAttributes.find(
+                                (a) => a.name === "Color"
+                            )?.value;
 
                         const handleAddToCart = async (productId: string) => {
                             setAddingToCart((prev) => ({
@@ -178,27 +180,32 @@ export default function WishlistPage() {
 
                         return (
                             <div
-                                className="flex items-start justify-between gap-4 border-b py-6 px-4 w-md md:min-w-4xl lg:w-5xl bg-secondary shadow-sm hover:shadow-md transition-shadow duration-200"
+                                className="flex flex-col sm:flex-row items-start justify-between gap-4 border-b py-6 px-2 sm:px-4 w-full bg-secondary shadow-sm hover:shadow-md transition-shadow duration-200"
                                 key={index}
                             >
                                 {/* Product Image */}
-                                <Link
-                                    href={`/product/${product.slug}`}
-                                    className="w-32 h-40 relative"
+                                <div
+                                    className="w-full sm:w-32 sm:h-40 relative flex-shrink-0 mb-4 sm:mb-0"
                                 >
-                                    <Image
-                                        src={
-                                            primaryImage?.url ||
-                                            "/assets/insta1.png"
-                                        } // Replace with dynamic src
-                                        alt={product.name}
-                                        fill
-                                        className="object-fit"
-                                    />
-                                </Link>
+                                    <Link href={`/product/${product.slug}`}>
+                                        <div className="relative w-full h-full sm:w-32 sm:h-40">
+                                            <Image
+                                                src={
+                                                    primaryImage?.url ||
+                                                    "/assets/insta1.png"
+                                                }
+                                                alt={product.name}
+                                                height={600}
+                                                width={600}
+                                                className="object-cover"
+                                                sizes="(max-width: 640px) 100vw, 8rem"
+                                            />
+                                        </div>
+                                    </Link>
+                                </div>
 
                                 {/* Product Info */}
-                                <div className="flex-1 space-y-2">
+                                <div className="flex-1 space-y-2 w-full sm:ml-4">
                                     <p>
                                         <Link
                                             href={`/product/${product.slug}`}
@@ -207,7 +214,7 @@ export default function WishlistPage() {
                                             {product.name}
                                         </Link>
                                     </p>
-                                    <p className="font-medium text-base">
+                                    <p className="font-medium text-base line-clamp-2">
                                         {product.description ||
                                             "No description available"}
                                     </p>
@@ -223,22 +230,6 @@ export default function WishlistPage() {
                                             Color: {color}
                                         </p>
                                     )}
-
-                                    {/* <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <div className="flex items-center gap-1 text-orange-500">
-                                            {Array.from({ length: 5 }).map(
-                                                (_, i) => (
-                                                    <span key={i}>★</span>
-                                                )
-                                            )}
-                                        </div>
-                                        <span className="font-medium text-black">
-                                            4.7 Star Rating
-                                        </span>
-                                        <span className="text-xs text-gray-500">
-                                            (21,671 User feedback)
-                                        </span>
-                                    </div> */}
 
                                     <div className="flex items-center gap-2">
                                         {Number(product.discountedPrice) ? (
@@ -267,13 +258,13 @@ export default function WishlistPage() {
                                     </div>
 
                                     {/* Buttons */}
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mt-2">
                                         <Button
                                             onClick={() =>
                                                 handleAddToCart(product.id)
                                             }
                                             disabled={!inStock}
-                                            className="bg-black text-white hover:bg-gray-800"
+                                            className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto rounded-none"
                                         >
                                             <ShoppingCart className="w-4 h-4 mr-1" />
                                             {addingToCart[product.id] ? (
@@ -286,7 +277,7 @@ export default function WishlistPage() {
                                         </Button>
                                         <Button
                                             variant="outline"
-                                            className="border-red-500 text-red-500 hover:bg-red-50"
+                                            className="border-red-500 text-red-500 hover:bg-red-50 w-full sm:w-auto rounded-none"
                                             onClick={() =>
                                                 removeFromWishlist(product.id)
                                             }
@@ -298,25 +289,30 @@ export default function WishlistPage() {
                                 </div>
 
                                 {/* Share Button */}
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="self-start bg-secondary"
-                                    onClick={() => {
-                                        navigator.clipboard.writeText(
-                                            `${window.location.origin}/product/${product.slug}`
-                                        );
-                                        toast.success(
-                                            "Link copied to clipboard!"
-                                        );
-                                    }}
-                                >
-                                    <Share2 className="w-5 h-5" />
-                                </Button>
+                                <div className="mt-2 sm:mt-0 sm:ml-4 flex-shrink-0 w-full sm:w-auto">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="bg-secondary w-full sm:w-auto border-2 border-gray-300 hover:border-gray-400 text-gray-600 hover:bg-gray-50"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(
+                                                `${window.location.origin}/product/${product.slug}`
+                                            );
+                                            toast.success(
+                                                "Link copied to clipboard!"
+                                            );
+                                        }}
+                                    >
+                                        <span className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-primary transition-colors px-2 py-1">
+                                            <Share2 className="w-5 h-5" />
+                                            <span>Share</span>
+                                        </span>
+                                    </Button>
+                                </div>
                             </div>
                         );
                     })}
-                </>
+                </div>
             )}
         </div>
     );

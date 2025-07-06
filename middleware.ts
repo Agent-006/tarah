@@ -89,17 +89,23 @@ function isPublicRoute(pathname: string): boolean {
   );
 }
 
+
 function isAdminRoute(pathname: string): boolean {
-  // ✅ Exclude /admin/sign-in to prevent infinite redirect
-  return pathname !== ADMIN_SIGN_IN_ROUTE &&
-    pathname.startsWith(ADMIN_ROUTES_PREFIX) &&
-    !pathname.startsWith('/admin/api');
+  // Protect all /admin routes except /admin/sign-in and /admin/api
+  return (
+    pathname.startsWith('/admin') &&
+    pathname !== ADMIN_SIGN_IN_ROUTE &&
+    !pathname.startsWith('/admin/api')
+  );
 }
 
+
 function isCustomerProtectedRoute(pathname: string): boolean {
-  return CUSTOMER_PROTECTED_ROUTES.some(route =>
-    pathname === route || pathname.startsWith(route.replace(/\[.*?\]/, ''))
-  );
+  // Protect all customer routes and their subpaths
+  return CUSTOMER_PROTECTED_ROUTES.some(route => {
+    const base = route.replace(/\[.*?\]/, '');
+    return pathname === base || pathname.startsWith(base + '/') || pathname === route;
+  });
 }
 
 // Route Handlers
@@ -112,30 +118,20 @@ function handlePublicRouteAccess(request: NextRequest, token: any, pathname: str
 }
 
 function handleAdminRouteAccess(request: NextRequest, token: any, pathname: string): NextResponse {
-  if (!token) {
-    console.log("❌ No token, redirecting from admin route to sign-in");
+  if (!token || token.role !== 'ADMIN') {
+    // Only allow admins
     const signInUrl = new URL(ADMIN_SIGN_IN_ROUTE, request.url);
     signInUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signInUrl);
   }
-
-  if (token.role !== 'ADMIN') {
-    console.log("⚠️ Invalid role, redirecting to home");
-    return NextResponse.redirect(new URL(HOME_ROUTE, request.url));
-  }
-
   return NextResponse.next();
 }
 
 function handleCustomerRouteAccess(request: NextRequest, token: any): NextResponse {
-  if (!token) {
+  if (!token || token.role !== 'CUSTOMER') {
+    // Only allow customers
     return NextResponse.redirect(new URL(CUSTOMER_SIGN_IN_ROUTE, request.url));
   }
-
-  if (token.role === 'ADMIN' && !isAdminRoute(request.nextUrl.pathname)) {
-    return NextResponse.redirect(new URL(ADMIN_PROTECTED_ROUTES[0], request.url));
-  }
-
   return NextResponse.next();
 }
 

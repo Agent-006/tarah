@@ -6,14 +6,14 @@ import {
     LayoutDashboard,
     Package,
     ShoppingCart,
-    Settings,
     Users,
     SettingsIcon,
-    LogOutIcon,
+    LogOut,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { Separator } from "../ui/separator";
+import { signOut } from "next-auth/react";
 
 export function AdminSidebar() {
     const pathname = usePathname();
@@ -39,58 +39,58 @@ export function AdminSidebar() {
             icon: Users,
             label: "Customers",
         },
-        {
-            href: "/admin/settings",
-            icon: Settings,
-            label: "Settings",
-        },
     ];
 
     return (
         <div className="w-64 h-full flex flex-col border-r bg-background">
-            <div className="p-4 border-b">
-                <h1 className="text-xl font-semibold">Admin Panel</h1>
+            <div className="p-6 border-b">
+                <h1 className="text-2xl font-bold tracking-tight text-left">Admin Panel</h1>
             </div>
 
-            <nav className="flex-1 p-4 overflow-y-auto">
+            <nav className="flex-1 p-4 flex flex-col justify-between">
                 <ul className="space-y-1">
                     {navItems.map((item) => (
                         <li key={item.href}>
-                            <Button
-                                asChild
-                                variant="ghost"
-                                className={cn(
-                                    "w-full justify-start h-10",
-                                    pathname === item.href &&
-                                        "bg-accent text-accent-foreground"
-                                )}
-                            >
-                                <Link href={item.href}>
-                                    <item.icon className="w-4 h-4 mr-3" />
-                                    {item.label}
-                                </Link>
-                            </Button>
+                            <Link href={item.href} passHref>
+                                <Button
+                                    variant={pathname === item.href ? "secondary" : "ghost"}
+                                    className={cn(
+                                        "w-full flex items-center gap-3 justify-start px-4 py-2 rounded-md transition-colors text-left",
+                                        pathname === item.href &&
+                                            "bg-accent text-accent-foreground font-semibold"
+                                    )}
+                                >
+                                    <item.icon className="w-5 h-5" />
+                                    <span className="text-base">{item.label}</span>
+                                </Button>
+                            </Link>
                         </li>
                     ))}
                 </ul>
 
-                <Separator className="my-4" />
+                <div>
+                    <Separator className="my-6" />
 
-                {/* Optional: Add additional sections */}
-                <div className="space-y-1">
+                    <Link href="/admin/settings" passHref>
+                        <Button
+                            variant={pathname === "/admin/settings" ? "secondary" : "ghost"}
+                            className={cn(
+                                "w-full flex items-center gap-3 justify-start px-4 py-2 rounded-md transition-colors mb-2 text-left",
+                                pathname === "/admin/settings" &&
+                                    "bg-accent text-accent-foreground font-semibold"
+                            )}
+                        >
+                            <SettingsIcon className="w-5 h-5" />
+                            <span className="text-base">Settings</span>
+                        </Button>
+                    </Link>
                     <Button
+                        onClick={() => signOut({ callbackUrl: "/admin/sign-in" })}
                         variant="ghost"
-                        className="w-full justify-start h-10 text-gray-500"
+                        className="w-full flex items-center gap-3 justify-start px-4 py-2 rounded-md text-destructive font-semibold hover:underline transition-colors text-left"
                     >
-                        <SettingsIcon className="w-4 h-4 mr-3" />
-                        Settings
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start h-10 text-gray-500"
-                    >
-                        <LogOutIcon className="w-4 h-4 mr-3" />
-                        Logout
+                        <LogOut className="w-5 h-5" />
+                        <span className="text-base">Logout</span>
                     </Button>
                 </div>
             </nav>

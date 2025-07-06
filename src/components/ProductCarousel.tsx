@@ -150,7 +150,7 @@ const ProductCarousel = ({
                                                     alt={product.name}
                                                     width={260}
                                                     height={340}
-                                                    className="w-full h-[450px] object-top transform transition-all duration-500 group-hover:scale-105"
+                                                    className="w-full h-[500px] object-top transform transition-all duration-500 group-hover:scale-105"
                                                 />
                                                 <div className="absolute inset-0 bg-primary/10 group-hover:bg-primary/20 transition-all duration-300" />
                                             </div>

@@ -4,16 +4,24 @@ import Footer from "@/components/Footer";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useProfileStore } from "@/store/user/profileStore";
 import { useAddressStore } from "@/store/user/addressStore";
 import AddressBook from "@/components/profile/AddressBook";
 import ProfileDetails from "@/components/profile/ProfileDetails";
 import OrderBook from "@/components/profile/OrderBook";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { Loader2, LogOut } from "lucide-react";
 import ReturnBook from "@/components/profile/ReturnBook";
 import CalcellationBook from "@/components/profile/CalcellationBook";
+import { Button } from "@/components/ui/button";
+
+const sidebarItemBase =
+    "cursor-pointer ml-3 transition-colors duration-150 rounded px-2 py-1";
+const sidebarItemActive =
+    "text-primary bg-primary/10 font-semibold";
+const sidebarItemInactive =
+    "text-muted-foreground hover:text-primary";
 
 const ProfilePage = () => {
     const router = useRouter();
@@ -34,14 +42,14 @@ const ProfilePage = () => {
 
     if (status === "loading") {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="animate-spin" />
+            <div className="flex items-center justify-center min-h-screen bg-background">
+                <Loader2 className="animate-spin text-primary" />
             </div>
         );
     }
 
     return (
-        <div className="bg-secondary text-gray-900 min-h-screen">
+        <div className="bg-background text-foreground min-h-screen">
             <main className="max-w-7xl mx-auto px-4 py-10">
                 <Tabs
                     value={activeTab}
@@ -50,18 +58,18 @@ const ProfilePage = () => {
                 >
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
                         {/* Left Sidebar */}
-                        <aside className="space-y-8 text-sm font-medium">
+                        <aside className="space-y-8 text-sm font-medium bg-card rounded-lg p-6 shadow-sm border">
                             <div>
-                                <h3 className="mb-2 text-base font-semibold">
+                                <h3 className="mb-2 text-base font-semibold text-primary">
                                     Manage My Account
                                 </h3>
                                 <ul className="space-y-2">
                                     <li
                                         onClick={() => setActiveTab("profile")}
-                                        className={`cursor-pointer ml-3 ${
+                                        className={`${sidebarItemBase} ${
                                             activeTab === "profile"
-                                                ? "text-black font-semibold"
-                                                : "text-gray-500"
+                                                ? sidebarItemActive
+                                                : sidebarItemInactive
                                         }`}
                                     >
                                         My Profile
@@ -70,10 +78,10 @@ const ProfilePage = () => {
                                         onClick={() =>
                                             setActiveTab("addresses")
                                         }
-                                        className={`cursor-pointer ml-3 ${
+                                        className={`${sidebarItemBase} ${
                                             activeTab === "addresses"
-                                                ? "text-black font-semibold"
-                                                : "text-gray-500"
+                                                ? sidebarItemActive
+                                                : sidebarItemInactive
                                         }`}
                                     >
                                         Address Book
@@ -82,10 +90,10 @@ const ProfilePage = () => {
                                         onClick={() =>
                                             setActiveTab("payment_options")
                                         }
-                                        className={`cursor-pointer ml-3 ${
+                                        className={`${sidebarItemBase} ${
                                             activeTab === "payment_options"
-                                                ? "text-black font-semibold"
-                                                : "text-gray-500"
+                                                ? sidebarItemActive
+                                                : sidebarItemInactive
                                         }`}
                                     >
                                         My Payment Options
@@ -93,26 +101,26 @@ const ProfilePage = () => {
                                 </ul>
                             </div>
                             <div>
-                                <h3 className="mb-2 text-base font-semibold">
+                                <h3 className="mb-2 text-base font-semibold text-primary">
                                     My Orders
                                 </h3>
                                 <ul className="space-y-2">
                                     <li
                                         onClick={() => setActiveTab("orders")}
-                                        className={`cursor-pointer ml-3 ${
+                                        className={`${sidebarItemBase} ${
                                             activeTab === "orders"
-                                                ? "text-black font-semibold"
-                                                : "text-gray-500"
+                                                ? sidebarItemActive
+                                                : sidebarItemInactive
                                         }`}
                                     >
                                         All Orders
                                     </li>
                                     <li
                                         onClick={() => setActiveTab("returns")}
-                                        className={`cursor-pointer ml-3 ${
+                                        className={`${sidebarItemBase} ${
                                             activeTab === "returns"
-                                                ? "text-black font-semibold"
-                                                : "text-gray-500"
+                                                ? sidebarItemActive
+                                                : sidebarItemInactive
                                         }`}
                                     >
                                         My Returns
@@ -121,10 +129,10 @@ const ProfilePage = () => {
                                         onClick={() =>
                                             setActiveTab("cancellations")
                                         }
-                                        className={`cursor-pointer ml-3 ${
+                                        className={`${sidebarItemBase} ${
                                             activeTab === "cancellations"
-                                                ? "text-black font-semibold"
-                                                : "text-gray-500"
+                                                ? sidebarItemActive
+                                                : sidebarItemInactive
                                         }`}
                                     >
                                         My Cancellations
@@ -134,10 +142,20 @@ const ProfilePage = () => {
                             <div>
                                 <Link
                                     href={"/wishlist"}
-                                    className="mb-2 text-base font-semibold block"
+                                    className="mb-2 text-base font-semibold block text-primary hover:underline"
                                 >
                                     My WishList
                                 </Link>
+                            </div>
+                            <div>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => signOut()}
+                                    className="w-full flex items-center gap-2 text-left font-semibold mt-4 transition-colors duration-150 border-destructive text-destructive hover:bg-destructive/10"
+                                >
+                                    <LogOut size={18} />
+                                    Logout
+                                </Button>
                             </div>
                         </aside>
 

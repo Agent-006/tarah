@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-
 import Autoplay from "embla-carousel-autoplay";
 import {
     Carousel,
@@ -10,7 +9,6 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
-
 import Image from "next/image";
 
 const carauselItemList = [
@@ -24,30 +22,29 @@ const Hero = () => {
         Autoplay({ delay: 2000 })
     );
     return (
-        <section>
+        <section className="w-full h-[800px] md:h-[688px] relative">
             <Carousel
                 plugins={[plugin.current]}
-                className="w-full"
+                className="w-full h-full"
                 onMouseLeave={plugin.current.reset}
             >
                 <CarouselContent>
-                    {Array.from({ length: 3 }).map((_, index) => (
+                    {carauselItemList.map((src, index) => (
                         <CarouselItem key={index}>
-                            <div className="py-1">
-                                <div className="relative">
-                                    <h1 className="absolute top-1/3 left-1/12 text-secondary text-7xl w-xl">
-                                        Styled to empower, crafted to{" "}
-                                        <span className="text-primary">
-                                            COMFORTS
-                                        </span>
-                                    </h1>
-                                    <Image
-                                        src={`${carauselItemList[index]}`}
-                                        alt={`Hero Banner ${index + 1}`}
-                                        width={1920}
-                                        height={688}
-                                    />
-                                </div>
+                            <div className="w-full h-[800px] md:h-[688px] relative">
+                                <h1 className="absolute z-10 top-1/3 left-4 md:left-1/12 text-secondary text-3xl md:text-7xl w-11/12 md:w-xl">
+                                    Styled to empower, crafted to{" "}
+                                    <span className="text-primary">
+                                        COMFORTS
+                                    </span>
+                                </h1>
+                                <Image
+                                    src={src}
+                                    alt={`Hero Banner ${index + 1}`}
+                                    fill
+                                    className="object-cover md:object-center"
+                                    priority
+                                />
                             </div>
                         </CarouselItem>
                     ))}

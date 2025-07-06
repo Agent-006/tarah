@@ -30,7 +30,8 @@ export async function GET() {
                         variant: {
                             include: {
                                 variantAttributes: true,
-                                inventory: true
+                                inventory: true,
+                                images: true,
                             }
                         }
                     }
