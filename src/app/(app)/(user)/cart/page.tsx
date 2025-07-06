@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Footer from "@/components/Footer";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Minus, Plus, Trash, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import Link from "next/link";
+
 import {
     Sheet,
     SheetContent,
@@ -14,9 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/user/cartStore";
-import { useSession } from "next-auth/react";
-import { toast } from "sonner";
-import Link from "next/link";
+import Footer from "@/components/Footer";
 
 // First, define the CartItem type based on your store's CartItem
 type CartItemType = {
@@ -181,7 +182,7 @@ const OrderSummary = ({
 
 // Now define the main CartPage component
 const CartPage = () => {
-    const { data: session, status: sessionStatus } = useSession();
+    const { status: sessionStatus } = useSession();
     const {
         items,
         isLoading,
@@ -231,6 +232,7 @@ const CartPage = () => {
             await syncWithDatabase();
             toast.success("Item removed from cart");
         } catch (err) {
+            console.error("Error removing item:", err);
             toast.error("Failed to remove item");
         } finally {
             setIsProcessing(false);
@@ -247,6 +249,7 @@ const CartPage = () => {
             await updateQuantity(productId, variantId, change);
             await syncWithDatabase();
         } catch (err) {
+            console.error("Error updating quantity:", err);
             toast.error("Failed to update quantity");
         } finally {
             setIsProcessing(false);
@@ -260,6 +263,7 @@ const CartPage = () => {
             await syncWithDatabase();
             toast.success("Cart cleared successfully");
         } catch (err) {
+            console.error("Error clearing cart:", err);
             toast.error("Failed to clear cart");
         } finally {
             setIsProcessing(false);
@@ -272,6 +276,7 @@ const CartPage = () => {
             await syncWithDatabase();
             toast.success("Cart refreshed");
         } catch (err) {
+            console.error("Error refreshing cart:", err);
             toast.error("Failed to refresh cart");
         } finally {
             setIsProcessing(false);
@@ -317,7 +322,7 @@ const CartPage = () => {
                     Your cart is empty
                 </h1>
                 <p className="mb-4">
-                    Looks like you haven't added anything to your cart yet
+                    Looks like you haven&apos;t added anything to your cart yet
                 </p>
                 <Button asChild>
                     <Link href="/products">Continue Shopping</Link>

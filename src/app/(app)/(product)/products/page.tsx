@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+
 import AllProductsPage from '@/components/AllProducts';
 
 export default function ProductsPage() {
