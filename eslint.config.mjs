@@ -14,7 +14,7 @@ const eslintConfig = [
     {
         files: ["**/*.ts", "**/*.tsx"],
         rules: {
-            "no-var": ["error", { allow: ["prisma"] }],
+            "no-var": "error",
             "@typescript-eslint/no-explicit-any": "warn",
             "react-hooks/exhaustive-deps": "warn",
             "import/order": [
