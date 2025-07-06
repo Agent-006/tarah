@@ -4,24 +4,25 @@ import { getImageUrl } from "@/lib/uploadthing";
 
 export const components: PortableTextComponents = {
     types: {
-        image: ({ value }) => {
-            const imageUrl = getImageUrl(value.assetKey);
-
+        image: ({ value }: { value: { assetKey?: string; alt?: string; caption?: string } }) => {
+            const imageUrl = value?.assetKey ? getImageUrl(value.assetKey) : undefined;
+            if (!imageUrl) return null;
             return (
-            <div className="relative w-full h-96 my-8">
-                <Image
-                    src={imageUrl}
-                    alt={value.alt || "Image"}
-                    fill
-                    className="object-contain"
-                />
-                {value.caption && (
-                    <p className="text-center text-sm text-gray-500 mt-2">
-                        {value.caption}
-                    </p>
-                )}
-            </div>
-        )},
+                <div className="relative w-full h-96 my-8">
+                    <Image
+                        src={imageUrl}
+                        alt={value.alt || "Image"}
+                        fill
+                        className="object-contain"
+                    />
+                    {value.caption && (
+                        <p className="text-center text-sm text-gray-500 mt-2">
+                            {value.caption}
+                        </p>
+                    )}
+                </div>
+            );
+        },
     },
     block: {
         h1: ({ children }) => (

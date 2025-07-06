@@ -110,9 +110,9 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
                 </div>
             )}
 
-            <div className="prose max-w-none animate-fade-in-slow">
+            {/* <div className="prose max-w-none animate-fade-in-slow">
                 <PortableText value={post.content} />
-            </div>
+            </div> */}
 
             {post.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
