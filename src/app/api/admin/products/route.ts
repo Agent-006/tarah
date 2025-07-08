@@ -1,5 +1,6 @@
 // app/api/admin/products/route.ts
 import { NextResponse } from "next/server";
+
 import prisma from "@/lib/db";
 import { adminProductsSchema } from "@/schemas/adminSchema/adminProductsSchema";
 
@@ -244,10 +245,10 @@ export async function PUT(request: Request) {
       });
 
       // Update variants
-      const existingVariants = await prisma.productVariant.findMany({
-        where: { productId: validatedData.id },
-        select: { id: true },
-      });
+      // const existingVariants = await prisma.productVariant.findMany({
+      //   where: { productId: validatedData.id },
+      //   select: { id: true },
+      // });
 
       // Delete variants not in the update
       await prisma.productVariant.deleteMany({
@@ -322,7 +323,7 @@ export async function PUT(request: Request) {
         } else {
           // Create new variant
           const { productId, ...newVariantData } = variantData;
-          const newVariant = await prisma.productVariant.create({
+          await prisma.productVariant.create({
             data: {
               ...newVariantData,
               product: { connect: { id: validatedData.id } },

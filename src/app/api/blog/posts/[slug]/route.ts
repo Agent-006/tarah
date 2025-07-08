@@ -1,6 +1,8 @@
-import { getServerSession } from "next-auth";
+
 import { NextResponse } from "next/server";
+
 import prisma from "@/lib/db";
+
 
 export async function GET(
     req: Request,
@@ -37,6 +39,7 @@ export async function GET(
 
         return NextResponse.json(post);
     } catch (error) {
+        console.error("Error fetching post:", error);
         return NextResponse.json(
             { error: "Failed to fetch post" },
             { status: 500 }

@@ -1,18 +1,18 @@
 "use client";
 
+
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Loader2,
   Users,
-  UserPlus,
   TrendingUp,
   ShoppingBag,
 } from "lucide-react";
+import { toast } from "sonner";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/admin/customers/data-table";
 import { columns, Customer } from "@/components/admin/customers/columns";
-import { toast } from "sonner";
 
 const CustomerPage = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);

@@ -1,17 +1,18 @@
 // components/admin/products/product-list.tsx
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/data-table";
-import { ColumnDef } from "@tanstack/react-table";
-import { Product } from "@prisma/client";
-import { formatCurrency } from "@/lib/utils";
-import { Check, X, Eye, Edit, Trash2 } from "lucide-react";
+
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check, X, Eye, Edit, Trash2 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
+import { ColumnDef } from "@tanstack/react-table";
+
 import { useConfirm } from "@/hooks/use-confirm";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
+import { formatCurrency } from "@/lib/utils";
 
 type SerializedProduct = {
     id: string;
@@ -33,11 +34,14 @@ export const columns: ColumnDef<SerializedProduct>[] = [
         cell: ({ row }) => (
             <div className="flex items-center gap-4">
                 {row.original.coverImage[0]?.url && (
-                    <img
-                        src={row.original.coverImage[0].url}
-                        alt={row.original.name}
-                        className="h-10 w-10 rounded-md object-cover"
-                    />
+                    <span className="block h-10 w-10 rounded-md overflow-hidden bg-gray-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={row.original.coverImage[0].url}
+                            alt={row.original.name}
+                            className="h-10 w-10 rounded-md object-cover"
+                        />
+                    </span>
                 )}
                 <span>{row.original.name}</span>
             </div>
@@ -96,6 +100,7 @@ function ProductActions({ product }: { product: SerializedProduct }) {
             toast.success("Product deleted successfully");
             router.refresh();
         } catch (error) {
+            console.error("Failed to delete product:", error);
             toast.error("Failed to delete product");
         } finally {
             setIsPending(false);

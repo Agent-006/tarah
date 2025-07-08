@@ -1,5 +1,7 @@
+
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/db";
 
@@ -74,6 +76,7 @@ export async function PATCH(request: Request) {
             { status: 200 }
         );
     } catch (error) {
+        console.error("Error setting default address:", error);
         return NextResponse.json(
             { message: "Internal Server Error" },
             { status: 500 }

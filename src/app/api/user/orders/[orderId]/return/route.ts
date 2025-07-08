@@ -1,6 +1,9 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { RefundReason } from "@prisma/client";
+
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/db";
 
 export async function POST(
@@ -61,7 +64,7 @@ export async function POST(
                     }
                 },
                 amount: order.totalAmount,
-                reason: reason as any, // cast to your RefundReason enum type
+                reason: reason as RefundReason, // cast to RefundReason enum type
                 status: "PENDING",
             }
         });
@@ -71,6 +74,7 @@ export async function POST(
             { status: 200 }
         );
     } catch (error) {
+        console.error("Error processing return request:", error);
         return NextResponse.json(
             { error: "Failed to process request return" },
             { status: 500 }

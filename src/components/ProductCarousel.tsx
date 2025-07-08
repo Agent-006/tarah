@@ -1,12 +1,15 @@
-import Autoplay from "embla-carousel-autoplay";
+
 import React, { useEffect, useState } from "react";
-import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
-import { Heart } from "lucide-react";
-import Image from "next/image";
-import { Button } from "./ui/button";
-import Link from "next/link";
 import axios from "axios";
+import Autoplay from "embla-carousel-autoplay";
+import Image from "next/image";
+import { Heart } from "lucide-react";
+import Link from "next/link";
+
 import { useWishlistStore } from "@/store/user/wishlistStore";
+
+import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
+import { Button } from "./ui/button";
 
 interface Product {
     id: string;
@@ -15,7 +18,7 @@ interface Product {
     description: string;
     basePrice: number;
     discountedPrice?: number;
-    variants?: any[];
+    variants?: unknown[];
     coverImage?: { url: string; altText?: string }[];
     categories?: { name: string }[];
     tag?: string;
@@ -32,7 +35,6 @@ const ProductCarousel = ({
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const {
-        items: wishlistItems,
         fetchWishlist,
         addToWishlist,
         removeFromWishlist,
@@ -48,6 +50,7 @@ const ProductCarousel = ({
                 });
                 setProducts(res.data.products || []);
             } catch (err) {
+                console.error("Error fetching top products:", err);
                 // Optionally handle error
             } finally {
                 setIsLoading(false);
@@ -105,7 +108,7 @@ const ProductCarousel = ({
                                         </div>
                                     </CarouselItem>
                                 ))
-                                : products.map((product, index) => (
+                                : products.map((product) => (
                                     <CarouselItem
                                         key={product.id}
                                         className="relative bg-background basis-full sm:basis-1/2 lg:basis-1/4 group"

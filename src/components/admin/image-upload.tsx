@@ -2,9 +2,11 @@
 "use client";
 
 import { useCallback, useState, useEffect } from "react";
-import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useDropzone } from "@uploadthing/react";
+import { X } from "lucide-react";
+import Image from "next/image";
+
+import { Button } from "@/components/ui/button";
 
 interface ImageUploadProps {
     value: string[]; // Array of image URLs
@@ -76,7 +78,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             }
             onChange(value.filter((u) => u !== url));
         },
-        [localFiles, value, onChange, onRemove]
+        [value, onChange, onRemove]
     );
 
     // Combine permanent URLs with local previews
@@ -106,10 +108,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                 <div className="mt-4 grid grid-cols-2 gap-4">
                     {displayUrls.map((url, index) => (
                         <div key={index} className="relative">
-                            <img
+                            <Image
                                 src={url}
                                 alt="Upload preview"
+                                width={256}
+                                height={128}
                                 className="rounded-md object-cover w-full h-32"
+                                sizes="100vw"
+                                priority
                             />
                             <Button
                                 type="button"

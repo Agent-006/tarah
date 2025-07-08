@@ -1,7 +1,11 @@
 "use client";
+
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { Heart, Menu, ShoppingCart, User } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import {
     NavigationMenu,
@@ -12,7 +16,6 @@ import {
     NavigationMenuTrigger,
     navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { Heart, Menu, ShoppingCart, User } from "lucide-react";
 import {
     Drawer,
     DrawerContent,
@@ -20,7 +23,6 @@ import {
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer";
-
 import {
     Select,
     SelectContent,
@@ -29,7 +31,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useCartStore } from "@/store/user/cartStore";
-import { useRouter, usePathname } from "next/navigation";
 import { useProductStore } from "@/store/product/productsStore";
 
 const Navbar = () => {
@@ -296,7 +297,7 @@ const Navbar = () => {
                             { label: "Western", category: "Western" },
                             { label: "Night Dress", category: "Night Dress" },
                             { label: "माँ + Beti", category: "माँ + Beti" },
-                        ].map((item, i) => (
+                        ].map((item) => (
                             <NavigationMenuItem key={item.category}>
                                 <NavigationMenuLink
                                     asChild

@@ -1,6 +1,21 @@
 "use client";
 
+
 import { useEffect, useState, use as usePromise } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import Image from "next/image";
+import {
+  Loader2,
+  ArrowLeft,
+  Package,
+  User,
+  MapPin,
+  CreditCard,
+  Calendar,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,19 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import Link from "next/link";
-import {
-  Loader2,
-  ArrowLeft,
-  Package,
-  User,
-  MapPin,
-  CreditCard,
-  Calendar,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import Image from "next/image";
 
 interface OrderItem {
   id: string;
@@ -67,7 +69,13 @@ interface OrderData {
   shippingFee: number;
   status: string;
   paymentStatus: string;
-  transactions: any[];
+  transactions: {
+    id: string;
+    amount: number;
+    status: string;
+    provider: string;
+    createdAt: string;
+  }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -207,6 +215,7 @@ export default function OrderDetailsPage({
 
   useEffect(() => {
     fetchOrder();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getStatusBadge = (status: string, type: "order" | "payment") => {

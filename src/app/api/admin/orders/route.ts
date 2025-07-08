@@ -1,7 +1,10 @@
-import { authOptions } from "../../auth/[...nextauth]/options";
+
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+
 import prisma from "@/lib/db";
+
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function GET() {
     const session = await getServerSession(authOptions);
@@ -39,13 +42,31 @@ export async function GET() {
             }
         });
 
-        const formattedOrders = orders.map((order : any) => ({
+        type OrderItem = {
+            variant: {
+                product: { name: string };
+                name: string;
+            };
+            quantity: number;
+            price: number;
+        };
+        type Order = {
+            id: string;
+            user: { firstName: string; lastName: string; email: string };
+            items: OrderItem[];
+            totalAmount: number;
+            status: string;
+            paymentStatus: string;
+            createdAt: string;
+        };
+
+        const formattedOrders = orders.map((order: Order) => ({
             id: order.id,
             customer: {
                 name: `${order.user.firstName} ${order.user.lastName}`,
                 email: order.user.email
             },
-            items: order.items.map((item : any) => ({
+            items: order.items.map((item: OrderItem) => ({
                 productName: item.variant.product.name,
                 variantName: item.variant.name,
                 quantity: item.quantity,
@@ -58,7 +79,7 @@ export async function GET() {
         }));
 
         return NextResponse.json(formattedOrders);
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: "Failed to fetch orders" },
             { status: 500 }

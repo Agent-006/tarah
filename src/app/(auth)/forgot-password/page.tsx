@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+
 import ForgotPasswordForm from "@/components/auth/forgot-password-form";
 
 const ForgotPasswordPage = () => {
@@ -13,7 +14,7 @@ const ForgotPasswordPage = () => {
                             Forgot your password?
                         </h1>
                         <p className="text-gray-500 text-base mt-2">
-                            Enter your email address and we'll send you a link
+                            Enter your email address and we&apos;ll send you a link
                             to reset your password.
                         </p>
                     </div>
@@ -31,7 +32,7 @@ const ForgotPasswordPage = () => {
             {/* Image Section */}
             <div className="hidden lg:block overflow-hidden">
                 <Image
-                    src="/assets/login_signup_model2.jpg" // Replace with actual path
+                    src="/assets/login_signup_model2.jpg" 
                     alt="Sign In Visual"
                     width={800}
                     height={1000}

@@ -1,5 +1,7 @@
+
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/db";
 
@@ -39,6 +41,7 @@ export async function GET() {
             status: 200
         });
     } catch (error) {
+        console.error("Error fetching addresses:", error);
         return NextResponse.json(
             { message: "Internal Server Error" },
             { status: 500 }
@@ -118,6 +121,7 @@ export async function POST(request: Request) {
             { status: 201 }
         );
     } catch (error) {
+        console.error("Error creating address:", error);
         return NextResponse.json(
             { message: "Internal Server Error" },
             { status: 500 }

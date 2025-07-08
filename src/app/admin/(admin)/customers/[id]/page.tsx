@@ -1,11 +1,10 @@
 "use client";
 
+
 import { useEffect, useState, use as usePromise } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Loader2,
   ArrowLeft,
@@ -19,8 +18,11 @@ import {
   Package,
   CreditCard,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 interface Address {
   id: string;
@@ -137,6 +139,7 @@ export default function CustomerDetailsPage({
 
   useEffect(() => {
     fetchCustomer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const formatCurrency = (amount: number) => {
@@ -412,7 +415,7 @@ export default function CustomerDetailsPage({
             <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-medium mb-2">No Orders Yet</h3>
             <p className="text-muted-foreground">
-              This customer hasn't placed any orders.
+              This customer hasn&apos;t placed any orders.
             </p>
           </CardContent>
         </Card>

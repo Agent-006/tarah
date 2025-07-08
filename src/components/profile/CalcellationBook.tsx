@@ -2,10 +2,11 @@
 "use client";
 
 import React from "react";
-import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import Image from "next/image";
+import { Loader2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
@@ -47,7 +48,7 @@ const CancellationBook = () => {
         return (
             <div className="text-center py-12">
                 <p className="text-gray-500">
-                    You haven't cancelled any orders yet.
+                    You haven&apos;t cancelled any orders yet.
                 </p>
             </div>
         );

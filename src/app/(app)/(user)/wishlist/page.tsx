@@ -1,17 +1,17 @@
 // app/wishlist/page.tsx
 "use client";
 
+
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Loader2, Share2, ShoppingCart, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { useWishlistStore } from "@/store/user/wishlistStore";
-import prisma from "@/lib/db";
-import { useCartStore } from "@/store/user/cartStore";
 import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { useWishlistStore } from "@/store/user/wishlistStore";
+import { useCartStore } from "@/store/user/cartStore";
 
 type CartItemInput = {
     productId: string;
@@ -63,7 +63,7 @@ export default function WishlistPage() {
                         Loading your wishlist...
                     </p>
                     <p className="text-sm text-gray-500">
-                        We're gathering your favorite items
+                        We&apos;re gathering your favorite items
                     </p>
                 </div>
             </div>

@@ -1,9 +1,14 @@
-import { authOptions } from "../../auth/[...nextauth]/options";
+
+
+
+import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import prisma from "@/lib/db";
-import { z } from "zod";
+
 import { blogPostSchema } from "@/schemas/blog/blogSchema";
+import prisma from "@/lib/db";
+
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function GET(req: Request) {
     try {
@@ -17,7 +22,7 @@ export async function GET(req: Request) {
         const skip = (page - 1) * limit;
 
         // Filter directly on categories and tags arrays
-        const where: any = {
+        const where: Record<string, unknown> = {
             published: true,
             ...(category && {
                 categories: { some: { slug: category } },

@@ -1,55 +1,27 @@
 "use client";
 
-import Hero from "@/components/Hero";
-import { Button } from "@/components/ui/button";
-
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-} from "@/components/ui/carousel";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { cn } from "@/lib/utils";
+import React from "react";
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import Link from "next/link";
 
-import { ChevronLeft, ChevronRight, Heart, Quote } from "lucide-react";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import Hero from "@/components/Hero";
+import { Button } from "@/components/ui/button";
+import ProductCarousel from "@/components/ProductCarousel";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import InstagramSection from "@/components/InstagramSection";
 import Footer from "@/components/Footer";
-import ProductCarousel from "@/components/ProductCarousel";
-import { useCartStore } from "@/store/user/cartStore";
-import Link from "next/link";
 import SummerCollection from "@/components/SummerCollection";
-import FamilyCoupleGoals from '../../components/FamilyCoupleGoals';
+
+import FamilyCoupleGoals from "../../components/FamilyCoupleGoals";
+
 
 const ph = [
     { path: "/assets/p1.jpg", description: "Exclusive Collection" },
     { path: "/assets/p2.jpg", description: "Summer Wears" },
     { path: "/assets/p3.jpg", description: "Classic Outfits" },
     { path: "/assets/p4.jpg", description: "Professional Outfits" },
-];
-
-const testimonials = [
-    {
-        name: "Kyle Merwin",
-        title: "CO-owner at LionEnergy",
-        image: "/assets/kyle.jpg", // place image in public folder
-        quote: `Ante facilisi ipsum sit eget dolor maecenas sed. Fringilla laoreet tincidunt nec nulla ullamcorper. Convallis viverra risus, facilisis erat gravida justo, urna ultrices.`,
-    },
-    {
-        name: "Jane Doe",
-        title: "Founder at BrightTech",
-        image: "/assets/jane.jpg",
-        quote: `Fringilla laoreet tincidunt nec nulla ullamcorper. Convallis viverra risus, facilisis erat gravida justo, urna ultrices.`,
-    },
-    {
-        name: "John Smith",
-        title: "CEO at CloudGrid",
-        image: "/assets/john.jpg",
-        quote: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut blandit arcu in pretium molestie.`,
-    },
 ];
 
 export default function Home() {

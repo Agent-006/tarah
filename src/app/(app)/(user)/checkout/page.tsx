@@ -1,13 +1,15 @@
+
 "use client";
 
-import { useCartStore } from "@/store/user/cartStore";
+import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
+
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { Step, Stepper } from "@/components/ui/stepper";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
+import { useCartStore } from "@/store/user/cartStore";
 
 const steps: Step[] = [
     { id: "cart", name: "Cart", status: "complete" },
@@ -18,7 +20,7 @@ const steps: Step[] = [
 
 export default function CheckoutPage() {
     const { items, isLoading: isCartLoading } = useCartStore();
-    const { data: session, status: sessionStatus } = useSession();
+    const { status: sessionStatus } = useSession();
 
     if (sessionStatus === "loading" || isCartLoading) {
         return (

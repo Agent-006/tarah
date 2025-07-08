@@ -1,25 +1,24 @@
+
 "use client";
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import axios from "axios";
+import { toast } from "sonner";
+import { Heart, Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useParams, useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import InstagramSection from "@/components/InstagramSection";
 import Footer from "@/components/Footer";
 import ProductCarousel from "@/components/ProductCarousel";
-import { useSession } from "next-auth/react";
 import { useCartStore } from "@/store/user/cartStore";
-import { useParams, useRouter } from "next/navigation";
 import { useWishlistStore } from "@/store/user/wishlistStore";
-import axios from "axios";
-import { toast } from "sonner";
-import { Heart, Loader2 } from "lucide-react";
 import { ProductError } from "@/components/error/ProductError";
 import { ProductSkeleton } from "@/components/ProductSkeleton";
 
-interface Category {
-    id: string;
-    name: string;
-}
+
 
 interface VariantAttribute {
     id: string;
@@ -74,8 +73,8 @@ export default function ProductDetailPage() {
     const { slug } = useParams();
     const { data: session } = useSession();
     const { addItem } = useCartStore();
+
     const {
-        items: wishlistItems,
         addToWishlist,
         removeFromWishlist,
         isInWishlist,
@@ -91,7 +90,7 @@ export default function ProductDetailPage() {
     const [activeImage, setActiveImage] = useState<string | null>(null);
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [isWishlistProcessing, setIsWishlistProcessing] = useState(false);
-    const [categories, setCategories] = useState<Category[]>([]);
+    // Removed unused categories state
     const [minimumLoadTimePassed, setMinimumLoadTimePassed] = useState(false);
 
     useEffect(() => {
@@ -108,7 +107,7 @@ export default function ProductDetailPage() {
                 // Map variantAttributes to attributes for compatibility
                 const productData = {
                     ...response.data,
-                    variants: response.data.variants.map((variant: any) => ({
+                    variants: response.data.variants.map((variant: ProductVariant) => ({
                         ...variant,
                         attributes: variant.variantAttributes || [],
                     })),
@@ -131,13 +130,14 @@ export default function ProductDetailPage() {
         fetchWishlist();
     }, [slug, fetchWishlist]);
 
-    console.log(product);
+
+
 
     // Get available colors from variants
     const colors =
         product?.variants.reduce((acc, variant) => {
             const colorAttr = variant.variantAttributes.find(
-                (attr: VariantAttribute) => attr.name === "Color"
+                (attr) => attr.name === "Color"
             );
             if (colorAttr && !acc.some((c) => c.value === colorAttr.value)) {
                 acc.push({
@@ -151,11 +151,12 @@ export default function ProductDetailPage() {
             return acc;
         }, [] as { name: string; value: string; price: number }[]) || [];
 
+
     // Get available sizes from variants
     const sizes =
         product?.variants.reduce((acc, variant) => {
             const sizeAttr = variant.variantAttributes.find(
-                (attr: VariantAttribute) => attr.name === "Size"
+                (attr) => attr.name === "Size"
             );
             if (sizeAttr && !acc.includes(sizeAttr.value)) {
                 acc.push(sizeAttr.value);
@@ -240,7 +241,7 @@ export default function ProductDetailPage() {
             toast.success(
                 `${product.name} (${selectedVariant.name}) item added to cart successfully!`
             );
-        } catch (error) {
+        } catch {
             toast.error("Failed to add item to cart");
         } finally {
             setIsAddingToCart(false);
@@ -266,12 +267,13 @@ export default function ProductDetailPage() {
                 await addToWishlist(product.id);
                 toast.success("Added to wishlist");
             }
-        } catch (error) {
+        } catch {
             toast.error("Failed to update wishlist");
         } finally {
             setIsWishlistProcessing(false);
         }
     };
+
 
     if (isLoading || !minimumLoadTimePassed) {
         return <ProductSkeleton />;
@@ -280,6 +282,7 @@ export default function ProductDetailPage() {
     if (error) {
         return <ProductError error={error} onRetry={() => router.refresh()} />;
     }
+
 
     if (!product) {
         return null;

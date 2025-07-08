@@ -1,7 +1,9 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from '../../auth/[...nextauth]/options';
+
 import prisma from "@/lib/db";
+
+import { authOptions } from '../../auth/[...nextauth]/options';
 
 // This route handles fetching the user's cart details.
 export async function GET() {
@@ -41,6 +43,7 @@ export async function GET() {
 
         return NextResponse.json(cart || { items: [] }); 
     } catch (error) {
+        console.error("Error fetching cart:", error);
         return NextResponse.json(
             { error: "Failed to fetch cart" },
             { status: 500 }
@@ -63,7 +66,7 @@ export async function POST(request: Request) {
         const { productId, variantId, quantity } = await request.json();
 
         // Get or create the user's cart
-        let cart = await prisma.cart.upsert({
+        const cart = await prisma.cart.upsert({
             where: { userId: session.user.id },
             update: {},
             create: {
@@ -134,6 +137,7 @@ export async function POST(request: Request) {
             { status: 200 }
         )
     } catch (error) {
+        console.error("Error adding item to cart:", error);
         return NextResponse.json(
             { error: "Failed to add item to cart" },
             { status: 500 }
@@ -180,6 +184,7 @@ export async function DELETE(request: Request) {
             { status: 200 }
         );
     } catch (error) {
+        console.error("Error removing item from cart:", error);
         return NextResponse.json(
             { error: "Failed to remove item from cart" },
             { status: 500 }

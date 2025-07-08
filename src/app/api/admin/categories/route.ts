@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/options";
+
 import prisma from "@/lib/db";
+
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function GET() {
     const session = await getServerSession(authOptions);
@@ -19,6 +21,7 @@ export async function GET() {
 
         return NextResponse.json(categories);
     } catch (error) {
+        console.error("Error fetching categories:", error);
         return NextResponse.json(
             { error: "Failed to fetch categories" },
             { status: 500 }

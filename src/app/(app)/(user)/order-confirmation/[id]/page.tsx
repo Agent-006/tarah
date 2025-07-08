@@ -1,14 +1,17 @@
 // app/order-confirmation/[id]/page.tsx
+
 "use client";
 
-import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Loader2 } from "lucide-react";
+
 import { useEffect, useState } from "react";
-import { CheckoutOrder } from "@/types/checkout";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 import axios from "axios";
+import { useParams } from "next/navigation";
+
+import { CheckoutOrder } from "@/types/checkout";
+import { Button } from "@/components/ui/button";
 import { OrderDetails } from "@/components/order/OrderDetails";
 
 export default function OrderConfirmationPage() {
@@ -22,8 +25,9 @@ export default function OrderConfirmationPage() {
             try {
                 const response = await axios.get(`/user/orders/${id}`);
                 setOrder(response.data);
-            } catch (err: any) {
-                setError(err.message || "Failed to load order details");
+            } catch (err) {
+                const errorMsg = (err instanceof Error) ? err.message : "Failed to load order details";
+                setError(errorMsg);
                 toast.error("Failed to load order details");
             } finally {
                 setIsLoading(false);
@@ -31,6 +35,24 @@ export default function OrderConfirmationPage() {
         };
 
         fetchOrder();
+
+        // const verifyOrder = async () => {
+        //     try {
+        //         const order = await useOrderStore.getState().verifyOrderPayment(id);
+        //         setOrder(order);
+        //     } catch (error) {
+        //         setError(
+        //             axios.isAxiosError(error)
+        //                 ? error.response?.data?.message || error.message
+        //                 : "Failed to verify order payment"
+        //         );
+        //     } finally {
+        //         setIsLoading(false);
+        //     }
+        // }
+        
+
+        // verifyOrder();
     }, [id]);
 
     if (isLoading) {
@@ -45,7 +67,7 @@ export default function OrderConfirmationPage() {
         return (
             <div className="max-w-2xl mx-auto p-4 text-center">
                 <h1 className="text-2xl font-bold mb-4">Order Not Found</h1>
-                <p className="mb-4">We couldn't find your order details</p>
+                <p className="mb-4">We couldn&apos;t find your order details</p>
                 <Button asChild>
                     <Link href="/orders">View Your Orders</Link>
                 </Button>

@@ -1,7 +1,10 @@
-import { authOptions } from "../../../auth/[...nextauth]/options";
+
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+
 import prisma from "@/lib/db";
+
+import { authOptions } from "../../../auth/[...nextauth]/options";
 
 export async function GET(
   request: Request,
@@ -185,7 +188,7 @@ export async function PATCH(
       );
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (status) updateData.status = status;
     if (paymentStatus) updateData.paymentStatus = paymentStatus;
 

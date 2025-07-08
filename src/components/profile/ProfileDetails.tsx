@@ -1,5 +1,11 @@
 "use client";
 
+import React, { useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -14,12 +20,7 @@ import {
     profileSchema,
     TProfileSchema,
 } from "@/schemas/userSchema/profileSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { useProfileStore } from "@/store/user/profileStore";
-import { Loader2 } from "lucide-react";
 
 const ProfileDetails = () => {
     const { profile, isLoading, updateProfile } = useProfileStore();

@@ -1,5 +1,8 @@
+
 "use client";
-import { useFieldArray } from "react-hook-form";
+import { useFieldArray, Control, FieldValues } from "react-hook-form";
+import { Plus, Trash } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,26 +12,26 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Plus, Trash } from "lucide-react";
 
-interface VariantAttributeFormProps {
-    control: any;
+interface VariantAttributeFormProps<T extends FieldValues = FieldValues> {
+    control: Control<T>;
     namePrefix: string;
 }
 
-export const VariantAttributeForm: React.FC<VariantAttributeFormProps> = ({
+export const VariantAttributeForm = <T extends FieldValues = FieldValues>({
     control,
     namePrefix,
-}) => {
+}: VariantAttributeFormProps<T>) => {
     const { fields, append, remove } = useFieldArray({
         control,
-        name: namePrefix,
+        name: namePrefix as import("react-hook-form").ArrayPath<T>,
     });
 
+
     const addNewAttribute = () => {
-        append({ name: "", value: "" });
+        append({ name: "", value: "" } as any);
     };
-    
+
     return (
         <div className="space-y-4">
             {fields.map((field, index) => (
@@ -38,7 +41,7 @@ export const VariantAttributeForm: React.FC<VariantAttributeFormProps> = ({
                 >
                     <FormField
                         control={control}
-                        name={`${namePrefix}.${index}.name`}
+                        name={`${namePrefix}.${index}.name` as import("react-hook-form").Path<T>}
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Name</FormLabel>
@@ -55,7 +58,7 @@ export const VariantAttributeForm: React.FC<VariantAttributeFormProps> = ({
 
                     <FormField
                         control={control}
-                        name={`${namePrefix}.${index}.value`}
+                        name={`${namePrefix}.${index}.value` as import("react-hook-form").Path<T>}
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Value</FormLabel>
@@ -93,4 +96,4 @@ export const VariantAttributeForm: React.FC<VariantAttributeFormProps> = ({
             </Button>
         </div>
     );
-}
+};

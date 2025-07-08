@@ -1,17 +1,19 @@
+
 "use client";
 
-import Footer from "@/components/Footer";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
+import { Loader2, LogOut } from "lucide-react";
+
+import Footer from "@/components/Footer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileStore } from "@/store/user/profileStore";
 import { useAddressStore } from "@/store/user/addressStore";
 import AddressBook from "@/components/profile/AddressBook";
 import ProfileDetails from "@/components/profile/ProfileDetails";
 import OrderBook from "@/components/profile/OrderBook";
-import Link from "next/link";
-import { Loader2, LogOut } from "lucide-react";
 import ReturnBook from "@/components/profile/ReturnBook";
 import CalcellationBook from "@/components/profile/CalcellationBook";
 import { Button } from "@/components/ui/button";
@@ -25,7 +27,7 @@ const sidebarItemInactive =
 
 const ProfilePage = () => {
     const router = useRouter();
-    const { data: session, status } = useSession();
+    const { status } = useSession();
     const { fetchProfile } = useProfileStore();
     const { fetchAddresses } = useAddressStore();
 

@@ -1,10 +1,11 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+
 import prisma from "@/lib/db";
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
 // GET request to fetch the user's wishlist
-export async function GET(request: Request) {
+export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -37,6 +38,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(wishlist);
     } catch (error) {
+        console.error("Error fetching wishlist:", error);
         return NextResponse.json(
             { error: "Failed to fetch wishlist" },
             { status: 500 }
@@ -102,6 +104,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json(wishlistItem, { status: 201 });
     } catch (error) {
+        console.error("Error adding to wishlist:", error);
         return NextResponse.json(
             { error: "Failed to update wishlist" },
             { status: 500 }
@@ -132,6 +135,7 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
+        console.error("Error removing item from wishlist:", error);
         return NextResponse.json(
             { error: "Failed to remove item from wishlist" },
             { status: 500 }

@@ -1,8 +1,10 @@
 // app/api/delete-image/route.ts
+
 import { UTApi } from "uploadthing/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { NextResponse } from "next/server";
+
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);

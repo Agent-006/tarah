@@ -1,7 +1,9 @@
 // app/api/uploadthing/core.ts
+
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import { getServerSession } from "next-auth";
+
 import { authOptions } from "../auth/[...nextauth]/options";
 
 const f = createUploadthing();
@@ -13,7 +15,7 @@ export const ourFileRouter = {
         maxFileCount: 10,
         },
     })
-        .middleware(async ({ req }) => {
+        .middleware(async () => {
         const session = await getServerSession(authOptions);
             if (!session?.user || session.user.role !== "ADMIN") {
                 throw new UploadThingError("Unauthorized");

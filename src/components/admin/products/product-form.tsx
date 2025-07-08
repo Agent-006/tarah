@@ -1,6 +1,14 @@
 // components/admin/products/product-form.tsx
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { Resolver, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+
+import { MultiSelect } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -11,25 +19,20 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useUploadThing } from "@/lib/uploadthing";
+import { useCategories } from "@/hooks/use-categories";
 import {
     adminProductsSchema,
     TAdminProductsSchema,
 } from "@/schemas/adminSchema/adminProductsSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Resolver, useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+
 import { ImageUpload } from "../image-upload";
-import { useUploadThing } from "@/lib/uploadthing";
-import { useCategories } from "@/hooks/use-categories";
-import axios from "axios";
-import { MultiSelect } from "@/components/ui/multi-select";
+
 import { VariantForm } from "./variant-form";
 import { ProductAttributeForm } from "./product-attribute-form";
+
 
 interface ProductFormProps {
     initialData?: TAdminProductsSchema;
@@ -45,7 +48,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
     } | null>(null);
     const [uploadingCoverImage, setUploadingCoverImage] = useState(false);
 
-    const { data: categories, isLoading: categoriesLoading } = useCategories();
+    const { data: categories } = useCategories();
     const { startUpload } = useUploadThing("imageUploader");
 
     const form = useForm<TAdminProductsSchema>({
@@ -184,6 +187,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
             console.log("Submitting product data:", data);
             await onSubmit(data);
         } catch (error) {
+            console.error("Error saving product:", error);
             toast.error("Failed to save product");
         } finally {
             setIsSubmitting(false);
@@ -444,7 +448,8 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
                     </div>
                 )}
                 
-                <ProductAttributeForm control={form.control} />
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                <ProductAttributeForm control={form.control as any} />
                 {/* Variants Section */}
                 <div className="space-y-4">
                     <VariantForm

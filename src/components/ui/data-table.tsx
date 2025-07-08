@@ -1,6 +1,8 @@
 // components/ui/data-table.tsx
+
 "use client";
 
+import { useState } from "react";
 import {
     ColumnDef,
     flexRender,
@@ -9,6 +11,7 @@ import {
     getPaginationRowModel,
     getFilteredRowModel,
 } from "@tanstack/react-table";
+
 import {
     Table,
     TableBody,
@@ -19,7 +22,6 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -31,7 +33,7 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
     columns,
     data,
-    searchKey,
+    // searchKey,
     placeholder = "Search...",
 }: DataTableProps<TData, TValue>) {
     const [globalFilter, setGlobalFilter] = useState("");
@@ -86,10 +88,10 @@ export function DataTable<TData, TValue>({
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(
-                                                header.column.columnDef
-                                                    .header,
-                                                header.getContext()
-                                            )}
+                                                  header.column.columnDef
+                                                      .header,
+                                                  header.getContext()
+                                              )}
                                     </TableHead>
                                 ))}
                             </TableRow>

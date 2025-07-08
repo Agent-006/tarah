@@ -1,21 +1,23 @@
 "use client";
 
 import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { getImageUrl } from "@/lib/uploadthing";
-import { ImageUploader } from "./ImageUploader";
-import { PortableText } from "@/components/blog/PortableTextComponents";
 import {
     BlogPostWithRelations,
     useAdminBlogStore,
 } from "@/store/admin/adminBlogStore";
+import { Label } from "@/components/ui/label";
+import { getImageUrl } from "@/lib/uploadthing";
+import { PortableText } from "@/components/blog/PortableTextComponents";
+
+import { ImageUploader } from "./ImageUploader";
 
 export function BlogEditor({ post }: { post?: BlogPostWithRelations }) {
     const { createPost, updatePost, isLoading } = useAdminBlogStore();
     const [title, setTitle] = useState(post?.title || "");
-    const [content, setContent] = useState(post?.content || []);
+    const [content] = useState(post?.content || []);
     const [coverImage, setCoverImage] = useState<File | null>(null);
     const [removeCoverImage, setRemoveCoverImage] = useState(false);
 

@@ -1,8 +1,11 @@
 "use client";
 
+
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
 import { ArrowUpDown, MoreHorizontal, Eye, Mail, Phone } from "lucide-react";
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
 
 export interface Customer {
   id: string;

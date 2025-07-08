@@ -1,6 +1,8 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/db";
 
 export async function PATCH(
@@ -41,6 +43,7 @@ export async function PATCH(
             { status: 200 }
         );
     } catch (error) {
+        console.error("Error cancelling order:", error);
         return NextResponse.json(
             { error: "Failed to cancel order" },
             { status: 500 }

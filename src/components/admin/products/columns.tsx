@@ -1,14 +1,15 @@
 // components/admin/products/columns.tsx
 import { ColumnDef } from "@tanstack/react-table";
+import Link from "next/link";
+import { MoreHorizontal } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Link from "next/link";
 
 export type Product = {
     id: string;

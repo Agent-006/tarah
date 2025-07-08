@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Quote } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
 import type { EmblaOptionsType } from "embla-carousel";
+
 import {
     Carousel,
     CarouselContent,

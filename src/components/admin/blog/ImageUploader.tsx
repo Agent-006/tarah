@@ -3,6 +3,8 @@
 import { useCallback, useState } from "react";
 import { useDropzone } from "@uploadthing/react";
 import { UploadCloud } from "lucide-react";
+import Image from "next/image";
+
 import { Button } from "@/components/ui/button";
 
 interface ImageUploaderProps {
@@ -17,7 +19,6 @@ export function ImageUploader({
     onRemove,
 }: ImageUploaderProps) {
     const [preview, setPreview] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
 
     const onDrop = useCallback(
         (acceptedFiles: File[]) => {
@@ -52,10 +53,13 @@ export function ImageUploader({
         <div className="space-y-4">
             {(preview || currentImage) && (
                 <div className="relative w-full h-64 rounded-md overflow-hidden border">
-                    <img
-                        src={preview || currentImage}
+                    <Image
+                        src={preview || currentImage || ""}
                         alt="Preview"
+                        fill
                         className="w-full h-full object-cover"
+                        sizes="100vw"
+                        priority
                     />
                     <Button
                         variant="destructive"

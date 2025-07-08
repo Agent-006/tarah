@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
 import { motion } from "framer-motion";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const images = [
     "/assets/insta1.jpg",
@@ -95,7 +96,8 @@ const InstagramSection = () => {
                         Subscribe Newsletter
                     </h3>
                     <p className="mb-8 text-sm md:text-base text-secondary/80">
-                        Get exclusive updates, early access to sales, and special offers
+                        Get exclusive updates, early access to sales, and
+                        special offers
                     </p>
 
                     <form className="flex flex-col sm:flex-row justify-center gap-4">

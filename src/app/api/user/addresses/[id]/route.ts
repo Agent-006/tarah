@@ -1,5 +1,7 @@
+
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/db";
 
@@ -44,6 +46,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
             { status: 200 }
         );
     } catch (error) {
+        console.error("Error fetching address:", error);
         return NextResponse.json(
             { message: "Internal Server Error" },
             { status: 500 }
@@ -138,6 +141,7 @@ export async function PUT(
             { status: 200 }
         );
     } catch (error) {
+        console.error("Error updating address:", error);
         return NextResponse.json(
             { message: "Internal Server Error" },
             { status: 500 }
@@ -197,6 +201,7 @@ export async function DELETE(
         );
 
     } catch (error) {
+        console.error("Error deleting address:", error);
         return NextResponse.json(
             { message: "Internal Server Error" },
             { status: 500 }

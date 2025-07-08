@@ -1,6 +1,4 @@
-import BlogGrid from "@/components/blog/BlogGrid";
-import React, { Suspense } from "react";
-import Loading from "./loading";
+import React from "react";
 
 const page = () => {
     return (
@@ -12,7 +10,7 @@ const page = () => {
             <div className="flex flex-col items-center justify-center h-full mt-20">
                 <h1 className="text-4xl font-bold text-primary mb-4">Blog Coming Soon!</h1>
                 <p className="text-lg text-gray-700 mb-6 text-center max-w-md">
-                    We're working hard to bring you insightful articles and updates. Stay tuned for our upcoming blog posts!
+                    We&apos;re working hard to bring you insightful articles and updates. Stay tuned for our upcoming blog posts!
                 </p>
                 {/* Smile SVG */}
                 <svg

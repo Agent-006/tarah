@@ -1,30 +1,28 @@
 "use client";
 
+
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Heart } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
-import Image from "next/image";
+import { Skeleton } from "@/components/ui/skeleton";
 import InstagramSection from "@/components/InstagramSection";
 import Footer from "@/components/Footer";
 import { useWishlistStore } from "@/store/user/wishlistStore";
-import Link from "next/link";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useProductStore } from "@/store/product/productsStore";
 
 const filters = ["XS", "S", "M", "L", "XL", "2XL"];
-const ITEMS_PER_PAGE = 8;
 
 interface AllProductPageProps {
     initialCategory?: string | null;
 }
 
-const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
+const AllProductsPage = ({}: AllProductPageProps) => {
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [showAvailableOnly, setShowAvailableOnly] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState<
-        typeof initialCategory | null
-    >(null);
 
     const {
         products,
@@ -35,17 +33,15 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
         fetchProducts,
     } = useProductStore();
 
-    const { isInWishlist, addToWishlist, removeFromWishlist } =
-        useWishlistStore();
+    const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistStore();
 
     useEffect(() => {
         fetchProducts({
             page: 1,
             size: selectedSize,
             inStockOnly: showAvailableOnly,
-            category: selectedCategory,
         });
-    }, [selectedSize, showAvailableOnly, selectedCategory, fetchProducts]);
+    }, [selectedSize, showAvailableOnly, fetchProducts]);
 
     const handlePageChange = (page: number) => {
         fetchProducts({
@@ -153,8 +149,7 @@ const AllProductsPage = ({ initialCategory }: AllProductPageProps) => {
                                     );
 
                                     const firstCategory =
-                                        (product.categories as any)?.[0]
-                                            ?.category?.name || "";
+                                        (product.categories as { category?: { name?: string } }[] | undefined)?.[0]?.category?.name || "";
 
                                     const sizeAttribute =
                                         product.variants?.[0]?.variantAttributes?.find(

@@ -1,8 +1,9 @@
+
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/db";
-import bcrypt from "bcryptjs";
 
 // This route handles fetching the user's profile information.
 export async function GET() {
@@ -33,6 +34,7 @@ export async function GET() {
             status: 200
         });
     } catch (error) {
+        console.error("Error fetching user profile:", error);
         return NextResponse.json(
             { message: "Internal Server Error" },
             { status: 500 }
@@ -52,7 +54,7 @@ export async function PUT(request: Request) {
     }
 
     try {
-        const { firstName, lastName, fullName, phone, newPassword } = await request.json();
+        const { firstName, lastName, fullName, phone } = await request.json();
 
         // If the user provided a new password, you would handle that here.
         // if (newPassword) {
@@ -125,6 +127,7 @@ export async function PUT(request: Request) {
             }
         );
     } catch (error) {
+        console.error("Error updating user profile:", error);
         return NextResponse.json(
             { message: "Internal Server Error" },
             { status: 500 }

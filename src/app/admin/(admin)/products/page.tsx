@@ -1,9 +1,11 @@
 // app/admin/products/page.tsx
+
+import Link from "next/link";
+
 import prisma from "@/lib/db";
 import { serializeProduct } from "@/lib/prisma";
 import { ProductList } from "@/components/admin/products/product-list";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export default async function ProductsPage() {
   const products = await prisma.product.findMany({

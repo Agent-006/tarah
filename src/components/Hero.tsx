@@ -2,14 +2,13 @@
 
 import React from "react";
 import Autoplay from "embla-carousel-autoplay";
+import Image from "next/image";
+
 import {
     Carousel,
     CarouselContent,
     CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
 } from "@/components/ui/carousel";
-import Image from "next/image";
 
 const carauselItemList = [
     "/assets/hero_banner_1.jpg",
@@ -18,9 +17,7 @@ const carauselItemList = [
 ];
 
 const Hero = () => {
-    const plugin = React.useRef(
-        Autoplay({ delay: 2000 })
-    );
+    const plugin = React.useRef(Autoplay({ delay: 2000 }));
     return (
         <section className="w-full h-[800px] md:h-[688px] relative">
             <Carousel

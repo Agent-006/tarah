@@ -1,13 +1,15 @@
 "use client";
 
+
 import { useEffect, useState, use as usePromise } from "react";
-import { ProductForm } from "@/components/admin/products/product-form";
-import { TAdminProductsSchema } from "@/schemas/adminSchema/adminProductsSchema";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
+import { ProductForm } from "@/components/admin/products/product-form";
+import { TAdminProductsSchema } from "@/schemas/adminSchema/adminProductsSchema";
+import { Button } from "@/components/ui/button";
 import { useAdminProductStore } from "@/store/admin/adminProductStore";
 
 export default function EditProductPage({
@@ -43,6 +45,7 @@ export default function EditProductPage({
 
     useEffect(() => {
         loadProduct();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleSubmit = async (data: TAdminProductsSchema) => {

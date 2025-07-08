@@ -1,4 +1,7 @@
 import { useEffect } from "react";
+import { Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -9,8 +12,6 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/utils";
-import { Pencil, Trash2 } from "lucide-react";
-import Link from "next/link";
 import { useAdminBlogStore } from "@/store/admin/adminBlogStore";
 
 export default function AdminBlogList() {
@@ -18,7 +19,7 @@ export default function AdminBlogList() {
 
     useEffect(() => {
         fetchAllPosts();
-    }, []);
+    }, [fetchAllPosts]);
 
     if (isLoading) {
         return <div className="p-8">Loading...</div>;

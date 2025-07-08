@@ -1,7 +1,9 @@
 // components/admin/products/product-attribute-form.tsx
 "use client";
 
-import { useFieldArray } from "react-hook-form";
+import { useFieldArray, Control, FieldValues } from "react-hook-form";
+import { Plus, Trash } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,10 +13,9 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Plus, Trash } from "lucide-react";
 
 interface ProductAttributeFormProps {
-    control: any;
+    control: Control<FieldValues>;
 }
 
 export const ProductAttributeForm: React.FC<ProductAttributeFormProps> = ({

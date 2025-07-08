@@ -46,25 +46,6 @@ export function CheckoutForm() {
     const [paymentMethods, setPaymentMethods] = useState<PaymentOption[]>([]);
     const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
 
-    useEffect(() => {
-        const fetchPaymentMethods = async () => {
-            try {
-                const response = await axios.get("/api/user/payment-methods");
-                setPaymentMethods([
-                    ...response.data,
-                    { id: "cash_on_delivery", type: "COD" }, // Add Cash on Delivery option
-                ]);
-            } catch (error) {
-                console.error("Error fetching payment methods:", error);
-                toast.error("Failed to load payment methods");
-            } finally {
-                setLoadingPaymentMethods(false);
-            }
-        };
-
-        // fetchPaymentMethods();
-    }, []);
-
     const { handleSubmit } = form;
     const { items } = useCartStore();
     const { createOrder } = useOrderStore();
@@ -73,17 +54,57 @@ export function CheckoutForm() {
 
     const onSubmit = async (data: CheckoutFormValues) => {
         setIsSubmitting(true);
-        try {
-            const order = await createOrder(data);
+        // try {
+        //     // create order draft
+        //     const order = await useOrderStore.getState().createOrder(data);
 
-            toast.success("Order placed successfully!");
-            router.push(`/order-confirmation/${order.id}`);
-        } catch (error) {
-            toast.error("Failed to place order");
-        } finally {
-            setIsSubmitting(false);
-        }
+        //     // handle payment based on method
+        //     if (data.payment.method === "stripe") {
+        //         const { url } = await useOrderStore
+        //             .getState()
+        //             .createStripePaymentIntent(order.id, order.totalAmount); // we don't have this in checkoutFormValues (order.totalAmount)
+
+        //         if (!url) {
+        //             toast.error("Failed to create payment intent");
+        //         }
+
+        //         toast.success("Redirecting to payment gateway...");
+        //         window.location.href = url; // redirect to Stripe checkout
+        //     }
+        //     router.push(`/order-confirmation/${order.id}`);
+        //     toast.success("Order placed successfully!");
+        // } catch (error) {
+        //     toast.error("Failed to place order");
+        // } finally {
+        //     setIsSubmitting(false);
+        // }
     };
+
+    useEffect(() => {
+        const fetchPaymentMethods = async () => {
+            try {
+                const response = await axios.get("/api/user/payment-methods");
+                setPaymentMethods([
+                    ...response.data,
+                    { id: "cash_on_delivery", type: "COD" }, // Add Cash on Delivery option
+                ]);
+                toast.success("Payment methods loaded successfully");
+            } catch (error) {
+                console.error("Error fetching payment methods:", error);
+                toast.error("Failed to load payment methods");
+            } finally {
+                setLoadingPaymentMethods(false);
+            }
+        };
+
+        if (!fetchPaymentMethods) {
+            toast.error(
+                "No payment methods found you can add one in your profile"
+            );
+        }
+
+        // fetchPaymentMethods();
+    }, []);
 
     return (
         <FormProvider {...form}>

@@ -1,6 +1,8 @@
-import prisma from "@/lib/db";
+
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+
+import prisma from "@/lib/db";
 import { signUpSchema } from "@/schemas/signUpSchema";
 
 export async function POST(request: Request) {
@@ -59,7 +61,8 @@ export async function POST(request: Request) {
         });
 
         // Exclude the password from the response
-        const { password: _, ...userWithoutPassword } = newUser;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password: _pw, ...userWithoutPassword } = newUser;
 
         return NextResponse.json(
             { 

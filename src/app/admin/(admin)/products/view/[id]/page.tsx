@@ -1,17 +1,10 @@
 "use client";
 
-import { useEffect, useState, use as usePromise } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { useEffect, use as usePromise } from "react";
 import Link from "next/link";
+import Image from "next/image";
+// import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Loader2,
   Edit,
@@ -24,17 +17,22 @@ import {
   Layers,
   Image as ImageIcon,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useAdminProductStore } from "@/store/admin/adminProductStore";
-import Image from "next/image";
 
 export default function ViewProductPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const router = useRouter();
   const { fetchProduct, product, isLoading, error } = useAdminProductStore();
 
   // Unwrap params using React.use()

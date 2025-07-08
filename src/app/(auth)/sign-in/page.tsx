@@ -1,6 +1,7 @@
 // app/sign-in/page.tsx
-import SignInForm from "@/components/auth/sign-in-form";
 import Image from "next/image";
+
+import SignInForm from "@/components/auth/sign-in-form";
 
 const SignInPage = () => {
     return (

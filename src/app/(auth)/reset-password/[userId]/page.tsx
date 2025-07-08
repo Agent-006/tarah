@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+
 import ResetPasswordForm from "@/components/auth/reset-password-form";
 
 const ResetPasswordPage = () => {

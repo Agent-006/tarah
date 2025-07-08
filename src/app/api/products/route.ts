@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import prisma from "@/lib/db";
 
 export async function GET(request: Request) {
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
         const inStockOnly = searchParams.get('inStockOnly') === 'true';
         const category = searchParams.get('category');
         
-        const where: any = {
+        const where: Record<string, unknown> = {
             published: true,
         }
 
