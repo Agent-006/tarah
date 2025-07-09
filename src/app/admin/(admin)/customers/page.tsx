@@ -1,13 +1,8 @@
 "use client";
 
-
 import { useEffect, useState } from "react";
-import {
-  Loader2,
-  Users,
-  TrendingUp,
-  ShoppingBag,
-} from "lucide-react";
+
+import { Loader2, Users, TrendingUp, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
