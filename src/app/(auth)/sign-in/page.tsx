@@ -1,5 +1,6 @@
 // app/sign-in/page.tsx
 import Image from "next/image";
+import { Suspense } from "react";
 
 import SignInForm from "@/components/auth/sign-in-form";
 
@@ -15,7 +16,9 @@ const SignInPage = () => {
                             Enter your credentials to sign in
                         </p>
                     </div>
-                    <SignInForm />
+                    <Suspense fallback={<div>Loading...</div>}>
+                        <SignInForm />
+                    </Suspense>
                 </div>
             </div>
 

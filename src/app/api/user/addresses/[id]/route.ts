@@ -6,7 +6,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/db";
 
 // This route handles fetching a specific address by ID for the user.
-export async function GET(request: Request, { params }: { params: { id: string } }
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await getServerSession(authOptions);
 
@@ -18,9 +18,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     try {
+        const resolvedParams = await params;
         const address = await prisma.address.findUnique({
             where: {
-                id: params.id,
+                id: resolvedParams.id,
                 userId: session.user.id, // Ensure the address belongs to the user
             },
             select: {
@@ -57,7 +58,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // This route handles updating a specific address by ID for the user.
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await getServerSession(authOptions);
 
@@ -69,6 +70,7 @@ export async function PUT(
     }
 
     try {
+        const resolvedParams = await params;
         const { street, city, state, postalCode, country, isDefault } = await request.json();
 
         // Validate required fields
@@ -81,7 +83,7 @@ export async function PUT(
 
         // first check if the existing address is default or not
         const existingAddress = await prisma.address.findUnique({
-            where: { id: params.id },
+            where: { id: resolvedParams.id },
         });
 
         if (!existingAddress) {
@@ -103,7 +105,7 @@ export async function PUT(
         // Update the address
         const updatedAddress = await prisma.address.update({
             where: {
-                id: params.id,
+                id: resolvedParams.id,
                 userId: session.user.id, // Ensure the address belongs to the user
             },
             data: updatedData,
@@ -152,7 +154,7 @@ export async function PUT(
 // This route handles deleting a specific address by ID for the user.
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await getServerSession(authOptions);
 
@@ -164,10 +166,11 @@ export async function DELETE(
     }
 
     try {
+        const resolvedParams = await params;
         // Check if the address exists and belongs to the user
         const address = await prisma.address.findUnique({
             where: {
-                id: params.id,
+                id: resolvedParams.id,
                 userId: session.user.id, // Ensure the address belongs to the user
             },
         });
@@ -190,7 +193,7 @@ export async function DELETE(
         // Delete the address
         await prisma.address.delete({
             where: {
-                id: params.id,
+                id: resolvedParams.id,
                 userId: session.user.id, // Ensure the address belongs to the user
             },
         });
