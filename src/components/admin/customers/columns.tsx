@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal, Eye, Mail, Phone } from "lucide-react";
-import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import {
