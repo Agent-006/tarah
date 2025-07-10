@@ -1,0 +1,3 @@
+-- Baseline migration for existing database
+-- This migration establishes the migration history for Prisma Migrate
+-- The database schema already exists, so no changes are needed
