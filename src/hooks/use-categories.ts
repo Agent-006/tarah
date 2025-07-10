@@ -24,7 +24,7 @@ export const useCategories = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const { data } = await axios.get("/api/admin/categories");
+                const { data } = await axios.get(`${process.env.NEXTAUTH_URL}/api/admin/categories`);
                 setCategories(data);
             } catch (error) {
                 setError(
