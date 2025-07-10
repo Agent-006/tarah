@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { OrderDetails } from "@/components/order/OrderDetails";
 
 export default function OrderConfirmationPage() {
-    const { id } = useParams();
+    const params = useParams();
     const [order, setOrder] = useState<CheckoutOrder | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -23,7 +23,11 @@ export default function OrderConfirmationPage() {
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                const response = await axios.get(`/user/orders/${id}`);
+                const id = params.id;
+                if (!id) {
+                    throw new Error("Order ID not found");
+                }
+                const response = await axios.get(`/api/user/orders/${id}`);
                 setOrder(response.data);
             } catch (err) {
                 const errorMsg = (err instanceof Error) ? err.message : "Failed to load order details";
@@ -35,25 +39,7 @@ export default function OrderConfirmationPage() {
         };
 
         fetchOrder();
-
-        // const verifyOrder = async () => {
-        //     try {
-        //         const order = await useOrderStore.getState().verifyOrderPayment(id);
-        //         setOrder(order);
-        //     } catch (error) {
-        //         setError(
-        //             axios.isAxiosError(error)
-        //                 ? error.response?.data?.message || error.message
-        //                 : "Failed to verify order payment"
-        //         );
-        //     } finally {
-        //         setIsLoading(false);
-        //     }
-        // }
-        
-
-        // verifyOrder();
-    }, [id]);
+    }, [params.id]);
 
     if (isLoading) {
         return (
