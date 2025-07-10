@@ -1,11 +1,11 @@
-
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import prisma from "@/lib/db";
 
 
 export async function GET(
-    req: Request,
+    req: NextRequest,
     { params }: { params: Promise<{ slug: string }> }
 ) {
     try {

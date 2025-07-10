@@ -95,7 +95,7 @@ const CancellationBook = () => {
                                             {item.variant.product.name}
                                         </h3>
                                         <p className="text-sm text-gray-500">
-                                            {item.quantity} × Rs.{" "}
+                                            {item.quantity} x Rs.{" "}
                                             {item.price.toFixed(2)}
                                         </p>
                                         <p className="text-sm text-gray-500">

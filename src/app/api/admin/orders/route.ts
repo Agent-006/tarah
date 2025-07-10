@@ -42,14 +42,6 @@ export async function GET() {
             }
         });
 
-        type OrderItem = {
-            variant: {
-                product: { name: string };
-                name: string;
-            };
-            quantity: number;
-            price: number;
-        };
         const formattedOrders = orders.map((order) => ({
             id: order.id,
             customer: {

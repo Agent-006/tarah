@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import axios from "axios";
+
 import { CheckoutOrder, CheckoutFormValues } from "@/types/checkout";
-import { useSession } from "next-auth/react";
+
 import { useCartStore } from "./cartStore";
 
 interface Refund {
@@ -109,6 +110,16 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
         try {
             await axios.patch(`/api/user/orders/${orderId}/cancel`);
             await get().fetchOrders(); // refresh orders after cancellation
+
+            // if the order was paid, initiate refund
+            // const order = get().orders.find(ord => ord.id === orderId);
+            // if (order?.paymentStatus === "CAPTURED") {
+            //     await get().processRefund(
+            //         undefined,
+            //         Number(order.totalAmount),
+            //         "Order cancelled by user" // Reason for refund
+            //     );
+            // }
         } catch (error) {
             set({ 
                 error: axios.isAxiosError(error)
