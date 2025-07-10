@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "ts-node --project ./prisma/tsconfig.json ./prisma/seed.ts",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "postinstall": "prisma generate",
+    "db:setup": "node scripts/db-setup.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

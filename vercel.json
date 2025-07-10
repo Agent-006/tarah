@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npm run db:setup && next build",
+  "env": {
+    "PRISMA_GENERATE_SKIP_AUTOINSTALL": "true"
+  }
+}
