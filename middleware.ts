@@ -23,7 +23,6 @@ const SHARED_AUTH_ROUTES = [
   '/sign-in', '/sign-up', '/forgot-password', '/reset-password', '/verify-email'
 ];
 
-const ADMIN_ROUTES_PREFIX = '/admin';
 const ADMIN_SIGN_IN_ROUTE = '/admin/sign-in';
 const CUSTOMER_SIGN_IN_ROUTE = '/sign-in';
 const HOME_ROUTE = '/';
