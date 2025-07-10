@@ -1,6 +1,8 @@
 "use client";
 
 import { useFieldArray, useFormContext } from "react-hook-form";
+import { Plus, Trash } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,10 +12,10 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Plus, Trash } from "lucide-react";
-import { ImageUpload } from "../image-upload";
-import { ProductAttributeForm } from "./product-attribute-form";
 import { TAdminProductsSchema } from "@/schemas/adminSchema/adminProductsSchema";
+
+import { ImageUpload } from "../image-upload";
+
 import { VariantAttributeForm } from "./variant-attribute.form";
 
 interface VariantFormProps {

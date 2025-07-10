@@ -42,35 +42,17 @@ export async function GET() {
             }
         });
 
-        type OrderItem = {
-            variant: {
-                product: { name: string };
-                name: string;
-            };
-            quantity: number;
-            price: number;
-        };
-        type Order = {
-            id: string;
-            user: { firstName: string; lastName: string; email: string };
-            items: OrderItem[];
-            totalAmount: number;
-            status: string;
-            paymentStatus: string;
-            createdAt: string;
-        };
-
-        const formattedOrders = orders.map((order: Order) => ({
+        const formattedOrders = orders.map((order) => ({
             id: order.id,
             customer: {
-                name: `${order.user.firstName} ${order.user.lastName}`,
+                name: `${order.user.firstName || 'Unknown'} ${order.user.lastName || 'User'}`.trim(),
                 email: order.user.email
             },
-            items: order.items.map((item: OrderItem) => ({
+            items: order.items.map((item) => ({
                 productName: item.variant.product.name,
                 variantName: item.variant.name,
                 quantity: item.quantity,
-                price: item.price
+                price: Number(item.price)
             })),
             totalAmount: order.totalAmount,
             status: order.status,

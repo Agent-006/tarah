@@ -8,7 +8,7 @@ import prisma from "@/lib/db";
 
 export async function POST(
     request: Request,
-    { params }: { params: { orderId: string } }
+    { params }: { params: Promise<{ orderId: string }> }
 ) {
     const session = await getServerSession(authOptions);
 
@@ -22,10 +22,11 @@ export async function POST(
     const { itemId, reason } = await request.json();
 
     try {
+        const resolvedParams = await params;
         // Check if the order exists and belongs to the user and is in a returnable state
         const order = await prisma.order.findUnique({
             where: {
-                id: params.orderId,
+                id: resolvedParams.orderId,
                 userId: session.user.id,
                 status: "DELIVERED", // Only allow returns for delivered orders
             },

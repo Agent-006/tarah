@@ -7,7 +7,7 @@ import prisma from "@/lib/db";
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { orderId: string } }
+    { params }: { params: Promise<{ orderId: string }> }
 ) {
     const session = await getServerSession(authOptions);
 
@@ -19,9 +19,10 @@ export async function PATCH(
     }
 
     try {
+        const resolvedParams = await params;
         const order = await prisma.order.update({
             where: {
-                id: params.orderId,
+                id: resolvedParams.orderId,
                 userId: session.user.id,
                 status: "PENDING", // Only allow cancellation for pending orders
             },

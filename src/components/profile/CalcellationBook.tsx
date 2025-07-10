@@ -81,7 +81,6 @@ const CancellationBook = () => {
                                     <div className="relative w-20 h-20">
                                         <Image
                                             src={
-                                                item.variant.images[0]?.url ||
                                                 item.variant.product.images[0]
                                                     ?.url ||
                                                 "/placeholder-product.jpg"
@@ -96,7 +95,7 @@ const CancellationBook = () => {
                                             {item.variant.product.name}
                                         </h3>
                                         <p className="text-sm text-gray-500">
-                                            {item.quantity} × Rs.{" "}
+                                            {item.quantity} x Rs.{" "}
                                             {item.price.toFixed(2)}
                                         </p>
                                         <p className="text-sm text-gray-500">

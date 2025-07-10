@@ -36,7 +36,7 @@ interface OrderStore {
     verifyOrderPayment: (orderId: string) => Promise<void>;
     cancelOrder: (orderId: string) => Promise<void>;
     requestReturn: (orderId: string, itemId: string, reason: string) => Promise<void>;
-    processRefund: (transactionId: string, amount: number, reason?: string) => Promise<void>;
+    processRefund: (transactionId: string | undefined, amount: number, reason?: string) => Promise<void>;
 }
 
 export const useOrderStore = create<OrderStore>((set, get) => ({
@@ -162,8 +162,8 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
             const order = get().orders.find(ord => ord.id === orderId);
             if (order?.paymentStatus === "CAPTURED") {
                 await get().processRefund(
-                    order.transactions[0].id,
-                    order.totalAmount,
+                    undefined,
+                    Number(order.totalAmount),
                     "Order cancelled by user" // Reason for refund
                 );
             }

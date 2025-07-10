@@ -1,16 +1,17 @@
-
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import prisma from "@/lib/db";
 
 
 export async function GET(
-    req: Request,
-    { params }: { params: { slug: string } }
+    req: NextRequest,
+    { params }: { params: Promise<{ slug: string }> }
 ) {
     try {
+        const resolvedParams = await params;
         const post = await prisma.blogPost.findUnique({
-            where: { slug: params.slug },
+            where: { slug: resolvedParams.slug },
             include: {
                 author: { select: { id: true, fullName: true, email: true } },
                 categories: true,
