@@ -16,7 +16,7 @@ const ADMIN_PROTECTED_ROUTES = [
 
 const CUSTOMER_PROTECTED_ROUTES = [
   '/cart', '/wishlist', '/checkout', '/profile', '/orders',
-  '/order[id]', '/settings', '/payment-methods', '/addresses'
+  '/orders/[id]', '/settings', '/payment-methods', '/addresses'
 ];
 
 const SHARED_AUTH_ROUTES = [
@@ -29,6 +29,15 @@ const HOME_ROUTE = '/';
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  
+  console.log('🚀 MIDDLEWARE TRIGGERED for path:', pathname);
+  
+  // Skip middleware for static files and API routes first
+  if (shouldSkipMiddleware(pathname)) {
+    console.log('⏭️ Skipping middleware for:', pathname);
+    return NextResponse.next();
+  }
+
   // ✅ Critical: Allow unauthenticated access to /admin/sign-in
   if (pathname === ADMIN_SIGN_IN_ROUTE) {
     console.log("✅ Allowing unauthenticated access to /admin/sign-in");
@@ -47,26 +56,22 @@ export async function middleware(request: NextRequest) {
   const callback = request.nextUrl.searchParams.get("callbackUrl");
   console.log('Callback URL:', callback);
 
-  // Skip middleware for static files and API routes
-  if (shouldSkipMiddleware(pathname)) {
-    return NextResponse.next();
-  }
-
-  // Public routes
-  if (isPublicRoute(pathname)) {
-    return handlePublicRouteAccess(request, token, pathname);
-  }
-
-  // Admin routes
+  // Check if this is an admin protected route
   if (isAdminRoute(pathname)) {
     return handleAdminRouteAccess(request, token, pathname);
   }
 
-  // Customer protected routes
+  // Check if this is a customer protected route
   if (isCustomerProtectedRoute(pathname)) {
-    return handleCustomerRouteAccess(request, token);
+    return handleCustomerRouteAccess(request, token, pathname);
   }
 
+  // Handle public routes (including auth pages)
+  if (isPublicRoute(pathname)) {
+    return handlePublicRouteAccess(request, token, pathname);
+  }
+
+  // Default: allow access for any other routes
   return NextResponse.next();
 }
 
@@ -108,34 +113,94 @@ function isCustomerProtectedRoute(pathname: string): boolean {
 }
 
 // Route Handlers
-function handlePublicRouteAccess(request: NextRequest, token: any, pathname: string): NextResponse {
+
+function handlePublicRouteAccess(request: NextRequest, token: { role?: string } | null, pathname: string): NextResponse {
   if (token && SHARED_AUTH_ROUTES.includes(pathname)) {
-    const redirectPath = token.role === 'ADMIN' ? ADMIN_PROTECTED_ROUTES[0] : HOME_ROUTE;
-    return NextResponse.redirect(new URL(redirectPath, request.url));
+    // If admin, always redirect to admin dashboard
+    if (token.role === 'ADMIN') {
+      return NextResponse.redirect(new URL(ADMIN_PROTECTED_ROUTES[0], request.url));
+    }
+    // If customer, always redirect to home
+    if (token.role === 'CUSTOMER') {
+      return NextResponse.redirect(new URL(HOME_ROUTE, request.url));
+    }
   }
   return NextResponse.next();
 }
 
-function handleAdminRouteAccess(request: NextRequest, token: any, pathname: string): NextResponse {
-  if (!token || token.role !== 'ADMIN') {
-    // Only allow admins
+
+
+function handleAdminRouteAccess(request: NextRequest, token: { role?: string } | null, pathname: string): NextResponse {
+  console.log('🔒 Admin route access check:', { pathname, hasToken: !!token, role: token?.role });
+  
+  // Block unauthenticated users - redirect to admin sign-in
+  if (!token) {
+    console.log('❌ No token - redirecting to admin sign-in');
     const signInUrl = new URL(ADMIN_SIGN_IN_ROUTE, request.url);
     signInUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signInUrl);
   }
+  
+  // Block customers - redirect to home
+  if (token.role === 'CUSTOMER') {
+    console.log('❌ Customer trying to access admin route - redirecting to home');
+    return NextResponse.redirect(new URL(HOME_ROUTE, request.url));
+  }
+  
+  // Block users with invalid/missing role - redirect to admin sign-in
+  if (token.role !== 'ADMIN') {
+    console.log('❌ Invalid role for admin route - redirecting to admin sign-in');
+    const signInUrl = new URL(ADMIN_SIGN_IN_ROUTE, request.url);
+    signInUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(signInUrl);
+  }
+  
+  // Allow admin access
+  console.log('✅ Admin access granted');
   return NextResponse.next();
 }
 
-function handleCustomerRouteAccess(request: NextRequest, token: any): NextResponse {
-  if (!token || token.role !== 'CUSTOMER') {
-    // Only allow customers
+
+function handleCustomerRouteAccess(request: NextRequest, token: { role?: string } | null, pathname: string): NextResponse {
+  console.log('🛒 Customer route access check:', { pathname, hasToken: !!token, role: token?.role });
+  
+  // Block unauthenticated users - redirect to customer sign-in
+  if (!token) {
+    console.log('❌ No token - redirecting to customer sign-in');
     return NextResponse.redirect(new URL(CUSTOMER_SIGN_IN_ROUTE, request.url));
   }
+  
+  // Block admins - redirect to home
+  if (token.role === 'ADMIN') {
+    console.log('❌ Admin trying to access customer route - redirecting to home');
+    return NextResponse.redirect(new URL(HOME_ROUTE, request.url));
+  }
+  
+  // Block users with invalid/missing role - redirect to customer sign-in
+  if (token.role !== 'CUSTOMER') {
+    console.log('❌ Invalid role for customer route - redirecting to customer sign-in');
+    return NextResponse.redirect(new URL(CUSTOMER_SIGN_IN_ROUTE, request.url));
+  }
+  
+  // Allow customer access
+  console.log('✅ Customer access granted');
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    // Match all paths except static files, images, and API routes
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    // Explicitly include admin routes
+    '/admin/:path*',
+    // Explicitly include customer protected routes
+    '/cart',
+    '/wishlist', 
+    '/checkout',
+    '/profile',
+    '/orders/:path*',
+    '/settings',
+    '/payment-methods',
+    '/addresses'
   ]
 };

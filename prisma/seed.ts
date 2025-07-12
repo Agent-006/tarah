@@ -1,6 +1,5 @@
-import { PrismaClient, PaymentProvider, TransactionStatus, TransactionType, OrderStatus, PaymentStatus } from '@prisma/client';
+import { PrismaClient, PaymentProvider, PaymentStatus, OrderStatus, TransactionStatus, TransactionType } from '@prisma/client';
 import { hash } from 'bcryptjs';
-
 const prisma = new PrismaClient();
 
 async function main() {
@@ -113,7 +112,7 @@ async function main() {
   // console.log('  - Western');
   
 
-  // Clear existing data
+  // // Clear existing data
   // await prisma.productImage.deleteMany();
   // await prisma.variantAttribute.deleteMany();
   // await prisma.productAttribute.deleteMany();
@@ -530,6 +529,7 @@ async function main() {
   //   console.log(`Created product: ${createdProduct.name}`);
   // }
 
+
   // const customer = await prisma.user.findUnique({
   //   where: { email: 'sagarghosh0610@gmail.com' }
   // });
@@ -539,7 +539,7 @@ async function main() {
   // }
 
   // // Get some existing products with their variants
-  // const products = await prisma.product.findMany({
+  // const demoProducts = await prisma.product.findMany({
   //   include: {
   //     variants: {
   //       include: {
@@ -550,7 +550,7 @@ async function main() {
   //   take: 5 // Get first 5 products for demo
   // });
 
-  // if (products.length === 0) {
+  // if (demoProducts.length === 0) {
   //   throw new Error('No products found in database');
   // }
 
@@ -597,7 +597,7 @@ async function main() {
   //     data: {
   //       userId: customer.id,
   //       type: 'UPI',
-  //       provider: 'RAZORPAY',
+  //       provider: PaymentProvider.RAZORPAY,
   //       upiId: 'customer@upi',
   //       isDefault: false,
   //       providerToken: 'upi_' + Math.random().toString(36).substring(2, 15)
@@ -610,9 +610,9 @@ async function main() {
   //   // Completed order
   //   {
   //     userId: customer.id,
-  //     totalAmount: 7498.00,
-  //     subtotal: 6998.00,
-  //     taxAmount: 500.00,
+  //     totalAmount: 7498.0,
+  //     subtotal: 6998.0,
+  //     taxAmount: 500.0,
   //     shippingFee: 0,
   //     status: OrderStatus.DELIVERED,
   //     paymentStatus: PaymentStatus.CAPTURED,
@@ -620,19 +620,19 @@ async function main() {
   //     paymentMethodId: paymentMethods[0].id,
   //     items: [
   //       {
-  //         variantId: products[0].variants[0].id, // First variant of first product
+  //         variantId: demoProducts[0].variants[0].id,
   //         quantity: 1,
-  //         price: 4999.00
+  //         price: 4999.0
   //       },
   //       {
-  //         variantId: products[1].variants[0].id, // First variant of second product
+  //         variantId: demoProducts[1].variants[0].id,
   //         quantity: 1,
-  //         price: 1999.00
+  //         price: 1999.0
   //       }
   //     ],
   //     transactions: [
   //       {
-  //         amount: 7498.00,
+  //         amount: 7498.0,
   //         currency: 'INR',
   //         provider: PaymentProvider.RAZORPAY,
   //         providerId: 'pay_' + Math.random().toString(36).substring(2, 15),
@@ -640,14 +640,14 @@ async function main() {
   //         type: TransactionType.CHARGE
   //       }
   //     ],
-  //     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-  //     updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+  //     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+  //     updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000)
   //   },
   //   // Processing order
   //   {
   //     userId: customer.id,
-  //     totalAmount: 3499.00,
-  //     subtotal: 3499.00,
+  //     totalAmount: 3499.0,
+  //     subtotal: 3499.0,
   //     taxAmount: 0,
   //     shippingFee: 0,
   //     status: OrderStatus.PROCESSING,
@@ -656,14 +656,14 @@ async function main() {
   //     paymentMethodId: paymentMethods[1].id,
   //     items: [
   //       {
-  //         variantId: products[2].variants[0].id,
+  //         variantId: demoProducts[2].variants[0].id,
   //         quantity: 1,
-  //         price: 3499.00
+  //         price: 3499.0
   //       }
   //     ],
   //     transactions: [
   //       {
-  //         amount: 3499.00,
+  //         amount: 3499.0,
   //         currency: 'INR',
   //         provider: PaymentProvider.RAZORPAY,
   //         providerId: 'pay_' + Math.random().toString(36).substring(2, 15),
@@ -671,13 +671,13 @@ async function main() {
   //         type: TransactionType.AUTHORIZE
   //       }
   //     ],
-  //     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
+  //     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
   //   },
   //   // Cancelled order
   //   {
   //     userId: customer.id,
-  //     totalAmount: 2499.00,
-  //     subtotal: 2499.00,
+  //     totalAmount: 2499.0,
+  //     subtotal: 2499.0,
   //     taxAmount: 0,
   //     shippingFee: 0,
   //     status: OrderStatus.CANCELLED,
@@ -686,14 +686,14 @@ async function main() {
   //     paymentMethodId: paymentMethods[0].id,
   //     items: [
   //       {
-  //         variantId: products[3].variants[0].id,
+  //         variantId: demoProducts[3].variants[0].id,
   //         quantity: 1,
-  //         price: 2499.00
+  //         price: 2499.0
   //       }
   //     ],
   //     transactions: [
   //       {
-  //         amount: 2499.00,
+  //         amount: 2499.0,
   //         currency: 'INR',
   //         provider: PaymentProvider.RAZORPAY,
   //         providerId: 'pay_' + Math.random().toString(36).substring(2, 15),
@@ -701,24 +701,23 @@ async function main() {
   //         type: TransactionType.CHARGE
   //       },
   //       {
-  //         amount: 2499.00,
+  //         amount: 2499.0,
   //         currency: 'INR',
   //         provider: PaymentProvider.RAZORPAY,
   //         providerId: 'ref_' + Math.random().toString(36).substring(2, 15),
   //         status: TransactionStatus.SUCCESS,
   //         type: TransactionType.REFUND
-  //         // Removed reason: 'CUSTOMER_REQUEST' as it is not a valid field for Transaction
   //       }
   //     ],
-  //     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-  //     updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000) // 4 days ago
+  //     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+  //     updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000)
   //   },
   //   // Shipped order
   //   {
   //     userId: customer.id,
-  //     totalAmount: 1299.00,
-  //     subtotal: 999.00,
-  //     taxAmount: 300.00,
+  //     totalAmount: 1299.0,
+  //     subtotal: 999.0,
+  //     taxAmount: 300.0,
   //     shippingFee: 0,
   //     status: OrderStatus.SHIPPED,
   //     paymentStatus: PaymentStatus.CAPTURED,
@@ -726,14 +725,14 @@ async function main() {
   //     paymentMethodId: paymentMethods[1].id,
   //     items: [
   //       {
-  //         variantId: products[4].variants[0].id,
+  //         variantId: demoProducts[4].variants[0].id,
   //         quantity: 1,
-  //         price: 999.00
+  //         price: 999.0
   //       }
   //     ],
   //     transactions: [
   //       {
-  //         amount: 1299.00,
+  //         amount: 1299.0,
   //         currency: 'INR',
   //         provider: PaymentProvider.RAZORPAY,
   //         providerId: 'pay_' + Math.random().toString(36).substring(2, 15),
@@ -741,36 +740,56 @@ async function main() {
   //         type: TransactionType.CHARGE
   //       }
   //     ],
-  //     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-  //     updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) // 1 day ago
+  //     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+  //     updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
   //   }
   // ];
 
   // // Create the orders
   // for (const orderData of orders) {
-  //   const { items, transactions, paymentMethodId, ...order } = orderData;
-  //   // Remove paymentMethodId from order creation data
+  //   const { items, transactions, ...orderFields } = orderData;
   //   const createdOrder = await prisma.order.create({
   //     data: {
-  //       ...order,
+  //       ...orderFields,
   //       items: {
-  //         create: items
+  //         create: items.map(item => ({
+  //           variantId: item.variantId,
+  //           quantity: item.quantity,
+  //           price: item.price
+  //         }))
   //       },
   //       transactions: {
-  //         create: transactions
+  //         create: transactions.map(txn => ({
+  //           amount: txn.amount,
+  //           currency: txn.currency,
+  //           provider: txn.provider,
+  //           providerId: txn.providerId,
+  //           status: txn.status,
+  //           type: txn.type
+  //         }))
   //       }
-  //     },
-  //     include: {
-  //       items: true,
-  //       transactions: true
   //     }
   //   });
-
-  //   console.log(`Created order #${createdOrder.id} with status ${createdOrder.status}`);
-  //   console.log(`- Items: ${createdOrder.items.map(i => `${i.quantity}x ₹${i.price}`).join(', ')}`);
-  //   console.log(`- Total: ₹${createdOrder.totalAmount}`);
+  //   console.log(`Created order: ${createdOrder.id}`);
   // }
-  
+
+  // // Add the same image for every product variant
+  // const allVariants = await prisma.productVariant.findMany();
+  // const variantImageUrl = 'https://z5bvwccrbg.ufs.sh/f/7FPxzmKwOTy2jVVgycC9PhBXKD76wcRzQnUoCmfg38lJ5S0e';
+  // await Promise.all(
+  //   allVariants.map(variant =>
+  //     prisma.productImage.create({
+  //       data: {
+  //         variantId: variant.id,
+  //         url: variantImageUrl,
+  //         altText: variant.name,
+  //         isPrimary: true,
+  //         order: 0
+  //       }
+  //     })
+  //   )
+  // );
+
   console.log('✅ Categories seeded successfully!');
 }
 

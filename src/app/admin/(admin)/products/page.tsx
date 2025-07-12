@@ -1,21 +1,35 @@
-// app/admin/products/page.tsx
+"use client";
 
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-import prisma from "@/lib/db";
-import { serializeProduct } from "@/lib/prisma";
 import { ProductList } from "@/components/admin/products/product-list";
 import { Button } from "@/components/ui/button";
+import { useAdminProductStore } from "@/store/admin/adminProductStore";
+import { serializeProduct } from "@/lib/prisma";
 
-export default async function ProductsPage() {
-  const products = await prisma.product.findMany({
-    include: {
-      variants: { select: { id: true } },
-      coverImage: true,
-      categories: { include: { category: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+export default function ProductsPage() {
+  const { data: session, status: sessionStatus } = useSession();
+  const router = useRouter();
+  const { products, fetchProducts } = useAdminProductStore();
+
+  useEffect(() => {
+    if (sessionStatus === "authenticated" && session?.user?.role === "CUSTOMER") {
+      router.replace("/");
+    }
+  }, [sessionStatus, session?.user?.role, router]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  if (sessionStatus === "authenticated" && session?.user?.role === "CUSTOMER") {
+    return null;
+  }
+
+  // Serialize products for ProductList
   const serializedProducts = products.map(serializeProduct);
 
   return (

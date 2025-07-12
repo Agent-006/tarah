@@ -3,27 +3,18 @@
 
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-    adminSignInSchema,
-    TAdminSignInSchema,
-} from "@/schemas/adminSchema/adminSignInSchema";
+import { adminSignInSchema, TAdminSignInSchema } from "@/schemas/adminSchema/adminSignInSchema";
 
 export default function AdminLogin() {
     const router = useRouter();
+    const { data: session, status: sessionStatus } = useSession();
     const form = useForm<TAdminSignInSchema>({
         resolver: zodResolver(adminSignInSchema),
         defaultValues: {
@@ -31,6 +22,14 @@ export default function AdminLogin() {
             password: "",
         },
     });
+
+    // Redirect CUSTOMER role to home
+    if (sessionStatus === "authenticated" && session?.user?.role === "CUSTOMER") {
+        if (typeof window !== "undefined") {
+            router.replace("/");
+        }
+        return null;
+    }
 
     const onSubmit = async (values: TAdminSignInSchema) => {
         const result = await signIn("credentials", {

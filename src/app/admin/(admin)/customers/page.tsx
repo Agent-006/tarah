@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Loader2, Users, TrendingUp, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
@@ -10,6 +11,8 @@ import { DataTable } from "@/components/admin/customers/data-table";
 import { columns, Customer } from "@/components/admin/customers/columns";
 
 const CustomerPage = () => {
+  const { data: session, status: sessionStatus } = useSession();
+  const router = useRouter();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -77,6 +80,12 @@ const CustomerPage = () => {
   };
 
   useEffect(() => {
+    if (sessionStatus === "authenticated" && session?.user?.role === "CUSTOMER") {
+      router.replace("/");
+    }
+  }, [sessionStatus, session?.user?.role, router]);
+
+  useEffect(() => {
     fetchCustomers();
   }, []);
 
@@ -86,6 +95,12 @@ const CustomerPage = () => {
       currency: "INR",
     }).format(amount);
   };
+
+
+  if (sessionStatus === "authenticated" && session?.user?.role === "CUSTOMER") {
+    // Optionally render a loading spinner while redirecting
+    return null;
+  }
 
   if (loading) {
     return (

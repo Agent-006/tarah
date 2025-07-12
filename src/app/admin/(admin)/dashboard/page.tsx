@@ -3,6 +3,8 @@
 
 
 import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OverviewChart } from "@/components/admin/overview-chart";
@@ -11,14 +13,27 @@ import { useAdminOrderStore } from "@/store/admin/adminOrderStore";
 import { useAdminProductStore } from "@/store/admin/adminProductStore";
 
 export default function AdminDashboard() {
-    
+    const { data: session, status: sessionStatus } = useSession();
+    const router = useRouter();
+
     const { orders, fetchOrders } = useAdminOrderStore();
     const { products, fetchProducts } = useAdminProductStore();
+
+    useEffect(() => {
+        if (sessionStatus === "authenticated" && session?.user?.role === "CUSTOMER") {
+            router.replace("/");
+        }
+    }, [sessionStatus, session?.user?.role, router]);
 
     useEffect(() => {
         fetchOrders();
         fetchProducts();
     }, [fetchOrders, fetchProducts]);
+
+    if (sessionStatus === "authenticated" && session?.user?.role === "CUSTOMER") {
+        // Optionally render a loading spinner while redirecting
+        return null;
+    }
 
     const totalRevenue = orders.reduce(
         (sum, order) => sum + Number(order.totalAmount),
@@ -28,10 +43,8 @@ export default function AdminDashboard() {
     const totalOrders = orders.length;
 
     return (
-        // <div>DashboardPage</div>
         <div className="space-y-6">
             <h1 className="text-2xl font-bold">Dashboard</h1>
-
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -116,7 +129,6 @@ export default function AdminDashboard() {
                     </CardContent>
                 </Card>
             </div>
-
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                 <Card className="col-span-4">
                     <CardHeader>

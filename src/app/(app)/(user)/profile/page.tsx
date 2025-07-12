@@ -27,7 +27,7 @@ const sidebarItemInactive =
 
 const ProfilePage = () => {
     const router = useRouter();
-    const { status } = useSession();
+    const { data: session, status } = useSession();
     const { fetchProfile } = useProfileStore();
     const { fetchAddresses } = useAddressStore();
 
@@ -35,12 +35,17 @@ const ProfilePage = () => {
 
     useEffect(() => {
         if (status === "authenticated") {
+            // Block admin from accessing user profile page
+            if (session?.user?.role === "ADMIN") {
+                router.replace("/admin/dashboard");
+                return;
+            }
             fetchProfile();
             fetchAddresses();
         } else if (status === "unauthenticated") {
             router.push("/sign-in");
         }
-    }, [status, fetchProfile, fetchAddresses, router]);
+    }, [status, session?.user?.role, fetchProfile, fetchAddresses, router]);
 
     if (status === "loading") {
         return (

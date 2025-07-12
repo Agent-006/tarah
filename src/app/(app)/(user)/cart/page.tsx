@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Minus, Plus, Trash, Loader2 } from "lucide-react";
@@ -182,7 +183,10 @@ const OrderSummary = ({
 
 // Now define the main CartPage component
 const CartPage = () => {
-    const { status: sessionStatus } = useSession();
+
+    const { data: session, status: sessionStatus } = useSession();
+
+    const router = useRouter();
     const {
         items,
         isLoading,
@@ -192,9 +196,8 @@ const CartPage = () => {
         removeItem,
         updateQuantity,
         clearCart,
+        setUserId,
     } = useCartStore();
-
-    console.log(items);
 
     const [promoCode, setPromoCode] = useState("");
     const [discountApplied, setDiscountApplied] = useState(false);
@@ -209,12 +212,16 @@ const CartPage = () => {
     const delivery = subtotal === 0 ? 0 : 15;
     const total = subtotal - discount + delivery;
 
-    // Initialize cart when session is available
+    // Initialize cart and set userId when session changes
     useEffect(() => {
-        if (sessionStatus === "authenticated") {
-            initializeCart();
+        if (sessionStatus === "authenticated" && session?.user?.id) {
+            setUserId(session.user.id);
+            initializeCart(session.user.id);
+        } else if (sessionStatus === "unauthenticated") {
+            setUserId(null);
+            initializeCart(null);
         }
-    }, [sessionStatus, initializeCart]);
+    }, [sessionStatus, session?.user?.id, setUserId, initializeCart]);
 
     const handleApplyPromo = () => {
         if (promoCode.toLowerCase() === "save20") {
@@ -283,7 +290,24 @@ const CartPage = () => {
         }
     };
 
+
+    // Always call hooks at the top level
+    useEffect(() => {
+        if (sessionStatus === "authenticated" && session?.user?.role === "ADMIN") {
+            router.replace("/admin/dashboard");
+        }
+    }, [sessionStatus, session?.user?.role, router]);
+
     if (sessionStatus === "loading" || isLoading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <Loader2 className="w-12 h-12 animate-spin" />
+            </div>
+        );
+    }
+
+    if (sessionStatus === "authenticated" && session?.user?.role === "ADMIN") {
+        // Render a loading spinner while redirecting
         return (
             <div className="flex items-center justify-center h-screen">
                 <Loader2 className="w-12 h-12 animate-spin" />

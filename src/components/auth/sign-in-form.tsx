@@ -1,11 +1,16 @@
 "use client";
 
-import { signInSchema, TSignInSchema } from "@/schemas/signInSchema";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { signIn } from "next-auth/react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+
+import { signInSchema, TSignInSchema } from "@/schemas/signInSchema";
+
 import {
     Form,
     FormControl,
@@ -15,9 +20,7 @@ import {
     FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
-import { signIn } from "next-auth/react";
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
 
 const SignInForm = () => {
     const router = useRouter();
@@ -45,8 +48,20 @@ const SignInForm = () => {
             }
 
             if (signInResponse?.ok) {
+                // Fetch session to get user role
+                const res = await fetch("/api/auth/session");
+                const session = await res.json();
+                let redirectTo = callbackUrl;
+                if (session?.user?.role === "ADMIN") {
+                    redirectTo = "/admin/dashboard";
+                } else if (session?.user?.role === "CUSTOMER") {
+                    // If callbackUrl is an admin route, force home
+                    if (callbackUrl.startsWith("/admin")) {
+                        redirectTo = "/";
+                    }
+                }
                 toast.success("Sign in successful!");
-                router.push(callbackUrl);
+                router.push(redirectTo);
                 router.refresh();
             }
         } catch (error) {

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Loader2, Share2, ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,22 +27,23 @@ type CartItemInput = {
 };
 
 export default function WishlistPage() {
-    const { data: session } = useSession();
-    const { items, isLoading, error, fetchWishlist, removeFromWishlist } =
-        useWishlistStore();
-
-    const [addingToCart, setAddingToCart] = useState<Record<string, boolean>>(
-        {}
-    );
+    const { data: session, status } = useSession();
+    const router = useRouter();
+    const { items, isLoading, error, fetchWishlist, removeFromWishlist } = useWishlistStore();
+    const [addingToCart, setAddingToCart] = useState<Record<string, boolean>>({});
     const { addItem } = useCartStore();
 
     useEffect(() => {
-        if (session) {
+        if (status === "authenticated") {
+            if (session?.user?.role === "ADMIN") {
+                router.replace("/admin/dashboard");
+                return;
+            }
             fetchWishlist();
         }
-    }, [session, fetchWishlist]);
+    }, [status, session?.user?.role, fetchWishlist, router]);
 
-    if (!session) {
+    if (status === "unauthenticated") {
         return (
             <div className="flex flex-col items-center justify-start min-h-screen py-8 text-center bg-secondary">
                 <h2 className="text-2xl font-bold mb-4">

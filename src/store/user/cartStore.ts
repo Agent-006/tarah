@@ -19,7 +19,9 @@ type CartState = {
     items: CartItem[];
     isLoading: boolean;
     error: string | null;
-    initializeCart: () => Promise<void>;
+    userId: string | null;
+    setUserId: (userId: string | null) => void;
+    initializeCart: (userId: string | null) => Promise<void>;
     syncWithDatabase: () => Promise<void>;
     addItem: (item: Omit<CartItem, 'id'>) => Promise<void>;
     removeItem: (productId: string, variantId: string) => Promise<void>;
@@ -27,16 +29,25 @@ type CartState = {
     clearCart: () => Promise<void>;
 }
 
-export const useCartStore = create<CartState> () (
+export const useCartStore = create<CartState>()(
     persist(
         (set, get) => ({
             items: [],
             isLoading: false,
             error: null,
+            userId: null,
+            setUserId: (userId) => set({ userId }),
 
-            initializeCart: async () => {
-                if (get().items.length === 0) {
+            // Always sync with DB on login, and clear cart if userId changes
+            initializeCart: async (userId) => {
+                const prevUserId = get().userId;
+                if (prevUserId !== userId) {
+                    set({ items: [], userId });
+                }
+                if (userId) {
                     await get().syncWithDatabase();
+                } else {
+                    set({ items: [] });
                 }
             },
 
@@ -192,26 +203,33 @@ export const useCartStore = create<CartState> () (
             }
         }),
         {
-            name: 'cart-storage', // unique name for the storage
-            partialize: (state) => ({ items: state.items }), // only persist items
-            // Add version to handle future migrations
+            name: 'cart-storage',
+            partialize: (state) => ({ items: state.items }),
             version: 1,
             migrate: (persistedState, version) => {
                 if (version === 0) {
-                // Migration from v0 to v1
-                return { 
-                    ...persistedState as any,
-                    items: (persistedState as any).items.map((item: any) => ({
-                    ...item,
-                    variantId: item.variantId || 'default-variant' // Add default if missing
-                    }))
-                };
+                    return {
+                        ...(persistedState as Record<string, unknown>),
+                        items: ((persistedState as unknown as { items: unknown[] }).items).map((item: unknown) => ({
+                            ...(item as Record<string, unknown>),
+                            variantId: (item as Record<string, unknown>).variantId || 'default-variant'
+                        }))
+                    };
                 }
-                return persistedState as CartState;
+                return persistedState as typeof persistedState;
+            },
+            storage: {
+                getItem: (name) => {
+                    const value = localStorage.getItem(name);
+                    return value ? JSON.parse(value) : null;
+                },
+                setItem: (name, value) => {
+                    localStorage.setItem(name, JSON.stringify(value));
+                },
+                removeItem: (name) => {
+                    localStorage.removeItem(name);
+                }
             }
         }
     )
 );
-
-// Initialize the cart store when the application starts
-useCartStore.getState().initializeCart();
