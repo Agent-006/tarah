@@ -9,15 +9,25 @@ import {
     CarouselContent,
     CarouselItem,
 } from "@/components/ui/carousel";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
-const carauselItemList = [
+const desktopImages = [
     "/assets/hero_banner_1.jpg",
     "/assets/hero_banner_2.jpg",
     "/assets/hero_banner_3.jpg",
 ];
 
+const mobileImages = [
+    "/assets/hero_banner_1_mobile.jpg",
+    "/assets/hero_banner_2_mobile.jpg",
+    "/assets/hero_banner_3_mobile.jpg",
+];
+
 const Hero = () => {
+    const isMobile = useMediaQuery("(max-width: 768px)"); // Adjust breakpoint as needed
+    const images = isMobile ? mobileImages : desktopImages;
     const plugin = React.useRef(Autoplay({ delay: 2000 }));
+
     return (
         <section className="w-full h-[800px] md:h-[688px] relative">
             <Carousel
@@ -26,7 +36,7 @@ const Hero = () => {
                 onMouseLeave={plugin.current.reset}
             >
                 <CarouselContent>
-                    {carauselItemList.map((src, index) => (
+                    {images.map((src, index) => (
                         <CarouselItem key={index}>
                             <div className="w-full h-[800px] md:h-[688px] relative">
                                 <h1 className="absolute z-10 top-1/3 left-4 md:left-1/12 text-secondary text-3xl md:text-7xl w-11/12 md:w-xl">
