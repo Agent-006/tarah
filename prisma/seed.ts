@@ -1,116 +1,122 @@
-import { PrismaClient, PaymentProvider, PaymentStatus, OrderStatus, TransactionStatus, TransactionType } from '@prisma/client';
-import { hash } from 'bcryptjs';
+import {
+  PrismaClient,
+  PaymentProvider,
+  PaymentStatus,
+  OrderStatus,
+  TransactionStatus,
+  TransactionType,
+} from "@prisma/client";
+import { hash } from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
   // Seed admin user
-    // const adminEmail = 'admin@example.com';
-    // const adminPassword = await hash('SecurePassword123!', 12);
+  const adminEmail = "admin@example.com";
+  const adminPassword = await hash("SecurePassword123!", 12);
 
-    // const adminUser = await prisma.user.upsert({
-    //     where: { email: adminEmail },
-    //     update: {},
-    //     create: {
-    //         email: adminEmail,
-    //         password: adminPassword,
-    //         firstName: 'Admin',
-    //         lastName: 'User',
-    //         fullName: 'Admin User',
-    //         role: 'ADMIN'
-    //     }
-    // });
+  const adminUser = await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {},
+    create: {
+      email: adminEmail,
+      password: adminPassword,
+      firstName: "Admin",
+      lastName: "User",
+      fullName: "Admin User",
+      role: "ADMIN",
+    },
+  });
 
-    // console.log('Seeded admin user:', adminUser);
+  console.log("Seeded admin user:", adminUser);
 
-    console.log('🌱 Seeding categories...');
+  console.log("🌱 Seeding categories...");
 
-  // // Clear existing categories (optional - remove if you want to keep existing data)
+  // Clear existing categories (optional - remove if you want to keep existing data)
   // await prisma.category.deleteMany();
 
-  // // Create parent categories
-  // const newArrivals = await prisma.category.create({
-  //   data: {
-  //     name: 'New Arrivals',
-  //     slug: 'new-arrivals',
-  //     featured: true,
-  //     description: 'Our latest fashion arrivals'
-  //   }
-  // });
+  // Create parent categories
+  const newArrivals = await prisma.category.create({
+    data: {
+      name: "New Arrivals",
+      slug: "new-arrivals",
+      featured: true,
+      description: "Our latest fashion arrivals",
+    },
+  });
 
-  // const jewellery = await prisma.category.create({
-  //   data: {
-  //     name: 'Jewellery & Accessories',
-  //     slug: 'jewellery-accessories',
-  //     description: 'Beautiful jewellery and fashion accessories'
-  //   }
-  // });
+  const jewellery = await prisma.category.create({
+    data: {
+      name: "Jewellery & Accessories",
+      slug: "jewellery-accessories",
+      description: "Beautiful jewellery and fashion accessories",
+    },
+  });
 
-  // const indian = await prisma.category.create({
-  //   data: {
-  //     name: 'Indian',
-  //     slug: 'indian',
-  //     description: 'Traditional Indian clothing and wear'
-  //   }
-  // });
+  const indian = await prisma.category.create({
+    data: {
+      name: "Indian",
+      slug: "indian",
+      description: "Traditional Indian clothing and wear",
+    },
+  });
 
-  // const western = await prisma.category.create({
-  //   data: {
-  //     name: 'Western',
-  //     slug: 'western',
-  //     description: 'Contemporary western fashion'
-  //   }
-  // });
+  const western = await prisma.category.create({
+    data: {
+      name: "Western",
+      slug: "western",
+      description: "Contemporary western fashion",
+    },
+  });
 
-  // const nightDress = await prisma.category.create({
-  //   data: {
-  //     name: 'Night Dress',
-  //     slug: 'night-dress',
-  //     description: 'Comfortable nightwear and sleepwear'
-  //   }
-  // });
+  const nightDress = await prisma.category.create({
+    data: {
+      name: "Night Dress",
+      slug: "night-dress",
+      description: "Comfortable nightwear and sleepwear",
+    },
+  });
 
-  // const maaBeti = await prisma.category.create({
-  //   data: {
-  //     name: 'माँ + Beti',
-  //     slug: 'maa-beti',
-  //     description: 'Matching outfits for mothers and daughters'
-  //   }
-  // });
+  const maaBeti = await prisma.category.create({
+    data: {
+      name: "माँ + Beti",
+      slug: "maa-beti",
+      description: "Matching outfits for mothers and daughters",
+    },
+  });
 
-  // // Create Plus Size category with subcategories
-  // const plusSize = await prisma.category.create({
-  //   data: {
-  //     name: 'Plus Size',
-  //     slug: 'plus-size',
-  //     description: 'Fashion for plus size women',
-  //     children: {
-  //       create: [
-  //         {
-  //           name: 'Indian',
-  //           slug: 'plus-size-indian',
-  //           description: 'Traditional Indian wear in plus sizes'
-  //         },
-  //         {
-  //           name: 'Western',
-  //           slug: 'plus-size-western',
-  //           description: 'Western fashion in plus sizes'
-  //         }
-  //       ]
-  //     }
-  //   }
-  // });
+  // Create Plus Size category with subcategories
+  const plusSize = await prisma.category.create({
+    data: {
+      name: "Plus Size",
+      slug: "plus-size",
+      description: "Fashion for plus size women",
+      children: {
+        create: [
+          {
+            name: "Indian",
+            slug: "plus-size-indian",
+            description: "Traditional Indian wear in plus sizes",
+          },
+          {
+            name: "Western",
+            slug: "plus-size-western",
+            description: "Western fashion in plus sizes",
+          },
+        ],
+      },
+    },
+  });
 
-  // console.log('Successfully seeded categories:');
-  // console.log('- New Arrivals');
-  // console.log('- Jewellery & Accessories');
-  // console.log('- Indian');
-  // console.log('- Western');
-  // console.log('- Night Dress');
-  // console.log('- माँ + Beti');
-  // console.log('- Plus Size');
-  // console.log('  - Indian');
-  // console.log('  - Western');
-  
+  console.log("Successfully seeded categories:");
+  console.log("- New Arrivals");
+  console.log("- Jewellery & Accessories");
+  console.log("- Indian");
+  console.log("- Western");
+  console.log("- Night Dress");
+  console.log("- माँ + Beti");
+  console.log("- Plus Size");
+  console.log("  - Indian");
+  console.log("  - Western");
 
   // // Clear existing data
   // await prisma.productImage.deleteMany();
@@ -529,7 +535,6 @@ async function main() {
   //   console.log(`Created product: ${createdProduct.name}`);
   // }
 
-
   // const customer = await prisma.user.findUnique({
   //   where: { email: 'sagarghosh0610@gmail.com' }
   // });
@@ -790,14 +795,14 @@ async function main() {
   //   )
   // );
 
-  console.log('✅ Categories seeded successfully!');
+  console.log("✅ Categories seeded successfully!");
 }
 
 main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

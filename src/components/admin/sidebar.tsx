@@ -7,6 +7,7 @@ import {
     Package,
     ShoppingCart,
     Users,
+    Shirt,
     SettingsIcon,
     LogOut,
 } from "lucide-react";
@@ -39,6 +40,11 @@ export function AdminSidebar() {
             icon: Users,
             label: "Customers",
         },
+        {
+            href:"/admin/categories",
+            icon: Shirt,
+            label: "Categories",
+        }
     ];
 
     return (
