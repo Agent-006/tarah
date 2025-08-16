@@ -35,9 +35,16 @@ export const useCategories = () => {
         const { data } = await axios.get("/api/admin/categories");
         setCategories(data);
       } catch (error) {
-        setError(
-          error instanceof Error ? error.message : "Failed to fetch categories"
-        );
+        console.error("Error fetching categories:", error);
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          setError("Please sign in as an admin to access categories");
+        } else {
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch categories"
+          );
+        }
       } finally {
         setIsLoading(false);
       }

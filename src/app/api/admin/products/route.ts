@@ -85,6 +85,32 @@ export async function POST(request: Request) {
     const validatedData = adminProductsSchema.parse(body);
     console.log("Validated data:", JSON.stringify(validatedData, null, 2));
 
+    // Validate that all category IDs exist before creating the product
+    if (validatedData.categories && validatedData.categories.length > 0) {
+      const existingCategories = await prisma.category.findMany({
+        where: {
+          id: {
+            in: validatedData.categories,
+          },
+        },
+        select: { id: true, name: true },
+      });
+
+      console.log("Requested category IDs:", validatedData.categories);
+      console.log("Found categories:", existingCategories);
+
+      if (existingCategories.length !== validatedData.categories.length) {
+        const foundIds = existingCategories.map((c) => c.id);
+        const missingIds = validatedData.categories.filter(
+          (id) => !foundIds.includes(id)
+        );
+        return NextResponse.json(
+          { error: `Categories not found: ${missingIds.join(", ")}` },
+          { status: 400 }
+        );
+      }
+    }
+
     const product = await prisma.product.create({
       data: {
         name: validatedData.name,
@@ -284,7 +310,10 @@ export async function PUT(request: Request) {
           await prisma.variantAttribute.deleteMany({
             where: { variantId: variant.id },
           });
-          if (variant.variantAttributes && variant.variantAttributes.length > 0) {
+          if (
+            variant.variantAttributes &&
+            variant.variantAttributes.length > 0
+          ) {
             await prisma.variantAttribute.createMany({
               data: variant.variantAttributes.map((attr) => ({
                 variantId: variant.id!,
@@ -328,7 +357,8 @@ export async function PUT(request: Request) {
               ...newVariantData,
               product: { connect: { id: validatedData.id } },
               variantAttributes:
-                variant.variantAttributes && variant.variantAttributes.length > 0
+                variant.variantAttributes &&
+                variant.variantAttributes.length > 0
                   ? {
                       create: variant.variantAttributes.map((attr) => ({
                         name: attr.name,

@@ -395,7 +395,15 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
                 ) : categoriesError ? (
                   <div className="flex items-center p-4 border border-red-200 rounded-md bg-red-50">
                     <span className="text-red-600 text-sm">
-                      Error loading categories: {categoriesError}
+                      {categoriesError?.includes("sign in") ? (
+                        <>
+                          <strong>Authentication Required:</strong>
+                          <br />
+                          Please sign in as an admin to load categories.
+                        </>
+                      ) : (
+                        <>Error loading categories: {categoriesError}</>
+                      )}
                     </span>
                   </div>
                 ) : (
