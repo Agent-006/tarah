@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
-
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -34,6 +33,8 @@ export default function AdminBlogList() {
             </div>
         );
     }
+
+    console.log(allPosts);
 
     return (
         <Table>

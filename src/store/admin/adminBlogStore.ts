@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
 import { BlogPost, BlogCategory, BlogTag } from '@prisma/client';
-
 import { deleteImage } from '@/lib/uploadthing';
 
 export interface BlogPostWithRelations extends BlogPost {
@@ -65,7 +64,7 @@ export const useAdminBlogStore = create<BlogState>((set) => ({
         try {
             const response = await axios.get('/api/admin/blog/posts');
             set({
-                allPosts: response.data,
+                allPosts: response.data.posts,
             });
         } catch (error) {
             set({
