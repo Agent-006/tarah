@@ -1,17 +1,34 @@
-// import BlogPost from "@/components/blog/BlogPost";
+import prisma from "@/lib/db";
+import ClientPost from "./post-client";
 
-// export default function BlogPostPage({ params }: { params: { slug: string } }) {
-//     return (
-//         <section className="bg-secondary flex flex-col items-center justify-center min-h-screen p-4">
-//             <BlogPost params={params} />
-//         </section>
-//     );
-// }
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const post = await prisma.blogPost.findUnique({ where: { slug: params.slug } });
+  if (!post) return { title: "Post not found" };
 
-import React from "react";
+  const title = post.seoTitle || post.title;
+  const description = post.seoDescription || post.excerpt || undefined;
+  const image = post.ogImage || post.coverImage || undefined;
 
-const BlogPostPage = () => {
-    return <div>BlogPostPage</div>;
-};
+  return {
+    title,
+    description,
+    keywords: post.seoKeywords,
+    openGraph: {
+      title,
+      description,
+      images: image ? [{ url: image }] : undefined,
+      type: "article",
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
 
-export default BlogPostPage;
+export default function Page({ params }: { params: { slug: string } }) {
+  // Render with client component to reuse your Zustand store + layout
+  return <ClientPost slug={params.slug} />;
+}

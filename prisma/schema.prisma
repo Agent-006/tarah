@@ -303,15 +303,15 @@ model BlogTag {
 model BlogView {
   id        String   @id @default(uuid())
   postId    String
+  userId    String?
   ipAddress String
   userAgent String?
   createdAt DateTime @default(now())
-  userId    String?
   post      BlogPost @relation(fields: [postId], references: [id])
   user      User?    @relation(fields: [userId], references: [id])
 
-  @@index([ipAddress])
   @@index([postId])
+  @@index([ipAddress])
 }
 
 enum Role {

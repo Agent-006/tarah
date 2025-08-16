@@ -1,129 +1,146 @@
+// app/api/blog/posts/route.ts
 
-
-
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { NextResponse } from "next/server";
 
-import { blogPostSchema } from "@/schemas/blog/blogSchema";
 import prisma from "@/lib/db";
 
-import { authOptions } from "../../auth/[...nextauth]/options";
+const listQuery = z.object({
+    page: z.coerce.number().min(1).default(1),
+    limit: z.coerce.number().min(1).max(50).default(9),
+    category: z.string().optional(),
+    tag: z.string().optional(),
+    search: z.string().optional(),
+    sort: z.enum(["latest", "views"]).default("latest"),
+    published: z.enum(["true", "false"]).optional(), // optional filter for admin
+});
 
-export async function GET(req: Request) {
-    try {
-        const { searchParams } = new URL(req.url);
-        const page = parseInt(searchParams.get("page") || "1");
-        const limit = parseInt(searchParams.get("limit") || "10");
-        const category = searchParams.get("category") || "";
-        const tag = searchParams.get("tag") || "";
-        const search = searchParams.get("search") || "";
+// list query for /api/blog/posts
+export async function GET(req: NextRequest) {
+    const q = listQuery.parse(Object.fromEntries(req.nextUrl.searchParams));
 
-        const skip = (page - 1) * limit;
+    const where: any = {};
 
-        // Filter directly on categories and tags arrays
-        const where: Record<string, unknown> = {
-            published: true,
-            ...(category && {
-                categories: { some: { slug: category } },
-            }),
-            ...(tag && {
-                tags: { some: { slug: tag } },
-            }),
-            ...(search && {
-                OR: [
-                    { title: { contains: search, mode: "insensitive" } },
-                    { excerpt: { contains: search, mode: "insensitive" } },
-                ],
-            }),
-        };
-
-        const [posts, total] = await Promise.all([
-            prisma.blogPost.findMany({
-                where,
-                include: {
-                    author: { select: { id: true, fullName: true } },
-                    categories: true,
-                    tags: true,
-                },
-                orderBy: { publishedAt: "desc" },
-                skip,
-                take: limit,
-            }),
-            prisma.blogPost.count({
-                where,
-            }),
-        ]);
-
-        return NextResponse.json({
-            data: posts,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            },
-        });
-    } catch (error) {
-        console.error("Failed to fetch blog posts:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch blog posts" },
-            { status: 500 }
-        );
+    if (q.published === "true") {
+        where.published = true;
     }
+    if (q.published === "false") {
+        where.published = false;
+    }
+    if (q.search) {
+        where.OR = [
+            { title: { contains: q.search, mode: "insensitive" } },
+            { excerpt: { contains: q.search, mode: "insensitive" } },
+        ];
+    }
+    if (q.category) {
+        where.categories = { some: { slug: q.category } };
+    }
+    if (q.tag) {
+        where.tags = { some: { slug: q.tag } };
+    }
+
+    const orderBy =
+        q.sort === "views"
+            ? { views: { _count: "desc" } }
+            : { publishedAt: "desc" as const };
+
+    const [total, posts] = await Promise.all([
+        prisma.blogPost.count({ where }),
+        prisma.blogPost.findMany({
+            where,
+            orderBy: orderBy as any, // Casting to any to bypass the type error
+            skip: (q.page - 1) * q.limit,
+            take: q.limit,
+            include: {
+                author: { select: { id: true, fullName: true } },
+                categories: true,
+                tags: true,
+                _count: { select: { views: true } },
+            },
+        }),
+    ]);
+
+    const meta = {
+        total,
+        page: q.page,
+        limit: q.limit,
+        pages: Math.ceil(total / q.limit),
+    };
+
+    return NextResponse.json({
+        posts,
+        meta
+    });
 }
 
-export async function POST(req: Request) {
-    const session = await getServerSession(authOptions);
+// FIXME: this endpoint should be in admin routes
+// Create or update blog post schema
+const backlinkItem = z.object({
+    url: z.string().url("Invalid URL"),
+    text: z.string().min(1, "Text cannot be empty"),
+});
 
-    if (!session?.user || session.user.role !== "ADMIN") {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+const postBody = z.object({
+    title: z.string().min(3),
+    slug: z.string().min(3),
+    excerpt: z.string().optional(),
+    content: z.any(), // tiptap/editor.js JSON
+    coverImage: z.string().url().optional(),
+    ogImage: z.string().url().optional(),
+    published: z.boolean().optional(),
+    publishedAt: z.string().datetime().optional(),
+    authorId: z.string().min(1),
 
+    seoTitle: z.string().optional(),
+    seoDescription: z.string().optional(),
+    seoKeywords: z.string().optional(),
+    backlinks: z.array(backlinkItem).optional(),
+
+    categorySlugs: z.array(z.string()).optional(),
+    tagSlugs: z.array(z.string()).optional(), 
+})
+
+export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
-        const data = blogPostSchema.parse(body);
+        const data = postBody.parse(await req.json());
 
-        const post = await prisma.blogPost.create({
+        const created = await prisma.blogPost.create({
             data: {
                 title: data.title,
                 slug: data.slug,
                 excerpt: data.excerpt,
                 content: data.content,
                 coverImage: data.coverImage,
-                published: data.published,
-                publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
-                author: { connect: { id: session.user.id } },
+                ogImage: data.ogImage,
+                published: data.published ?? false,
+                publishedAt: data.published ? data.publishedAt ? new Date(data.publishedAt) : new Date() : null,
+                authorId: data.authorId,
                 seoTitle: data.seoTitle,
                 seoDescription: data.seoDescription,
-                ...(data.categories && {
-                    categories: {
-                        connect: data.categories.map((catId) => ({
-                            id: catId,
-                        })),
-                    },
-                }),
-                ...(data.tags && {
-                    tags: {
-                        connect: data.tags.map((tagId) => ({
-                            id: tagId,
-                        })),
-                    },
-                }),
+                seoKeywords: data.seoKeywords,
+                backlinks: data.backlinks ? data.backlinks : undefined,
+                categories: data.categorySlugs?.length
+                    ? { connect: data.categorySlugs.map(slug => ({ slug })) }
+                    : undefined,
+                tags: data.tagSlugs?.length
+                    ? { connect: data.tagSlugs.map(slug => ({ slug })) }
+                    : undefined,
+            },
+            include: {
+                author: { select: { id: true, fullName: true } },
+                categories: true,
+                tags: true,
+                _count: { select: { views: true } },
             },
         });
 
-        return NextResponse.json(post, { status: 201 });
-    } catch (error) {
-        if (error instanceof z.ZodError) {
-            return NextResponse.json(
-                { error: "Invalid data", details: error.errors },
-                { status: 400 }
-            );
-        }
         return NextResponse.json(
-            { error: "Failed to create blog post" },
-            { status: 500 }
+            created, 
+            { status: 201 }
         );
+
+    } catch (error: any) {
+        return NextResponse.json({ message: error.message ?? "Invalid data" }, { status: 400 });
     }
 }

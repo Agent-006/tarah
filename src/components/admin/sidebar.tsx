@@ -10,11 +10,14 @@ import {
     Shirt,
     SettingsIcon,
     LogOut,
+    Book,
 } from "lucide-react";
-import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
-import { Separator } from "../ui/separator";
 import { signOut } from "next-auth/react";
+
+import { cn } from "@/lib/utils";
+
+import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
 
 export function AdminSidebar() {
     const pathname = usePathname();
@@ -44,7 +47,12 @@ export function AdminSidebar() {
             href:"/admin/categories",
             icon: Shirt,
             label: "Categories",
-        }
+        },
+        {
+            href: "/admin/blogs",
+            icon: Book,
+            label: "Blogs",
+        },
     ];
 
     return (

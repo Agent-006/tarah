@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
 import { BlogPost, BlogCategory, BlogTag } from '@prisma/client';
+
 import { deleteImage } from '@/lib/uploadthing';
 
 export interface BlogPostWithRelations extends BlogPost {

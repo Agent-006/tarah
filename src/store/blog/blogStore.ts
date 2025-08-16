@@ -40,7 +40,7 @@ interface BlogState {
     fetchPostBySlug: (slug: string) => Promise<void>;
     fetchPopularPosts: () => Promise<void>;
     clearCurrentPost: () => void;
-    incrementViewCount: (slug: string) => Promise<void>;
+    incrementViewCount: (slug: string) => Promise<number>;
 }
 
 export const useBlogStore = create<BlogState>((set) => ({
@@ -60,7 +60,7 @@ export const useBlogStore = create<BlogState>((set) => ({
         set({ isLoading: true, error: null });
 
         try {
-            const { page = 1, limit = 9, category, tag, search } = params;
+            const { page = 1, limit = 9, category, tag, search } = params as any;
 
             const response = await axios.get('/api/blog/posts', {
                 params: {
@@ -75,7 +75,6 @@ export const useBlogStore = create<BlogState>((set) => ({
             set({
                 posts: response.data.posts,
                 meta: response.data.meta,
-                isLoading: false,
             });
         } catch (error) {
             set({ 
@@ -116,11 +115,10 @@ export const useBlogStore = create<BlogState>((set) => ({
                 params: {
                     limit: 3, 
                     sort: 'views', 
+                    published: 'true',
                 },
             });
-            set({
-                popularPosts: response.data.data,
-            });
+            set({ popularPosts: response.data.posts });
         } catch (error) {
             set({
                 error: axios.isAxiosError(error) 
@@ -139,13 +137,16 @@ export const useBlogStore = create<BlogState>((set) => ({
     incrementViewCount: async (slug: string) => {
         try {
             set({ isLoading: true, error: null });
-            await axios.post(`/api/blog/posts/${slug}/views`);
+            const response = await axios.post(`/api/blog/posts/${slug}/views`);
+
+            return response.data.views as number;
         } catch (error) {
             set({ 
                 error: axios.isAxiosError(error) 
                     ? error.response?.data.message || error.message
                     : 'An unexpected error occurred while incrementing view count.',
             });
+            return 0; // Return 0 on error to indicate no views were recorded
         } finally {
             set({ isLoading: false });
         }
