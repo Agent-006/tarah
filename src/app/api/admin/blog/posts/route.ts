@@ -9,7 +9,31 @@ import prisma from "@/lib/db";
 // Get all blog posts
 export async function GET() {
     try {
-        const posts = await prisma.blogPost.findMany();
+        const posts = await prisma.blogPost.findMany({
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        fullName: true,
+                    }
+                },
+                views: {
+                    select: {
+                        id: true,
+                    }
+                },
+                categories: true,
+                tags: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
 
         if (!posts || posts.length === 0) {
             return NextResponse.json({
@@ -23,7 +47,10 @@ export async function GET() {
             message: "Blog posts fetched successfully"
         });
 
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message || "Failed to fetch blog posts" });
+    } catch (error: unknown) {
+        console.error('Error fetching blog posts:', error);
+        return NextResponse.json({ 
+            error: error instanceof Error ? error.message : "Failed to fetch blog posts" 
+        }, { status: 500 });
     }
 }
