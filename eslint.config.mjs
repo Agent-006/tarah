@@ -28,7 +28,7 @@ const eslintConfig = [
                         "sibling",
                         "index",
                     ],
-                    "newlines-between": "always",
+                    "newlines-between": "never",
                 },
             ],
         },

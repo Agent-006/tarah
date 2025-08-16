@@ -27,6 +27,13 @@ export default function AdminBlogList() {
     if (error) {
         return <div className="p-8 text-red-600">{error}</div>;
     }
+    if (allPosts.length === 0) {
+        return (
+            <div className="p-8 text-center text-muted-foreground">
+                No blog post yet
+            </div>
+        );
+    }
 
     return (
         <Table>
