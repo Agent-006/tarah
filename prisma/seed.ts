@@ -29,147 +29,126 @@ async function main() {
   //   },
   // });
 
-    // --- Authors ---
-  const author1 = await prisma.author.upsert({
-    where: { name: "Sagar Gope" },
-    update: {},
-    create: {
-      name: "Sagar Gope",
-      bio: "Full Stack Developer and blogger sharing insights on tech.",
-      avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg",
-    },
+  const categories = await prisma.blogCategory.createMany({
+    data: [
+      { id: uuid(), name: "Technology", slug: "technology", description: "Latest updates in tech and software." },
+      { id: uuid(), name: "Lifestyle", slug: "lifestyle", description: "Tips on living a better life." },
+      { id: uuid(), name: "Productivity", slug: "productivity", description: "Work smarter, not harder." },
+    ],
+    skipDuplicates: true,
   });
 
-  const author2 = await prisma.author.upsert({
-    where: { name: "Sneha Roy" },
-    update: {},
-    create: {
-      name: "Sneha Roy",
-      bio: "Tech writer passionate about web dev and AI.",
-      avatarUrl: "https://randomuser.me/api/portraits/women/45.jpg",
-    },
+  // Seed Tags
+  const tags = await prisma.blogTag.createMany({
+    data: [
+      { id: uuid(), name: "Next.js", slug: "nextjs" },
+      { id: uuid(), name: "React", slug: "react" },
+      { id: uuid(), name: "Prisma", slug: "prisma" },
+      { id: uuid(), name: "Wellness", slug: "wellness" },
+      { id: uuid(), name: "Habits", slug: "habits" },
+    ],
+    skipDuplicates: true,
   });
 
-  // --- Categories ---
-  const categoryWeb = await prisma.blogCategory.upsert({
-    where: { slug: "web-development" },
-    update: {},
-    create: {
-      name: "Web Development",
-      slug: "web-development",
-      description: "Articles about modern web technologies and frameworks.",
-    },
-  });
+  // Get one user (replace with your actual seeded user id)
+  const author = await prisma.user.findFirst();
+  if (!author) {
+    throw new Error("No users found. Please seed a User first.");
+  }
 
-  const categoryAI = await prisma.blogCategory.upsert({
-    where: { slug: "artificial-intelligence" },
-    update: {},
-    create: {
-      name: "Artificial Intelligence",
-      slug: "artificial-intelligence",
-      description: "AI, ML, and everything in between.",
-    },
-  });
+  // Fetch categories and tags for relations
+  const techCategory = await prisma.blogCategory.findUnique({ where: { slug: "technology" } });
+  const lifestyleCategory = await prisma.blogCategory.findUnique({ where: { slug: "lifestyle" } });
+  const productivityCategory = await prisma.blogCategory.findUnique({ where: { slug: "productivity" } });
 
-  // --- Tags ---
-  const tagNextjs = await prisma.blogTag.upsert({
-    where: { slug: "nextjs" },
-    update: {},
-    create: { name: "Next.js", slug: "nextjs" },
-  });
+  const nextjsTag = await prisma.blogTag.findUnique({ where: { slug: "nextjs" } });
+  const reactTag = await prisma.blogTag.findUnique({ where: { slug: "react" } });
+  const prismaTag = await prisma.blogTag.findUnique({ where: { slug: "prisma" } });
+  const wellnessTag = await prisma.blogTag.findUnique({ where: { slug: "wellness" } });
+  const habitsTag = await prisma.blogTag.findUnique({ where: { slug: "habits" } });
 
-  const tagPrisma = await prisma.blogTag.upsert({
-    where: { slug: "prisma" },
-    update: {},
-    create: { name: "Prisma", slug: "prisma" },
-  });
-
-  const tagAI = await prisma.blogTag.upsert({
-    where: { slug: "ai" },
-    update: {},
-    create: { name: "AI", slug: "ai" },
-  });
-
-  // --- Blog Posts ---
-  await prisma.blogPost.create({
-    data: {
-      title: "Getting Started with Next.js and Prisma",
-      slug: "getting-started-nextjs-prisma",
-      excerpt: "A beginner-friendly guide to building full-stack apps with Next.js and Prisma.",
-      content: {
-        type: "doc",
-        content: [
-          { type: "paragraph", content: [{ type: "text", text: "This is a seeded blog post about Next.js and Prisma." }] },
-        ],
+  // Seed Blog Posts
+  await prisma.blogPost.createMany({
+    data: [
+      {
+        id: uuid(),
+        title: "Getting Started with Next.js 15",
+        slug: "getting-started-with-nextjs-15",
+        excerpt: "Learn the basics of Next.js 15 with routing, layouts, and new app features.",
+        content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Next.js 15 introduces powerful new features..." }] }] },
+        coverImage: "https://picsum.photos/800/400?random=1",
+        ogImage: "https://picsum.photos/1200/600?random=1",
+        published: true,
+        publishedAt: new Date(),
+        authorId: author.id,
+        seoTitle: "Next.js 15 Beginner Guide",
+        seoDescription: "Step-by-step guide to build modern web apps with Next.js 15.",
+        seoKeywords: "Next.js, React, Fullstack, Web Development",
       },
-      coverImage: "https://source.unsplash.com/800x400/?code",
-      coverImageAlt: "Laptop with code editor open",
-      ogImage: "https://source.unsplash.com/1200x630/?developer",
-      ogImageAlt: "Developer coding",
-      published: true,
-      publishedAt: new Date(),
-      authorName: author1.name,
-      seoTitle: "Next.js and Prisma Guide",
-      seoDescription: "Learn how to integrate Next.js with Prisma for scalable full-stack development.",
-      seoKeywords: "Next.js, Prisma, Full Stack, Database",
-      canonicalUrl: "https://example.com/blog/getting-started-nextjs-prisma",
-      categories: { connect: [{ id: categoryWeb.id }] },
-      tags: { connect: [{ id: tagNextjs.id }, { id: tagPrisma.id }] },
-    },
+      {
+        id: uuid(),
+        title: "Top 10 React Hooks You Should Know",
+        slug: "top-10-react-hooks",
+        excerpt: "A list of essential React hooks every developer should master.",
+        content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "React hooks have revolutionized..." }] }] },
+        coverImage: "https://picsum.photos/800/400?random=2",
+        ogImage: "https://picsum.photos/1200/600?random=2",
+        published: true,
+        publishedAt: new Date(),
+        authorId: author.id,
+        seoTitle: "Essential React Hooks",
+        seoDescription: "Learn the top 10 React hooks with examples.",
+        seoKeywords: "React, Hooks, JavaScript",
+      },
+      {
+        id: uuid(),
+        title: "Building a Productive Morning Routine",
+        slug: "productive-morning-routine",
+        excerpt: "Small habits that can transform your mornings and increase productivity.",
+        content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Morning routines set the tone for the day..." }] }] },
+        coverImage: "https://picsum.photos/800/400?random=3",
+        ogImage: "https://picsum.photos/1200/600?random=3",
+        published: true,
+        publishedAt: new Date(),
+        authorId: author.id,
+        seoTitle: "Morning Habits for Success",
+        seoDescription: "Practical habits to boost productivity every morning.",
+        seoKeywords: "Productivity, Habits, Wellness",
+      },
+    ],
+    skipDuplicates: true,
   });
 
-  await prisma.blogPost.create({
-    data: {
-      title: "The Future of AI in Web Development",
-      slug: "future-of-ai-web-development",
-      excerpt: "Exploring how AI is transforming the way we build for the web.",
-      content: {
-        type: "doc",
-        content: [
-          { type: "paragraph", content: [{ type: "text", text: "This is a seeded blog post about AI in web dev." }] },
-        ],
-      },
-      coverImage: "https://source.unsplash.com/800x400/?artificial-intelligence",
-      coverImageAlt: "AI brain concept illustration",
-      ogImage: "https://source.unsplash.com/1200x630/?machine-learning",
-      ogImageAlt: "AI neural network visualization",
-      published: true,
-      publishedAt: new Date(),
-      authorName: author2.name,
-      seoTitle: "AI in Web Development",
-      seoDescription: "How artificial intelligence is shaping the future of web apps.",
-      seoKeywords: "AI, Web Development, Machine Learning",
-      canonicalUrl: "https://example.com/blog/future-of-ai-web-development",
-      categories: { connect: [{ id: categoryAI.id }] },
-      tags: { connect: [{ id: tagAI.id }] },
-    },
-  });
+  // Add categories and tags relations
+  const posts = await prisma.blogPost.findMany();
 
-  await prisma.blogPost.create({
-    data: {
-      title: "Why You Should Care About Database Indexing",
-      slug: "importance-of-database-indexing",
-      excerpt: "Database indexing is key for performance. Here’s why you should care.",
-      content: {
-        type: "doc",
-        content: [
-          { type: "paragraph", content: [{ type: "text", text: "Indexes make queries faster by reducing scan times." }] },
-        ],
-      },
-      coverImage: "https://source.unsplash.com/800x400/?database",
-      coverImageAlt: "Database server racks",
-      ogImage: "https://source.unsplash.com/1200x630/?data",
-      ogImageAlt: "Data visualization",
-      published: false, // draft example
-      authorName: author1.name,
-      seoTitle: "Database Indexing Explained",
-      seoDescription: "Learn why database indexing improves query performance.",
-      seoKeywords: "Database, Indexing, Performance",
-      canonicalUrl: "https://example.com/blog/importance-of-database-indexing",
-      categories: { connect: [{ id: categoryWeb.id }] },
-      tags: { connect: [{ id: tagPrisma.id }] },
-    },
-  });
+  for (const post of posts) {
+    if (post.slug.includes("nextjs")) {
+      await prisma.blogPost.update({
+        where: { id: post.id },
+        data: {
+          categories: { connect: { id: techCategory!.id } },
+          tags: { connect: [{ id: nextjsTag!.id }, { id: reactTag!.id }, { id: prismaTag!.id }] },
+        },
+      });
+    } else if (post.slug.includes("react-hooks")) {
+      await prisma.blogPost.update({
+        where: { id: post.id },
+        data: {
+          categories: { connect: { id: techCategory!.id } },
+          tags: { connect: [{ id: reactTag!.id }] },
+        },
+      });
+    } else if (post.slug.includes("morning-routine")) {
+      await prisma.blogPost.update({
+        where: { id: post.id },
+        data: {
+          categories: { connect: { id: productivityCategory!.id } },
+          tags: { connect: [{ id: wellnessTag!.id }, { id: habitsTag!.id }] },
+        },
+      });
+    }
+  }
 
   console.log("✅ Blog data seeded successfully!");
 
@@ -943,6 +922,7 @@ async function main() {
 
   // console.log("✅ Categories seeded successfully!");
 }
+
 main()
   .catch((e) => {
     console.error(e);
@@ -951,4 +931,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
