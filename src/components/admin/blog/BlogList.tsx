@@ -1,6 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
+import axios from "axios";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -27,10 +29,30 @@ export default function AdminBlogList({
     setCurrentPage,
 }: AdminBlogListProps) {
     const { allPosts, isLoading, error, fetchAllPosts } = useAdminBlogStore();
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchAllPosts();
     }, [fetchAllPosts]);
+
+    const handleDelete = async (postId: string, postTitle: string) => {
+        if (!confirm(`Are you sure you want to delete "${postTitle}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            setDeletingId(postId);
+            await axios.delete(`/api/admin/blog/posts/${postId}`);
+            toast.success("Blog post deleted successfully");
+            // Refresh the posts list
+            fetchAllPosts();
+        } catch (error) {
+            console.error("Failed to delete blog post:", error);
+            toast.error("Failed to delete blog post");
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
     const filteredPosts = searchSlug.trim()
         ? allPosts.filter((post) =>
@@ -111,7 +133,7 @@ export default function AdminBlogList({
                                         size="icon"
                                     >
                                         <Link
-                                            href={`/admin/blog/view/${post.id}`}
+                                            href={`/admin/blogs/view/${post.id}`}
                                         >
                                             <span className="sr-only">View</span>
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
@@ -123,12 +145,17 @@ export default function AdminBlogList({
                                         size="icon"
                                     >
                                         <Link
-                                            href={`/admin/blog/edit/${post.id}`}
+                                            href={`/admin/blogs/edit/${post.id}`}
                                         >
                                             <Pencil className="h-4 w-4" />
                                         </Link>
                                     </Button>
-                                    <Button variant="destructive" size="icon">
+                                    <Button 
+                                        variant="destructive" 
+                                        size="icon"
+                                        onClick={() => handleDelete(post.id, post.title)}
+                                        disabled={deletingId === post.id}
+                                    >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>

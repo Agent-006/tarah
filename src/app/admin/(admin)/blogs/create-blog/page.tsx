@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
@@ -50,18 +50,19 @@ import {
   Eye,
   Plus,
   X,
-  Upload,
   Hash,
   FileText,
   Globe,
   Calendar,
-  Settings,
+  Loader2,
+  Save,
+  User,
+  Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
   Form,
@@ -90,13 +91,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { useUploadThing } from "@/lib/uploadthing";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Enhanced Schema definition matching Prisma schema
-const backlinkSchema = z.object({
-  url: z.string().url("Must be a valid URL"),
-  text: z.string().min(1, "Link text is required"),
-});
-
 const formSchema = z.object({
   title: z
     .string()
@@ -115,7 +120,9 @@ const formSchema = z.object({
     .max(500, "Excerpt must be less than 500 characters")
     .optional(),
   coverImage: z.string().optional().or(z.literal("")),
+  coverImageAlt: z.string().optional().or(z.literal("")),
   ogImage: z.string().optional().or(z.literal("")),
+  ogImageAlt: z.string().optional().or(z.literal("")),
 
   // SEO fields
   seoTitle: z
@@ -127,11 +134,12 @@ const formSchema = z.object({
     .max(160, "SEO description should be less than 160 characters")
     .optional(),
   seoKeywords: z.string().optional(),
+  canonicalUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
 
   // Relationships
   categories: z.array(z.string()),
   tags: z.array(z.string()),
-  backlinks: z.array(backlinkSchema),
+  authorName: z.string().min(1, "Author is required"),
 
   // Publishing
   published: z.boolean(),
@@ -516,8 +524,15 @@ export default function CreateBlogPage() {
   const [activeTab, setActiveTab] = useState("content");
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [availableAuthors, setAvailableAuthors] = useState<{name: string; bio?: string}[]>([]);
   const [newCategory, setNewCategory] = useState("");
   const [newTag, setNewTag] = useState("");
+  const [isAuthorModalOpen, setIsAuthorModalOpen] = useState(false);
+  const [newAuthor, setNewAuthor] = useState({
+    name: "",
+    bio: "",
+    avatarUrl: "",
+  });
 
   // Redirect customers to home page
   useEffect(() => {
@@ -530,14 +545,18 @@ export default function CreateBlogPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [categoriesRes, tagsRes] = await Promise.all([
+        const [categoriesRes, tagsRes, authorsRes] = await Promise.all([
           axios.get("/api/admin/blog-categories"),
           axios.get("/api/admin/blog-tags"),
+          axios.get("/api/admin/authors"),
         ]);
         setAvailableCategories(
           categoriesRes.data.map((cat: { slug: string }) => cat.slug)
         );
         setAvailableTags(tagsRes.data.map((tag: { slug: string }) => tag.slug));
+        setAvailableAuthors(
+          authorsRes.data.map((author: { name: string; bio?: string }) => author)
+        );
       } catch (error) {
         console.error("Failed to fetch categories and tags:", error);
       }
@@ -556,25 +575,21 @@ export default function CreateBlogPage() {
       content: "<p>Start writing your blog content here...</p>",
       excerpt: "",
       coverImage: "",
+      coverImageAlt: "",
       ogImage: "",
+      ogImageAlt: "",
       seoTitle: "",
       seoDescription: "",
       seoKeywords: "",
+      canonicalUrl: "",
       categories: [],
       tags: [],
-      backlinks: [],
+      authorName: "",
       published: false,
     },
   });
 
-  const {
-    fields: backlinkFields,
-    append: appendBacklink,
-    remove: removeBacklink,
-  } = useFieldArray({
-    control: form.control,
-    name: "backlinks",
-  });
+  // ...existing code...
 
   // State for image uploads
   const [coverImageFile, setCoverImageFile] = useState<string[]>([]);
@@ -627,19 +642,26 @@ export default function CreateBlogPage() {
 
   // Auto-generate slug from title
   const watchTitle = form.watch("title");
+  const watchSlug = form.watch("slug");
   const watchCoverImage = form.watch("coverImage");
   const watchOgImage = form.watch("ogImage");
 
   useEffect(() => {
-    if (watchTitle && !form.getValues("slug")) {
-      const slug = watchTitle
+    if (watchTitle) {
+      const generatedSlug = watchTitle
         .toLowerCase()
         .replace(/[^\w\s-]/g, "")
         .replace(/\s+/g, "-")
-        .trim();
-      form.setValue("slug", slug);
+        .replace(/-+/g, "-") // Replace multiple dashes with single dash
+        .trim()
+        .replace(/^-|-$/g, ""); // Remove leading/trailing dashes
+      
+      // Auto-generate slug if current slug is empty or appears to be auto-generated
+      if (!watchSlug || watchSlug === "" || watchSlug === generatedSlug) {
+        form.setValue("slug", generatedSlug, { shouldValidate: true });
+      }
     }
-  }, [watchTitle, form]);
+  }, [watchTitle, watchSlug, form]);
 
   // Sync form image values with state
   useEffect(() => {
@@ -661,13 +683,12 @@ export default function CreateBlogPage() {
       const blogData = {
         ...values,
         content: JSON.parse(JSON.stringify(values.content)), // Ensure JSON serializable
-        publishedAt: values.published ? new Date().toISOString() : null,
-        authorId: session?.user?.id,
+        publishedAt: values.publishedAt || null,
       };
 
       console.log("Submitting blog data:", blogData);
 
-      const response = await axios.post("/api/admin/blogs", blogData, {
+      const response = await axios.post("/api/admin/blog/posts", blogData, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -762,6 +783,28 @@ export default function CreateBlogPage() {
     }
   };
 
+  const createNewAuthor = async () => {
+    if (!newAuthor.name.trim()) return;
+
+    try {
+      const response = await axios.post("/api/admin/authors", {
+        name: newAuthor.name,
+        bio: newAuthor.bio || null,
+        avatarUrl: newAuthor.avatarUrl || null,
+      });
+
+      const author = response.data;
+      setAvailableAuthors([...availableAuthors, author]);
+      form.setValue("authorName", author.name);
+      setNewAuthor({ name: "", bio: "", avatarUrl: "" });
+      setIsAuthorModalOpen(false);
+      toast.success("Author created successfully!");
+    } catch (error) {
+      console.error("Failed to create author:", error);
+      toast.error("Failed to create author");
+    }
+  };
+
   // Show loading or redirect if not authenticated
   if (status === "loading") {
     return (
@@ -835,7 +878,7 @@ export default function CreateBlogPage() {
                       onValueChange={setActiveTab}
                       className="w-full"
                     >
-                      <TabsList className="grid w-full grid-cols-4">
+                      <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger
                           value="content"
                           className="flex items-center gap-2"
@@ -856,13 +899,6 @@ export default function CreateBlogPage() {
                         >
                           <ImageIcon className="h-4 w-4" />
                           Media
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="links"
-                          className="flex items-center gap-2"
-                        >
-                          <LinkIcon className="h-4 w-4" />
-                          Backlinks
                         </TabsTrigger>
                       </TabsList>
 
@@ -901,14 +937,38 @@ export default function CreateBlogPage() {
                                 <FormLabel className="text-base font-semibold">
                                   URL Slug *
                                 </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="blog-post-url-slug"
-                                    {...field}
-                                  />
-                                </FormControl>
+                                <div className="flex gap-2">
+                                  <FormControl>
+                                    <Input
+                                      placeholder="blog-post-url-slug"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      const title = form.getValues("title");
+                                      if (title) {
+                                        const generatedSlug = title
+                                          .toLowerCase()
+                                          .replace(/[^\w\s-]/g, "")
+                                          .replace(/\s+/g, "-")
+                                          .replace(/-+/g, "-")
+                                          .trim()
+                                          .replace(/^-|-$/g, "");
+                                        form.setValue("slug", generatedSlug, { shouldValidate: true });
+                                      }
+                                    }}
+                                    disabled={!form.watch("title")}
+                                    title="Generate slug from title"
+                                  >
+                                    <Wand2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
                                 <FormDescription>
-                                  URL-friendly version of the title
+                                  URL-friendly version of the title (auto-generated from title)
                                 </FormDescription>
                                 <FormMessage />
                               </FormItem>
@@ -1038,6 +1098,26 @@ export default function CreateBlogPage() {
                             </FormItem>
                           )}
                         />
+
+                        <FormField
+                          control={form.control}
+                          name="canonicalUrl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Canonical URL</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="https://example.com/canonical-url"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Canonical URL for this blog post to avoid duplicate content issues
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </TabsContent>
 
                       {/* Media Tab */}
@@ -1054,7 +1134,7 @@ export default function CreateBlogPage() {
                         <FormField
                           control={form.control}
                           name="coverImage"
-                          render={({ field }) => (
+                          render={() => (
                             <FormItem>
                               <FormLabel>Cover Image</FormLabel>
                               <FormControl>
@@ -1075,8 +1155,28 @@ export default function CreateBlogPage() {
 
                         <FormField
                           control={form.control}
-                          name="ogImage"
+                          name="coverImageAlt"
                           render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Cover Image Alt Text</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Describe the cover image for accessibility..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Alt text for cover image accessibility (screen readers)
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="ogImage"
+                          render={() => (
                             <FormItem>
                               <FormLabel>
                                 Social Share Image (OG Image)
@@ -1097,99 +1197,26 @@ export default function CreateBlogPage() {
                             </FormItem>
                           )}
                         />
-                      </TabsContent>
 
-                      {/* Backlinks Tab */}
-                      <TabsContent value="links" className="space-y-6 mt-6">
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="text-lg font-semibold">
-                                Backlinks
-                              </h3>
-                              <p className="text-gray-600">
-                                Manage external links and references
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              onClick={() =>
-                                appendBacklink({
-                                  url: "",
-                                  text: "",
-                                })
-                              }
-                              size="sm"
-                              className="flex items-center gap-2"
-                            >
-                              <Plus className="h-4 w-4" />
-                              Add Backlink
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          {backlinkFields.map((field, index) => (
-                            <Card key={field.id} className="p-4">
-                              <div className="flex gap-4 items-end">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
-                                  <FormField
-                                    control={form.control}
-                                    name={`backlinks.${index}.url`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>URL</FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            placeholder="https://example.com"
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={form.control}
-                                    name={`backlinks.${index}.text`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>Link Text</FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            placeholder="Link description"
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => removeBacklink(index)}
-                                  className="text-red-600 hover:text-red-700"
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </Card>
-                          ))}
-
-                          {backlinkFields.length === 0 && (
-                            <div className="text-center py-8 text-gray-500">
-                              <LinkIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                              <p>No backlinks added yet</p>
-                              <p className="text-sm">
-                                Click &quot;Add Backlink&quot; to add external
-                                references
-                              </p>
-                            </div>
+                        <FormField
+                          control={form.control}
+                          name="ogImageAlt"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>OG Image Alt Text</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Describe the OG image for accessibility..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Alt text for social media image accessibility
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
                           )}
-                        </div>
+                        />
                       </TabsContent>
                     </Tabs>
                   </CardContent>
@@ -1198,15 +1225,232 @@ export default function CreateBlogPage() {
 
               {/* Sidebar */}
               <div className="space-y-6">
-                {/* Publishing Options */}
+                {/* Author Dropdown */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Settings className="h-5 w-5" />
-                      Publishing
+                      <User className="h-5 w-5" />
+                      Author & Publishing
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="authorName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Author</FormLabel>
+                          <div className="flex gap-2">
+                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select author" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {availableAuthors.map((author) => (
+                                  <SelectItem key={author.name} value={author.name}>
+                                    {author.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {field.value && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  field.onChange("");
+                                  form.setValue("authorName", "");
+                                }}
+                                className="text-red-500 hover:text-red-700"
+                                title="Clear selected author"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Dialog open={isAuthorModalOpen} onOpenChange={setIsAuthorModalOpen}>
+                              <DialogTrigger asChild>
+                                <Button type="button" variant="outline" size="sm">
+                                  <Plus className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="sm:max-w-[525px]">
+                                <DialogHeader>
+                                  <DialogTitle>Manage Authors</DialogTitle>
+                                  <DialogDescription>
+                                    Create a new author profile or select from existing ones.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                
+                                {/* Existing Authors */}
+                                {availableAuthors.length > 0 && (
+                                  <div className="border rounded-lg p-4">
+                                    <h4 className="font-medium mb-3">Existing Authors</h4>
+                                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                                      {availableAuthors.map((author) => (
+                                        <div key={author.name} className="flex items-center gap-3 text-sm">
+                                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                            {author.name.charAt(0).toUpperCase()}
+                                          </div>
+                                          <div className="flex-1">
+                                            <div className="font-medium">{author.name}</div>
+                                            {author.bio && (
+                                              <div className="text-gray-500 text-xs truncate">
+                                                {author.bio}
+                                              </div>
+                                            )}
+                                          </div>
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={async () => {
+                                              try {
+                                                await axios.delete(`/api/admin/authors/${encodeURIComponent(author.name)}`);
+                                                setAvailableAuthors(availableAuthors.filter(a => a.name !== author.name));
+                                                // If the removed author was selected, clear the selection
+                                                if (form.getValues("authorName") === author.name) {
+                                                  form.setValue("authorName", "");
+                                                }
+                                                toast.success("Author removed successfully!");
+                                              } catch (error) {
+                                                console.error("Failed to remove author:", error);
+                                                toast.error("Failed to remove author");
+                                              }
+                                            }}
+                                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                <Separator />
+                                
+                                <div className="space-y-4">
+                                  <h4 className="font-medium">Add New Author</h4>
+                                  <div className="grid gap-4">
+                                    <div className="grid gap-2">
+                                      <Label htmlFor="author-name">Author Name *</Label>
+                                      <Input
+                                        id="author-name"
+                                        placeholder="Enter author name"
+                                        value={newAuthor.name}
+                                        onChange={(e) =>
+                                          setNewAuthor({ ...newAuthor, name: e.target.value })
+                                        }
+                                      />
+                                    </div>
+                                    <div className="grid gap-2">
+                                      <Label htmlFor="author-bio">Bio</Label>
+                                      <Textarea
+                                        id="author-bio"
+                                        placeholder="Brief bio about the author (optional)"
+                                        value={newAuthor.bio}
+                                        onChange={(e) =>
+                                          setNewAuthor({ ...newAuthor, bio: e.target.value })
+                                        }
+                                        className="resize-none"
+                                      />
+                                    </div>
+                                    <div className="grid gap-2">
+                                      <Label htmlFor="author-avatar">Avatar URL</Label>
+                                      <Input
+                                        id="author-avatar"
+                                        placeholder="https://example.com/avatar.jpg (optional)"
+                                        value={newAuthor.avatarUrl}
+                                        onChange={(e) =>
+                                          setNewAuthor({ ...newAuthor, avatarUrl: e.target.value })
+                                        }
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                <DialogFooter>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setIsAuthorModalOpen(false);
+                                      setNewAuthor({ name: "", bio: "", avatarUrl: "" });
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    onClick={createNewAuthor}
+                                    disabled={!newAuthor.name.trim()}
+                                  >
+                                    Create Author
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                          <FormDescription>
+                            Choose the author for this blog post or create a new one
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Selected Author Display */}
+                    {form.watch("authorName") && (
+                      <div className="space-y-2">
+                        <Label>Selected Author</Label>
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <User className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium">{form.watch("authorName")}</div>
+                            {availableAuthors.find(author => author.name === form.watch("authorName"))?.bio && (
+                              <div className="text-sm text-gray-500">
+                                {availableAuthors.find(author => author.name === form.watch("authorName"))?.bio}
+                              </div>
+                            )}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              form.setValue("authorName", "");
+                            }}
+                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                            title="Deselect author"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* PublishedAt Date Picker */}
+                    <FormField
+                      control={form.control}
+                      name="publishedAt"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Published At</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <FormField
                       control={form.control}
                       name="published"
@@ -1271,62 +1515,181 @@ export default function CreateBlogPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      {form.watch("categories").map((category) => (
-                        <Badge
-                          key={category}
-                          variant="secondary"
-                          className="flex items-center gap-1"
-                        >
-                          {category}
-                          <X
-                            className="h-3 w-3 cursor-pointer hover:text-red-600"
-                            onClick={() => removeCategory(category)}
-                          />
-                        </Badge>
-                      ))}
-                    </div>
-
+                    {/* Category Dropdown Selector */}
                     <div className="space-y-2">
-                      <Label>Add Categories</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {availableCategories
-                          .filter(
-                            (cat) => !form.watch("categories").includes(cat)
-                          )
-                          .map((category) => (
-                            <Button
-                              key={category}
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => addCategory(category)}
-                            >
-                              {category}
-                            </Button>
-                          ))}
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div className="space-y-2">
-                      <Label>Create New Category</Label>
+                      <Label>Select Category</Label>
                       <div className="flex gap-2">
-                        <Input
-                          placeholder="Category name"
-                          value={newCategory}
-                          onChange={(e) => setNewCategory(e.target.value)}
-                        />
-                        <Button
-                          type="button"
-                          onClick={createNewCategory}
-                          size="sm"
-                          disabled={!newCategory.trim()}
+                        <Select
+                          onValueChange={(value) => {
+                            if (value && !form.watch("categories").includes(value)) {
+                              addCategory(value);
+                            }
+                          }}
                         >
-                          <Plus className="h-4 w-4" />
-                        </Button>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose a category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableCategories
+                              .filter((cat) => !form.watch("categories").includes(cat))
+                              .map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        {form.watch("categories").length > 0 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => form.setValue("categories", [])}
+                            className="text-red-500 hover:text-red-700"
+                            title="Clear all categories"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button type="button" variant="outline" size="sm">
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[525px]">
+                            <DialogHeader>
+                              <DialogTitle>Manage Categories</DialogTitle>
+                              <DialogDescription>
+                                Create new categories or remove existing ones.
+                              </DialogDescription>
+                            </DialogHeader>
+                            
+                            {/* Existing Categories */}
+                            {availableCategories.length > 0 && (
+                              <div className="border rounded-lg p-4">
+                                <h4 className="font-medium mb-3">Existing Categories</h4>
+                                <div className="space-y-2 max-h-32 overflow-y-auto">
+                                  {availableCategories.map((category) => (
+                                    <div key={category} className="flex items-center gap-3 text-sm">
+                                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <Hash className="h-3 w-3 text-blue-600" />
+                                      </div>
+                                      <div className="flex-1">
+                                        <div className="font-medium">{category}</div>
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={async () => {
+                                          try {
+                                            await axios.delete(`/api/admin/blog-categories?slug=${encodeURIComponent(category)}`);
+                                            setAvailableCategories(availableCategories.filter(c => c !== category));
+                                            // Remove from selected categories if selected
+                                            const currentCategories = form.getValues("categories");
+                                            if (currentCategories.includes(category)) {
+                                              form.setValue("categories", currentCategories.filter(c => c !== category));
+                                            }
+                                            toast.success("Category removed successfully!");
+                                          } catch (error) {
+                                            console.error("Failed to remove category:", error);
+                                            const errorMessage = error instanceof Error ? error.message : "Failed to remove category";
+                                            toast.error(errorMessage);
+                                          }
+                                        }}
+                                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            <Separator />
+                            
+                            <div className="space-y-4">
+                              <h4 className="font-medium">Add New Category</h4>
+                              <div className="grid gap-4">
+                                <div className="grid gap-2">
+                                  <Label htmlFor="category-name">Category Name *</Label>
+                                  <Input
+                                    id="category-name"
+                                    placeholder="Enter category name"
+                                    value={newCategory}
+                                    onChange={(e) => setNewCategory(e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <DialogFooter>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setNewCategory("")}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                type="button"
+                                onClick={createNewCategory}
+                                disabled={!newCategory.trim()}
+                              >
+                                Create Category
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       </div>
+                    </div>
+
+                    {/* Selected Categories */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label>Selected Categories ({form.watch("categories").length})</Label>
+                        {form.watch("categories").length > 0 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => form.setValue("categories", [])}
+                            className="text-red-500 hover:text-red-700 h-6 text-xs"
+                          >
+                            Clear All
+                          </Button>
+                        )}
+                      </div>
+                      {form.watch("categories").length === 0 ? (
+                        <p className="text-sm text-gray-500 p-3 bg-gray-50 rounded-md text-center">
+                          No categories selected
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {form.watch("categories").map((category) => (
+                            <div key={category} className="flex items-center gap-3 p-3 bg-blue-50 rounded-md">
+                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <Hash className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-medium text-blue-800">{category}</div>
+                                <div className="text-xs text-blue-600">Category</div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeCategory(category)}
+                                className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                                title="Remove category"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -1340,64 +1703,213 @@ export default function CreateBlogPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      {form.watch("tags").map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="flex items-center gap-1"
-                        >
-                          {tag}
-                          <X
-                            className="h-3 w-3 cursor-pointer hover:text-red-600"
-                            onClick={() => removeTag(tag)}
-                          />
-                        </Badge>
-                      ))}
-                    </div>
-
+                    {/* Tag Dropdown Selector */}
                     <div className="space-y-2">
-                      <Label>Add Tags</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {availableTags
-                          .filter((tag) => !form.watch("tags").includes(tag))
-                          .map((tag) => (
-                            <Button
-                              key={tag}
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => addTag(tag)}
-                            >
-                              {tag}
-                            </Button>
-                          ))}
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div className="space-y-2">
-                      <Label>Create New Tag</Label>
+                      <Label>Select Tag</Label>
                       <div className="flex gap-2">
-                        <Input
-                          placeholder="Tag name"
-                          value={newTag}
-                          onChange={(e) => setNewTag(e.target.value)}
-                        />
-                        <Button
-                          type="button"
-                          onClick={createNewTag}
-                          size="sm"
-                          disabled={!newTag.trim()}
+                        <Select
+                          onValueChange={(value) => {
+                            if (value && !form.watch("tags").includes(value)) {
+                              addTag(value);
+                            }
+                          }}
                         >
-                          <Plus className="h-4 w-4" />
-                        </Button>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose a tag" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableTags
+                              .filter((tag) => !form.watch("tags").includes(tag))
+                              .map((tag) => (
+                                <SelectItem key={tag} value={tag}>
+                                  {tag}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        {form.watch("tags").length > 0 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => form.setValue("tags", [])}
+                            className="text-red-500 hover:text-red-700"
+                            title="Clear all tags"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button type="button" variant="outline" size="sm">
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[525px]">
+                            <DialogHeader>
+                              <DialogTitle>Manage Tags</DialogTitle>
+                              <DialogDescription>
+                                Create new tags or remove existing ones.
+                              </DialogDescription>
+                            </DialogHeader>
+                            
+                            {/* Existing Tags */}
+                            {availableTags.length > 0 && (
+                              <div className="border rounded-lg p-4">
+                                <h4 className="font-medium mb-3">Existing Tags</h4>
+                                <div className="space-y-2 max-h-32 overflow-y-auto">
+                                  {availableTags.map((tag) => (
+                                    <div key={tag} className="flex items-center gap-3 text-sm">
+                                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <Hash className="h-3 w-3 text-green-600" />
+                                      </div>
+                                      <div className="flex-1">
+                                        <div className="font-medium">{tag}</div>
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={async () => {
+                                          try {
+                                            await axios.delete(`/api/admin/blog-tags?slug=${encodeURIComponent(tag)}`);
+                                            setAvailableTags(availableTags.filter(t => t !== tag));
+                                            // Remove from selected tags if selected
+                                            const currentTags = form.getValues("tags");
+                                            if (currentTags.includes(tag)) {
+                                              form.setValue("tags", currentTags.filter(t => t !== tag));
+                                            }
+                                            toast.success("Tag removed successfully!");
+                                          } catch (error) {
+                                            console.error("Failed to remove tag:", error);
+                                            const errorMessage = error instanceof Error ? error.message : "Failed to remove tag";
+                                            toast.error(errorMessage);
+                                          }
+                                        }}
+                                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            <Separator />
+                            
+                            <div className="space-y-4">
+                              <h4 className="font-medium">Add New Tag</h4>
+                              <div className="grid gap-4">
+                                <div className="grid gap-2">
+                                  <Label htmlFor="tag-name">Tag Name *</Label>
+                                  <Input
+                                    id="tag-name"
+                                    placeholder="Enter tag name"
+                                    value={newTag}
+                                    onChange={(e) => setNewTag(e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <DialogFooter>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setNewTag("")}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                type="button"
+                                onClick={createNewTag}
+                                disabled={!newTag.trim()}
+                              >
+                                Create Tag
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       </div>
+                    </div>
+
+                    {/* Selected Tags */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label>Selected Tags ({form.watch("tags").length})</Label>
+                        {form.watch("tags").length > 0 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => form.setValue("tags", [])}
+                            className="text-red-500 hover:text-red-700 h-6 text-xs"
+                          >
+                            Clear All
+                          </Button>
+                        )}
+                      </div>
+                      {form.watch("tags").length === 0 ? (
+                        <p className="text-sm text-gray-500 p-3 bg-gray-50 rounded-md text-center">
+                          No tags selected
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {form.watch("tags").map((tag) => (
+                            <div key={tag} className="flex items-center gap-3 p-3 bg-green-50 rounded-md">
+                              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <Hash className="h-4 w-4 text-green-600" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-medium text-green-800">{tag}</div>
+                                <div className="text-xs text-green-600">Tag</div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeTag(tag)}
+                                className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                                title="Remove tag"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               </div>
+            </div>
+            
+            {/* Submit Button */}
+            <div className="flex justify-end gap-4 pt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/admin/blogs")}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="min-w-[120px]"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Publishing...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    {form.watch("published") ? "Publish Blog" : "Save Draft"}
+                  </>
+                )}
+              </Button>
             </div>
           </form>
         </Form>
