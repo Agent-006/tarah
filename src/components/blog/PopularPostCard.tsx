@@ -2,61 +2,108 @@
 
 import Image from "next/image";
 import Link from "next/link";
-
-import { Card, CardContent } from "@/components/ui/card";
+import { BlogPostWithRelations } from "@/store/blog/blogStore";
 
 interface PopularPostCardProps {
+    id: string;
     title: string;
-    category: string;
-    date: string;
-    description: string;
-    image: string;
     slug: string;
-    imageAttribution: string;
+    excerpt?: string | null;
+    coverImage?: string | null;
+    coverImageAlt?: string | null;
+    publishedAt?: Date | null;
+    createdAt: Date;
+    author: {
+        name: string;
+        avatarUrl?: string | null;
+    };
+    categories: Array<{ name: string }>;
+    _count: {
+        views: number;
+    };
 }
 
 export default function PopularPostCard({
+    id,
     title,
-    category,
-    date,
-    description,
-    image,
     slug,
-    imageAttribution,
+    excerpt,
+    coverImage,
+    coverImageAlt,
+    publishedAt,
+    createdAt,
+    author,
+    categories,
+    _count
 }: PopularPostCardProps) {
+    // Use a placeholder image if coverImage is null/empty
+    const imageUrl = coverImage && coverImage.trim() !== "" 
+        ? coverImage 
+        : "/placeholder-blog.jpg";
+
+    const imageAlt = coverImageAlt || title || "Blog post image";
+
+    const displayDate = publishedAt 
+        ? new Date(publishedAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        })
+        : new Date(createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+
     return (
-        <Link href={`/blog/${slug}`} className="group block">
-            <Card className="overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white">
-                <div className="relative overflow-hidden">
+        <Link href={`/blogs/${slug}`} className="group block">
+            <article className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+                <div className="relative h-48 w-full">
                     <Image
-                        src={image}
-                        alt={`${title} - ${imageAttribution}`}
-                        width={400}
-                        height={250}
-                        className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                        src={imageUrl}
+                        alt={imageAlt}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-200"
                     />
-                </div>
-                <CardContent className="p-5">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                            {category}
+                    {categories.length > 0 && (
+                        <span className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-medium px-2 py-1 rounded-full">
+                            {categories[0].name}
                         </span>
-                        <span className="text-gray-300">•</span>
-                        <span className="text-xs text-gray-400">{date}</span>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200 leading-tight">
+                    )}
+                </div>
+                
+                <div className="p-4">
+                    <p className="text-xs text-gray-500 mb-2">
+                        {displayDate} • {_count.views} views
+                    </p>
+                    
+                    <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors duration-200 line-clamp-2 mb-2">
                         {title}
                     </h3>
-                    <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-                        {description}
-                    </p>
-                    <div className="mt-3">
-                        <span className="text-sm font-medium text-gray-900 group-hover:underline">
-                            Read More...
+                    
+                    {excerpt && (
+                        <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                            {excerpt}
+                        </p>
+                    )}
+                    
+                    <div className="flex items-center gap-2">
+                        <div className="relative w-6 h-6 rounded-full overflow-hidden">
+                            <Image
+                                src={author.avatarUrl || "/avatar.jpg"}
+                                alt={author.name}
+                                fill
+                                sizes="24px"
+                                className="object-cover"
+                            />
+                        </div>
+                        <span className="text-sm text-gray-700 font-medium">
+                            {author.name}
                         </span>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </article>
         </Link>
     );
 }

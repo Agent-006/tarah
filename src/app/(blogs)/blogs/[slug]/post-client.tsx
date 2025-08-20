@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -13,6 +14,8 @@ export default function BlogPost({ slug }: { slug: string }) {
     const {
         currentPost,
         popularPosts,
+        isLoading,
+        error,
         fetchPostBySlug,
         fetchPopularPosts,
         incrementViewCount,
@@ -21,21 +24,61 @@ export default function BlogPost({ slug }: { slug: string }) {
     useEffect(() => {
         fetchPostBySlug(slug);
         fetchPopularPosts();
-    }, [slug]);
+    }, [slug, fetchPostBySlug, fetchPopularPosts]);
 
     // Increment view count for the current post when the component mounts
     useEffect(() => {
-        incrementViewCount(slug);
-    }, [slug, incrementViewCount]);
+        if (currentPost) {
+            incrementViewCount(slug);
+        }
+    }, [slug, incrementViewCount, currentPost]);
 
     const editor = useEditor({
         extensions: [StarterKit, Link],
-        content:
-            typeof currentPost?.content === "string" ? currentPost.content : "",
+        content: currentPost?.content || "",
         editable: false,
+        immediatelyRender: false, // Fix SSR issue
     });
 
-    if (!currentPost) return null;
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                    <p>Loading blog post...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="text-center text-red-600">
+                    <h2 className="text-xl font-bold mb-2">Error</h2>
+                    <p>{error}</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!currentPost) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-xl font-bold mb-2">Post not found</h2>
+                    <p>The blog post you&apos;re looking for doesn&apos;t exist.</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Handle cover image safely
+    const coverImageUrl = currentPost.coverImage && currentPost.coverImage.trim() !== ""
+        ? currentPost.coverImage
+        : null;
+
+    const coverImageAlt = currentPost.coverImageAlt || currentPost.title;
 
     return (
         <div className="min-h-screen bg-white">
@@ -46,8 +89,11 @@ export default function BlogPost({ slug }: { slug: string }) {
                     </h1>
 
                     <AuthorProfile
-                        name={currentPost.author?.fullName ?? "Anonymous"}
-                        avatar="https://i.pravatar.cc/150?img=1"
+                        name={currentPost.author?.name ?? "Anonymous"}
+                        avatar={currentPost.author?.avatarUrl && currentPost.author.avatarUrl.trim() !== ""
+                            ? currentPost.author.avatarUrl
+                            : "/avatar.jpg"
+                        }
                         socialLinks={{
                             facebook: "#",
                             linkedin: "#",
@@ -57,11 +103,11 @@ export default function BlogPost({ slug }: { slug: string }) {
                     />
                 </header>
 
-                {currentPost.coverImage && (
+                {coverImageUrl && (
                     <div className="mb-12 overflow-hidden rounded-2xl shadow-lg">
                         <Image
-                            src={currentPost.coverImage}
-                            alt={currentPost.title}
+                            src={coverImageUrl}
+                            alt={coverImageAlt}
                             width={800}
                             height={450}
                             className="w-full h-auto object-cover"
@@ -71,7 +117,7 @@ export default function BlogPost({ slug }: { slug: string }) {
 
                 {/* Rich content */}
                 <div className="prose prose-lg max-w-none">
-                    {editor ? <EditorContent editor={editor} /> : null}
+                    {editor && <EditorContent editor={editor} />}
                 </div>
             </article>
 
@@ -80,42 +126,17 @@ export default function BlogPost({ slug }: { slug: string }) {
                 <div className="max-w-6xl mx-auto px-6">
                     <div className="flex justify-between items-center mb-8">
                         <h2 className="heading-lg text-gray-900">
-                            Popular Post
+                            Popular Posts
                         </h2>
-                        {/* Your Button */}
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
-                        {popularPosts.map((post, i) => (
-                            <PopularPostCard key={i} {...post} />
+                        {popularPosts.map((post) => (
+                            <PopularPostCard key={post.id} {...post} />
                         ))}
                     </div>
                 </div>
             </section>
-
-            {/* Backlinks */}
-            {Array.isArray(currentPost.backlinks) &&
-                currentPost.backlinks.length > 0 && (
-                    <section className="max-w-4xl mx-auto px-6 pb-12">
-                        <h3 className="text-xl font-semibold mb-4">
-                            Related Links
-                        </h3>
-                        <ul className="list-disc pl-5 space-y-2">
-                            {currentPost.backlinks.map((l: any, i: number) => (
-                                <li key={i}>
-                                    <a
-                                        className="text-blue-600 underline"
-                                        href={l.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        {l.text}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </section>
-                )}
         </div>
     );
 }
