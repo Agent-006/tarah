@@ -21,7 +21,6 @@ model User {
   updatedAt               DateTime        @updatedAt
   verificationCodeExpires DateTime?
   addresses               Address[]
-  blogPosts               BlogPost[]      @relation("BlogPostToUser")
   blogViews               BlogView[]
   cart                    Cart?
   orders                  Order[]
@@ -262,14 +261,16 @@ model BlogPost {
   ogImage        String?
   published      Boolean        @default(false)
   publishedAt    DateTime?
-  authorId       String
   seoTitle       String?
   seoDescription String?
   seoKeywords    String?
-  backlinks      Json?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-  author         User           @relation("BlogPostToUser", fields: [authorId], references: [id], onDelete: Cascade)
+  authorName     String
+  canonicalUrl   String?
+  coverImageAlt  String?
+  ogImageAlt     String?
+  Author         Author         @relation(fields: [authorName], references: [name])
   views          BlogView[]
   categories     BlogCategory[] @relation("BlogCategoryToBlogPost")
   tags           BlogTag[]      @relation("BlogPostToBlogTag")
@@ -303,15 +304,23 @@ model BlogTag {
 model BlogView {
   id        String   @id @default(uuid())
   postId    String
-  userId    String?
   ipAddress String
   userAgent String?
   createdAt DateTime @default(now())
+  userId    String?
   post      BlogPost @relation(fields: [postId], references: [id])
   user      User?    @relation(fields: [userId], references: [id])
 
   @@index([postId])
   @@index([ipAddress])
+}
+
+model Author {
+  id        String     @id
+  name      String     @unique
+  bio       String?
+  avatarUrl String?
+  BlogPost  BlogPost[]
 }
 
 enum Role {
