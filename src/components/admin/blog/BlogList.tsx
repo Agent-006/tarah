@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
 import { toast } from "sonner";
@@ -14,6 +14,13 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/utils";
 import { useAdminBlogStore } from "@/store/admin/adminBlogStore";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
 
 interface AdminBlogListProps {
     searchSlug?: string;
@@ -30,22 +37,34 @@ export default function AdminBlogList({
 }: AdminBlogListProps) {
     const { allPosts, isLoading, error, fetchAllPosts } = useAdminBlogStore();
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+    const [selectedPost, setSelectedPost] = useState<{
+        id: string;
+        title: string;
+    } | null>(null);
 
     useEffect(() => {
         fetchAllPosts();
     }, [fetchAllPosts]);
 
-    const handleDelete = async (postId: string, postTitle: string) => {
-        if (!confirm(`Are you sure you want to delete "${postTitle}"? This action cannot be undone.`)) {
-            return;
-        }
+    const openDeleteModal = (postId: string, postTitle: string) => {
+        setSelectedPost({ id: postId, title: postTitle });
+        setConfirmModalOpen(true);
+    };
 
+    const closeDeleteModal = () => {
+        setConfirmModalOpen(false);
+        setSelectedPost(null);
+    };
+
+    const handleDelete = async () => {
+        if (!selectedPost) return;
         try {
-            setDeletingId(postId);
-            await axios.delete(`/api/admin/blog/posts/${postId}`);
+            setDeletingId(selectedPost.id);
+            await axios.delete(`/api/admin/blog/posts/${selectedPost.id}`);
             toast.success("Blog post deleted successfully");
-            // Refresh the posts list
             fetchAllPosts();
+            closeDeleteModal();
         } catch (error) {
             console.error("Failed to delete blog post:", error);
             toast.error("Failed to delete blog post");
@@ -135,8 +154,29 @@ export default function AdminBlogList({
                                         <Link
                                             href={`/admin/blogs/view/${post.id}`}
                                         >
-                                            <span className="sr-only">View</span>
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                            <span className="sr-only">
+                                                View
+                                            </span>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                />
+                                            </svg>
                                         </Link>
                                     </Button>
                                     <Button
@@ -150,13 +190,19 @@ export default function AdminBlogList({
                                             <Pencil className="h-4 w-4" />
                                         </Link>
                                     </Button>
-                                    <Button 
-                                        variant="destructive" 
+                                    <Button
+                                        variant="destructive"
                                         size="icon"
-                                        onClick={() => handleDelete(post.id, post.title)}
+                                        onClick={() =>
+                                            openDeleteModal(post.id, post.title)
+                                        }
                                         disabled={deletingId === post.id}
                                     >
-                                        <Trash2 className="h-4 w-4" />
+                                        {deletingId === post.id ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Trash2 className="h-4 w-4" />
+                                        )}
                                     </Button>
                                 </div>
                             </TableCell>
@@ -184,6 +230,41 @@ export default function AdminBlogList({
                     Next
                 </button>
             </div>
+            {/* Delete Confirmation Modal */}
+            <Dialog open={confirmModalOpen} onOpenChange={setConfirmModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete Blog Post</DialogTitle>
+                    </DialogHeader>
+                    <div>
+                        Are you sure you want to delete{" "}
+                        <span className="font-semibold">
+                            &quot;{selectedPost?.title}&quot;
+                        </span>
+                        ? This action cannot be undone.
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={closeDeleteModal}
+                            disabled={deletingId === selectedPost?.id}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDelete}
+                            disabled={deletingId === selectedPost?.id}
+                        >
+                            {deletingId === selectedPost?.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                "Delete"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
