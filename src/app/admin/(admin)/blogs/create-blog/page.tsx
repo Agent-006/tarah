@@ -8,49 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import axios from "axios";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Heading from "@tiptap/extension-heading";
-import Bold from "@tiptap/extension-bold";
-import Italic from "@tiptap/extension-italic";
-import Strike from "@tiptap/extension-strike";
-import Underline from "@tiptap/extension-underline";
-import Code from "@tiptap/extension-code";
-import CodeBlock from "@tiptap/extension-code-block";
-import Blockquote from "@tiptap/extension-blockquote";
-import BulletList from "@tiptap/extension-bullet-list";
-import OrderedList from "@tiptap/extension-ordered-list";
-import ListItem from "@tiptap/extension-list-item";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import { Table } from "@tiptap/extension-table";
-import { TableRow } from "@tiptap/extension-table-row";
-import { TableHeader } from "@tiptap/extension-table-header";
-import { TableCell } from "@tiptap/extension-table-cell";
-import TextAlign from "@tiptap/extension-text-align";
-import Highlight from "@tiptap/extension-highlight";
 import {
-  Bold as BoldIcon,
-  Italic as ItalicIcon,
-  Underline as UnderlineIcon,
-  Strikethrough,
-  Code as CodeIcon,
-  Quote,
-  List,
-  ListOrdered,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  Link as LinkIcon,
-  Image as ImageIcon,
-  Table as TableIcon,
-  Highlighter as HighlightIcon,
-  Undo,
-  Redo,
-  Eye,
-  Plus,
-  X,
-  Hash,
   FileText,
   Globe,
   Calendar,
@@ -58,12 +16,19 @@ import {
   Save,
   User,
   Wand2,
+  Eye,
+  ImageIcon,
+  Plus,
+  X,
+  Hash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { EditorState, SerializedEditorState } from "lexical";
+import { Editor } from "@/components/admin/blog/rte/editor-x/editor";
 import {
   Form,
   FormControl,
@@ -114,7 +79,10 @@ const formSchema = z.object({
       /^[a-z0-9-]+$/,
       "Slug must contain only lowercase letters, numbers, and hyphens"
     ),
-  content: z.string().min(1, "Content is required"),
+  content: z.any().refine((value) => {
+    // Accept either string, SerializedEditorState, or null (for initial state)
+    return value !== undefined && value !== "" && value !== null;
+  }, "Content is required"),
   excerpt: z
     .string()
     .max(500, "Excerpt must be less than 500 characters")
@@ -134,7 +102,11 @@ const formSchema = z.object({
     .max(160, "SEO description should be less than 160 characters")
     .optional(),
   seoKeywords: z.string().optional(),
-  canonicalUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  canonicalUrl: z
+    .string()
+    .url("Must be a valid URL")
+    .optional()
+    .or(z.literal("")),
 
   // Relationships
   categories: z.array(z.string()),
@@ -143,379 +115,10 @@ const formSchema = z.object({
 
   // Publishing
   published: z.boolean(),
-  publishedAt: z.string().optional(),
+  publishedAt: z.string(),
 });
 
 type BlogFormData = z.infer<typeof formSchema>;
-
-// Advanced Tiptap Editor Component
-const AdvancedTiptapEditor = ({
-  content,
-  onChange,
-}: {
-  content: string;
-  onChange: (content: string) => void;
-}) => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Heading.configure({
-        levels: [1, 2, 3, 4, 5, 6],
-      }),
-      Bold,
-      Italic,
-      Strike,
-      Underline,
-      Code,
-      CodeBlock.configure({
-        HTMLAttributes: {
-          class: "bg-gray-100 p-4 rounded-md font-mono text-sm",
-        },
-      }),
-      Blockquote.configure({
-        HTMLAttributes: {
-          class: "border-l-4 border-gray-300 pl-4 italic",
-        },
-      }),
-      BulletList,
-      OrderedList,
-      ListItem,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: "text-blue-600 underline",
-        },
-      }),
-      Image.configure({
-        HTMLAttributes: {
-          class: "max-w-full h-auto rounded-md",
-        },
-      }),
-      Table.configure({
-        resizable: true,
-      }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      TextAlign.configure({
-        types: ["heading", "paragraph"],
-      }),
-      Highlight.configure({
-        multicolor: true,
-      }),
-    ],
-    content,
-    immediatelyRender: false,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
-    editorProps: {
-      attributes: {
-        class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[400px] p-4",
-      },
-    },
-  });
-
-  const addImage = () => {
-    const url = window.prompt("Enter image URL:");
-    if (url) {
-      editor?.chain().focus().setImage({ src: url }).run();
-    }
-  };
-
-  const addLink = () => {
-    const previousUrl = editor?.getAttributes("link").href;
-    const url = window.prompt("Enter link URL:", previousUrl);
-
-    if (url === null) {
-      return;
-    }
-
-    if (url === "") {
-      editor?.chain().focus().extendMarkRange("link").unsetLink().run();
-      return;
-    }
-
-    editor
-      ?.chain()
-      .focus()
-      .extendMarkRange("link")
-      .setLink({ href: url })
-      .run();
-  };
-
-  const addTable = () => {
-    editor
-      ?.chain()
-      .focus()
-      .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-      .run();
-  };
-
-  if (!editor) {
-    return (
-      <div className="animate-pulse bg-gray-100 h-96 rounded-md flex items-center justify-center">
-        <span>Loading advanced editor...</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="border rounded-lg overflow-hidden">
-      {/* Advanced Toolbar */}
-      <div className="bg-gray-50 border-b p-3">
-        <div className="flex flex-wrap gap-1">
-          {/* Text Formatting */}
-          <div className="flex gap-1 border-r pr-2 mr-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().undo().run()}
-              disabled={!editor.can().undo()}
-              className="h-8 w-8 p-0"
-            >
-              <Undo className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().redo().run()}
-              disabled={!editor.can().redo()}
-              className="h-8 w-8 p-0"
-            >
-              <Redo className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Headings */}
-          <div className="flex gap-1 border-r pr-2 mr-2">
-            <Select
-              value={
-                editor.isActive("heading", { level: 1 })
-                  ? "h1"
-                  : editor.isActive("heading", { level: 2 })
-                  ? "h2"
-                  : editor.isActive("heading", { level: 3 })
-                  ? "h3"
-                  : editor.isActive("paragraph")
-                  ? "p"
-                  : "p"
-              }
-              onValueChange={(value) => {
-                if (value === "p") {
-                  editor.chain().focus().setParagraph().run();
-                } else if (value === "h1") {
-                  editor.chain().focus().toggleHeading({ level: 1 }).run();
-                } else if (value === "h2") {
-                  editor.chain().focus().toggleHeading({ level: 2 }).run();
-                } else if (value === "h3") {
-                  editor.chain().focus().toggleHeading({ level: 3 }).run();
-                }
-              }}
-            >
-              <SelectTrigger className="h-8 w-[100px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="p">Paragraph</SelectItem>
-                <SelectItem value="h1">Heading 1</SelectItem>
-                <SelectItem value="h2">Heading 2</SelectItem>
-                <SelectItem value="h3">Heading 3</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Text Style */}
-          <div className="flex gap-1 border-r pr-2 mr-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive("bold") ? "bg-gray-200" : ""
-              }`}
-            >
-              <BoldIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive("italic") ? "bg-gray-200" : ""
-              }`}
-            >
-              <ItalicIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().toggleUnderline().run()}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive("underline") ? "bg-gray-200" : ""
-              }`}
-            >
-              <UnderlineIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().toggleStrike().run()}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive("strike") ? "bg-gray-200" : ""
-              }`}
-            >
-              <Strikethrough className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().toggleHighlight().run()}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive("highlight") ? "bg-gray-200" : ""
-              }`}
-            >
-              <HighlightIcon className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Lists & Quotes */}
-          <div className="flex gap-1 border-r pr-2 mr-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().toggleBulletList().run()}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive("bulletList") ? "bg-gray-200" : ""
-              }`}
-            >
-              <List className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive("orderedList") ? "bg-gray-200" : ""
-              }`}
-            >
-              <ListOrdered className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().toggleBlockquote().run()}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive("blockquote") ? "bg-gray-200" : ""
-              }`}
-            >
-              <Quote className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().toggleCode().run()}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive("code") ? "bg-gray-200" : ""
-              }`}
-            >
-              <CodeIcon className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Alignment */}
-          <div className="flex gap-1 border-r pr-2 mr-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().setTextAlign("left").run()}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive({ textAlign: "left" }) ? "bg-gray-200" : ""
-              }`}
-            >
-              <AlignLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                editor.chain().focus().setTextAlign("center").run()
-              }
-              className={`h-8 w-8 p-0 ${
-                editor.isActive({ textAlign: "center" }) ? "bg-gray-200" : ""
-              }`}
-            >
-              <AlignCenter className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => editor.chain().focus().setTextAlign("right").run()}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive({ textAlign: "right" }) ? "bg-gray-200" : ""
-              }`}
-            >
-              <AlignRight className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Media & Links */}
-          <div className="flex gap-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={addLink}
-              className={`h-8 w-8 p-0 ${
-                editor.isActive("link") ? "bg-gray-200" : ""
-              }`}
-            >
-              <LinkIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={addImage}
-              className="h-8 w-8 p-0"
-            >
-              <ImageIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={addTable}
-              className="h-8 w-8 p-0"
-            >
-              <TableIcon className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Editor Content */}
-      <div className="min-h-[400px]">
-        <EditorContent editor={editor} />
-      </div>
-    </div>
-  );
-};
 
 export default function CreateBlogPage() {
   const { data: session, status } = useSession();
@@ -524,7 +127,9 @@ export default function CreateBlogPage() {
   const [activeTab, setActiveTab] = useState("content");
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
-  const [availableAuthors, setAvailableAuthors] = useState<{name: string; bio?: string}[]>([]);
+  const [availableAuthors, setAvailableAuthors] = useState<
+    { name: string; bio?: string }[]
+  >([]);
   const [newCategory, setNewCategory] = useState("");
   const [newTag, setNewTag] = useState("");
   const [isAuthorModalOpen, setIsAuthorModalOpen] = useState(false);
@@ -555,7 +160,9 @@ export default function CreateBlogPage() {
         );
         setAvailableTags(tagsRes.data.map((tag: { slug: string }) => tag.slug));
         setAvailableAuthors(
-          authorsRes.data.map((author: { name: string; bio?: string }) => author)
+          authorsRes.data.map(
+            (author: { name: string; bio?: string }) => author
+          )
         );
       } catch (error) {
         console.error("Failed to fetch categories and tags:", error);
@@ -572,7 +179,7 @@ export default function CreateBlogPage() {
     defaultValues: {
       title: "",
       slug: "",
-      content: "<p>Start writing your blog content here...</p>",
+      content: null, // Will be initialized by the editor
       excerpt: "",
       coverImage: "",
       coverImageAlt: "",
@@ -655,7 +262,7 @@ export default function CreateBlogPage() {
         .replace(/-+/g, "-") // Replace multiple dashes with single dash
         .trim()
         .replace(/^-|-$/g, ""); // Remove leading/trailing dashes
-      
+
       // Auto-generate slug if current slug is empty or appears to be auto-generated
       if (!watchSlug || watchSlug === "" || watchSlug === generatedSlug) {
         form.setValue("slug", generatedSlug, { shouldValidate: true });
@@ -682,8 +289,8 @@ export default function CreateBlogPage() {
 
       const blogData = {
         ...values,
-        content: JSON.parse(JSON.stringify(values.content)), // Ensure JSON serializable
-        publishedAt: values.publishedAt || null,
+        content: JSON.stringify(values.content), // Serialize the editor state for storage
+        publishedAt: values.publishedAt || "null",
       };
 
       console.log("Submitting blog data:", blogData);
@@ -958,7 +565,9 @@ export default function CreateBlogPage() {
                                           .replace(/-+/g, "-")
                                           .trim()
                                           .replace(/^-|-$/g, "");
-                                        form.setValue("slug", generatedSlug, { shouldValidate: true });
+                                        form.setValue("slug", generatedSlug, {
+                                          shouldValidate: true,
+                                        });
                                       }
                                     }}
                                     disabled={!form.watch("title")}
@@ -968,7 +577,8 @@ export default function CreateBlogPage() {
                                   </Button>
                                 </div>
                                 <FormDescription>
-                                  URL-friendly version of the title (auto-generated from title)
+                                  URL-friendly version of the title
+                                  (auto-generated from title)
                                 </FormDescription>
                                 <FormMessage />
                               </FormItem>
@@ -1009,9 +619,11 @@ export default function CreateBlogPage() {
                                 Blog Content *
                               </FormLabel>
                               <FormControl>
-                                <AdvancedTiptapEditor
-                                  content={field.value}
-                                  onChange={field.onChange}
+                                <Editor
+                                  editorSerializedState={field.value}
+                                  onSerializedChange={(serializedState) => {
+                                    field.onChange(serializedState);
+                                  }}
                                 />
                               </FormControl>
                               <FormDescription>
@@ -1112,7 +724,8 @@ export default function CreateBlogPage() {
                                 />
                               </FormControl>
                               <FormDescription>
-                                Canonical URL for this blog post to avoid duplicate content issues
+                                Canonical URL for this blog post to avoid
+                                duplicate content issues
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -1166,7 +779,8 @@ export default function CreateBlogPage() {
                                 />
                               </FormControl>
                               <FormDescription>
-                                Alt text for cover image accessibility (screen readers)
+                                Alt text for cover image accessibility (screen
+                                readers)
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -1241,7 +855,11 @@ export default function CreateBlogPage() {
                         <FormItem>
                           <FormLabel>Author</FormLabel>
                           <div className="flex gap-2">
-                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              defaultValue={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select author" />
@@ -1249,7 +867,10 @@ export default function CreateBlogPage() {
                               </FormControl>
                               <SelectContent>
                                 {availableAuthors.map((author) => (
-                                  <SelectItem key={author.name} value={author.name}>
+                                  <SelectItem
+                                    key={author.name}
+                                    value={author.name}
+                                  >
                                     {author.name}
                                   </SelectItem>
                                 ))}
@@ -1270,9 +891,16 @@ export default function CreateBlogPage() {
                                 <X className="h-4 w-4" />
                               </Button>
                             )}
-                            <Dialog open={isAuthorModalOpen} onOpenChange={setIsAuthorModalOpen}>
+                            <Dialog
+                              open={isAuthorModalOpen}
+                              onOpenChange={setIsAuthorModalOpen}
+                            >
                               <DialogTrigger asChild>
-                                <Button type="button" variant="outline" size="sm">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                >
                                   <Plus className="h-4 w-4" />
                                 </Button>
                               </DialogTrigger>
@@ -1280,22 +908,32 @@ export default function CreateBlogPage() {
                                 <DialogHeader>
                                   <DialogTitle>Manage Authors</DialogTitle>
                                   <DialogDescription>
-                                    Create a new author profile or select from existing ones.
+                                    Create a new author profile or select from
+                                    existing ones.
                                   </DialogDescription>
                                 </DialogHeader>
-                                
+
                                 {/* Existing Authors */}
                                 {availableAuthors.length > 0 && (
                                   <div className="border rounded-lg p-4">
-                                    <h4 className="font-medium mb-3">Existing Authors</h4>
+                                    <h4 className="font-medium mb-3">
+                                      Existing Authors
+                                    </h4>
                                     <div className="space-y-2 max-h-32 overflow-y-auto">
                                       {availableAuthors.map((author) => (
-                                        <div key={author.name} className="flex items-center gap-3 text-sm">
+                                        <div
+                                          key={author.name}
+                                          className="flex items-center gap-3 text-sm"
+                                        >
                                           <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                            {author.name.charAt(0).toUpperCase()}
+                                            {author.name
+                                              .charAt(0)
+                                              .toUpperCase()}
                                           </div>
                                           <div className="flex-1">
-                                            <div className="font-medium">{author.name}</div>
+                                            <div className="font-medium">
+                                              {author.name}
+                                            </div>
                                             {author.bio && (
                                               <div className="text-gray-500 text-xs truncate">
                                                 {author.bio}
@@ -1308,16 +946,39 @@ export default function CreateBlogPage() {
                                             size="sm"
                                             onClick={async () => {
                                               try {
-                                                await axios.delete(`/api/admin/authors/${encodeURIComponent(author.name)}`);
-                                                setAvailableAuthors(availableAuthors.filter(a => a.name !== author.name));
+                                                await axios.delete(
+                                                  `/api/admin/authors/${encodeURIComponent(
+                                                    author.name
+                                                  )}`
+                                                );
+                                                setAvailableAuthors(
+                                                  availableAuthors.filter(
+                                                    (a) =>
+                                                      a.name !== author.name
+                                                  )
+                                                );
                                                 // If the removed author was selected, clear the selection
-                                                if (form.getValues("authorName") === author.name) {
-                                                  form.setValue("authorName", "");
+                                                if (
+                                                  form.getValues(
+                                                    "authorName"
+                                                  ) === author.name
+                                                ) {
+                                                  form.setValue(
+                                                    "authorName",
+                                                    ""
+                                                  );
                                                 }
-                                                toast.success("Author removed successfully!");
+                                                toast.success(
+                                                  "Author removed successfully!"
+                                                );
                                               } catch (error) {
-                                                console.error("Failed to remove author:", error);
-                                                toast.error("Failed to remove author");
+                                                console.error(
+                                                  "Failed to remove author:",
+                                                  error
+                                                );
+                                                toast.error(
+                                                  "Failed to remove author"
+                                                );
                                               }
                                             }}
                                             className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
@@ -1329,20 +990,27 @@ export default function CreateBlogPage() {
                                     </div>
                                   </div>
                                 )}
-                                
+
                                 <Separator />
-                                
+
                                 <div className="space-y-4">
-                                  <h4 className="font-medium">Add New Author</h4>
+                                  <h4 className="font-medium">
+                                    Add New Author
+                                  </h4>
                                   <div className="grid gap-4">
                                     <div className="grid gap-2">
-                                      <Label htmlFor="author-name">Author Name *</Label>
+                                      <Label htmlFor="author-name">
+                                        Author Name *
+                                      </Label>
                                       <Input
                                         id="author-name"
                                         placeholder="Enter author name"
                                         value={newAuthor.name}
                                         onChange={(e) =>
-                                          setNewAuthor({ ...newAuthor, name: e.target.value })
+                                          setNewAuthor({
+                                            ...newAuthor,
+                                            name: e.target.value,
+                                          })
                                         }
                                       />
                                     </div>
@@ -1353,19 +1021,27 @@ export default function CreateBlogPage() {
                                         placeholder="Brief bio about the author (optional)"
                                         value={newAuthor.bio}
                                         onChange={(e) =>
-                                          setNewAuthor({ ...newAuthor, bio: e.target.value })
+                                          setNewAuthor({
+                                            ...newAuthor,
+                                            bio: e.target.value,
+                                          })
                                         }
                                         className="resize-none"
                                       />
                                     </div>
                                     <div className="grid gap-2">
-                                      <Label htmlFor="author-avatar">Avatar URL</Label>
+                                      <Label htmlFor="author-avatar">
+                                        Avatar URL
+                                      </Label>
                                       <Input
                                         id="author-avatar"
                                         placeholder="https://example.com/avatar.jpg (optional)"
                                         value={newAuthor.avatarUrl}
                                         onChange={(e) =>
-                                          setNewAuthor({ ...newAuthor, avatarUrl: e.target.value })
+                                          setNewAuthor({
+                                            ...newAuthor,
+                                            avatarUrl: e.target.value,
+                                          })
                                         }
                                       />
                                     </div>
@@ -1377,7 +1053,11 @@ export default function CreateBlogPage() {
                                     variant="outline"
                                     onClick={() => {
                                       setIsAuthorModalOpen(false);
-                                      setNewAuthor({ name: "", bio: "", avatarUrl: "" });
+                                      setNewAuthor({
+                                        name: "",
+                                        bio: "",
+                                        avatarUrl: "",
+                                      });
                                     }}
                                   >
                                     Cancel
@@ -1394,7 +1074,8 @@ export default function CreateBlogPage() {
                             </Dialog>
                           </div>
                           <FormDescription>
-                            Choose the author for this blog post or create a new one
+                            Choose the author for this blog post or create a new
+                            one
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -1410,10 +1091,20 @@ export default function CreateBlogPage() {
                             <User className="h-5 w-5 text-blue-600" />
                           </div>
                           <div className="flex-1">
-                            <div className="font-medium">{form.watch("authorName")}</div>
-                            {availableAuthors.find(author => author.name === form.watch("authorName"))?.bio && (
+                            <div className="font-medium">
+                              {form.watch("authorName")}
+                            </div>
+                            {availableAuthors.find(
+                              (author) =>
+                                author.name === form.watch("authorName")
+                            )?.bio && (
                               <div className="text-sm text-gray-500">
-                                {availableAuthors.find(author => author.name === form.watch("authorName"))?.bio}
+                                {
+                                  availableAuthors.find(
+                                    (author) =>
+                                      author.name === form.watch("authorName")
+                                  )?.bio
+                                }
                               </div>
                             )}
                           </div>
@@ -1441,10 +1132,7 @@ export default function CreateBlogPage() {
                         <FormItem>
                           <FormLabel>Published At</FormLabel>
                           <FormControl>
-                            <Input
-                              type="date"
-                              {...field}
-                            />
+                            <Input type="date" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1521,7 +1209,10 @@ export default function CreateBlogPage() {
                       <div className="flex gap-2">
                         <Select
                           onValueChange={(value) => {
-                            if (value && !form.watch("categories").includes(value)) {
+                            if (
+                              value &&
+                              !form.watch("categories").includes(value)
+                            ) {
                               addCategory(value);
                             }
                           }}
@@ -1531,7 +1222,9 @@ export default function CreateBlogPage() {
                           </SelectTrigger>
                           <SelectContent>
                             {availableCategories
-                              .filter((cat) => !form.watch("categories").includes(cat))
+                              .filter(
+                                (cat) => !form.watch("categories").includes(cat)
+                              )
                               .map((category) => (
                                 <SelectItem key={category} value={category}>
                                   {category}
@@ -1564,19 +1257,26 @@ export default function CreateBlogPage() {
                                 Create new categories or remove existing ones.
                               </DialogDescription>
                             </DialogHeader>
-                            
+
                             {/* Existing Categories */}
                             {availableCategories.length > 0 && (
                               <div className="border rounded-lg p-4">
-                                <h4 className="font-medium mb-3">Existing Categories</h4>
+                                <h4 className="font-medium mb-3">
+                                  Existing Categories
+                                </h4>
                                 <div className="space-y-2 max-h-32 overflow-y-auto">
                                   {availableCategories.map((category) => (
-                                    <div key={category} className="flex items-center gap-3 text-sm">
+                                    <div
+                                      key={category}
+                                      className="flex items-center gap-3 text-sm"
+                                    >
                                       <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                                         <Hash className="h-3 w-3 text-blue-600" />
                                       </div>
                                       <div className="flex-1">
-                                        <div className="font-medium">{category}</div>
+                                        <div className="font-medium">
+                                          {category}
+                                        </div>
                                       </div>
                                       <Button
                                         type="button"
@@ -1584,17 +1284,43 @@ export default function CreateBlogPage() {
                                         size="sm"
                                         onClick={async () => {
                                           try {
-                                            await axios.delete(`/api/admin/blog-categories?slug=${encodeURIComponent(category)}`);
-                                            setAvailableCategories(availableCategories.filter(c => c !== category));
+                                            await axios.delete(
+                                              `/api/admin/blog-categories?slug=${encodeURIComponent(
+                                                category
+                                              )}`
+                                            );
+                                            setAvailableCategories(
+                                              availableCategories.filter(
+                                                (c) => c !== category
+                                              )
+                                            );
                                             // Remove from selected categories if selected
-                                            const currentCategories = form.getValues("categories");
-                                            if (currentCategories.includes(category)) {
-                                              form.setValue("categories", currentCategories.filter(c => c !== category));
+                                            const currentCategories =
+                                              form.getValues("categories");
+                                            if (
+                                              currentCategories.includes(
+                                                category
+                                              )
+                                            ) {
+                                              form.setValue(
+                                                "categories",
+                                                currentCategories.filter(
+                                                  (c) => c !== category
+                                                )
+                                              );
                                             }
-                                            toast.success("Category removed successfully!");
+                                            toast.success(
+                                              "Category removed successfully!"
+                                            );
                                           } catch (error) {
-                                            console.error("Failed to remove category:", error);
-                                            const errorMessage = error instanceof Error ? error.message : "Failed to remove category";
+                                            console.error(
+                                              "Failed to remove category:",
+                                              error
+                                            );
+                                            const errorMessage =
+                                              error instanceof Error
+                                                ? error.message
+                                                : "Failed to remove category";
                                             toast.error(errorMessage);
                                           }
                                         }}
@@ -1607,19 +1333,23 @@ export default function CreateBlogPage() {
                                 </div>
                               </div>
                             )}
-                            
+
                             <Separator />
-                            
+
                             <div className="space-y-4">
                               <h4 className="font-medium">Add New Category</h4>
                               <div className="grid gap-4">
                                 <div className="grid gap-2">
-                                  <Label htmlFor="category-name">Category Name *</Label>
+                                  <Label htmlFor="category-name">
+                                    Category Name *
+                                  </Label>
                                   <Input
                                     id="category-name"
                                     placeholder="Enter category name"
                                     value={newCategory}
-                                    onChange={(e) => setNewCategory(e.target.value)}
+                                    onChange={(e) =>
+                                      setNewCategory(e.target.value)
+                                    }
                                   />
                                 </div>
                               </div>
@@ -1648,7 +1378,10 @@ export default function CreateBlogPage() {
                     {/* Selected Categories */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label>Selected Categories ({form.watch("categories").length})</Label>
+                        <Label>
+                          Selected Categories ({form.watch("categories").length}
+                          )
+                        </Label>
                         {form.watch("categories").length > 0 && (
                           <Button
                             type="button"
@@ -1668,13 +1401,20 @@ export default function CreateBlogPage() {
                       ) : (
                         <div className="space-y-2">
                           {form.watch("categories").map((category) => (
-                            <div key={category} className="flex items-center gap-3 p-3 bg-blue-50 rounded-md">
+                            <div
+                              key={category}
+                              className="flex items-center gap-3 p-3 bg-blue-50 rounded-md"
+                            >
                               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                                 <Hash className="h-4 w-4 text-blue-600" />
                               </div>
                               <div className="flex-1">
-                                <div className="font-medium text-blue-800">{category}</div>
-                                <div className="text-xs text-blue-600">Category</div>
+                                <div className="font-medium text-blue-800">
+                                  {category}
+                                </div>
+                                <div className="text-xs text-blue-600">
+                                  Category
+                                </div>
                               </div>
                               <Button
                                 type="button"
@@ -1719,7 +1459,9 @@ export default function CreateBlogPage() {
                           </SelectTrigger>
                           <SelectContent>
                             {availableTags
-                              .filter((tag) => !form.watch("tags").includes(tag))
+                              .filter(
+                                (tag) => !form.watch("tags").includes(tag)
+                              )
                               .map((tag) => (
                                 <SelectItem key={tag} value={tag}>
                                   {tag}
@@ -1752,14 +1494,19 @@ export default function CreateBlogPage() {
                                 Create new tags or remove existing ones.
                               </DialogDescription>
                             </DialogHeader>
-                            
+
                             {/* Existing Tags */}
                             {availableTags.length > 0 && (
                               <div className="border rounded-lg p-4">
-                                <h4 className="font-medium mb-3">Existing Tags</h4>
+                                <h4 className="font-medium mb-3">
+                                  Existing Tags
+                                </h4>
                                 <div className="space-y-2 max-h-32 overflow-y-auto">
                                   {availableTags.map((tag) => (
-                                    <div key={tag} className="flex items-center gap-3 text-sm">
+                                    <div
+                                      key={tag}
+                                      className="flex items-center gap-3 text-sm"
+                                    >
                                       <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                                         <Hash className="h-3 w-3 text-green-600" />
                                       </div>
@@ -1772,17 +1519,39 @@ export default function CreateBlogPage() {
                                         size="sm"
                                         onClick={async () => {
                                           try {
-                                            await axios.delete(`/api/admin/blog-tags?slug=${encodeURIComponent(tag)}`);
-                                            setAvailableTags(availableTags.filter(t => t !== tag));
+                                            await axios.delete(
+                                              `/api/admin/blog-tags?slug=${encodeURIComponent(
+                                                tag
+                                              )}`
+                                            );
+                                            setAvailableTags(
+                                              availableTags.filter(
+                                                (t) => t !== tag
+                                              )
+                                            );
                                             // Remove from selected tags if selected
-                                            const currentTags = form.getValues("tags");
+                                            const currentTags =
+                                              form.getValues("tags");
                                             if (currentTags.includes(tag)) {
-                                              form.setValue("tags", currentTags.filter(t => t !== tag));
+                                              form.setValue(
+                                                "tags",
+                                                currentTags.filter(
+                                                  (t) => t !== tag
+                                                )
+                                              );
                                             }
-                                            toast.success("Tag removed successfully!");
+                                            toast.success(
+                                              "Tag removed successfully!"
+                                            );
                                           } catch (error) {
-                                            console.error("Failed to remove tag:", error);
-                                            const errorMessage = error instanceof Error ? error.message : "Failed to remove tag";
+                                            console.error(
+                                              "Failed to remove tag:",
+                                              error
+                                            );
+                                            const errorMessage =
+                                              error instanceof Error
+                                                ? error.message
+                                                : "Failed to remove tag";
                                             toast.error(errorMessage);
                                           }
                                         }}
@@ -1795,9 +1564,9 @@ export default function CreateBlogPage() {
                                 </div>
                               </div>
                             )}
-                            
+
                             <Separator />
-                            
+
                             <div className="space-y-4">
                               <h4 className="font-medium">Add New Tag</h4>
                               <div className="grid gap-4">
@@ -1836,7 +1605,9 @@ export default function CreateBlogPage() {
                     {/* Selected Tags */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label>Selected Tags ({form.watch("tags").length})</Label>
+                        <Label>
+                          Selected Tags ({form.watch("tags").length})
+                        </Label>
                         {form.watch("tags").length > 0 && (
                           <Button
                             type="button"
@@ -1856,13 +1627,20 @@ export default function CreateBlogPage() {
                       ) : (
                         <div className="space-y-2">
                           {form.watch("tags").map((tag) => (
-                            <div key={tag} className="flex items-center gap-3 p-3 bg-green-50 rounded-md">
+                            <div
+                              key={tag}
+                              className="flex items-center gap-3 p-3 bg-green-50 rounded-md"
+                            >
                               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                                 <Hash className="h-4 w-4 text-green-600" />
                               </div>
                               <div className="flex-1">
-                                <div className="font-medium text-green-800">{tag}</div>
-                                <div className="text-xs text-green-600">Tag</div>
+                                <div className="font-medium text-green-800">
+                                  {tag}
+                                </div>
+                                <div className="text-xs text-green-600">
+                                  Tag
+                                </div>
                               </div>
                               <Button
                                 type="button"
@@ -1883,7 +1661,7 @@ export default function CreateBlogPage() {
                 </Card>
               </div>
             </div>
-            
+
             {/* Submit Button */}
             <div className="flex justify-end gap-4 pt-6">
               <Button
