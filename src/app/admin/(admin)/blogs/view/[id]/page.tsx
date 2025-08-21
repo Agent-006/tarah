@@ -30,7 +30,7 @@ interface BlogPost {
   title: string;
   slug: string;
   excerpt?: string;
-  content: string;
+  content: any;
   coverImage?: string;
   coverImageAlt?: string;
   ogImage?: string;
@@ -66,6 +66,223 @@ interface BlogPost {
     ipAddress?: string;
   }>;
 }
+
+const RenderLexicalContent = (contentRoot: any) => {
+  const content = contentRoot.content;
+  console.log(content);
+  if (!content || !content.root || !content.root.children) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground text-lg">No content available.</p>
+        <p className="text-sm text-muted-foreground mt-2">
+          This article appears to be empty.
+        </p>
+      </div>
+    );
+  }
+
+  const renderNode = (node: any, index: number): React.ReactNode => {
+    if (!node) return null;
+
+    // Handle text nodes
+    if (node.type === "text") {
+      let text = node.text || "";
+      let element: React.ReactNode = text;
+
+      // Apply text formatting using bitwise operations
+      if (node.format) {
+        if (node.format & 1) element = <strong>{element}</strong>; // Bold
+        if (node.format & 2) element = <em>{element}</em>; // Italic
+        if (node.format & 8) element = <u>{element}</u>; // Underline
+        if (node.format & 16) element = <s>{element}</s>; // Strikethrough
+        if (node.format & 32) {
+          // Code
+          element = (
+            <code className="bg-muted px-2 py-1 rounded text-sm font-mono">
+              {element}
+            </code>
+          );
+        }
+      }
+
+      return <span key={index}>{element}</span>;
+    }
+
+    // Handle paragraph nodes
+    if (node.type === "paragraph") {
+      const children = node.children?.map((child: any, childIndex: number) =>
+        renderNode(child, childIndex)
+      );
+
+      // Check if paragraph is empty
+      if (!children || children.length === 0) {
+        return <div key={index} className="h-4"></div>; // Empty line
+      }
+
+      return (
+        <p key={index} className="mb-4 leading-relaxed text-foreground">
+          {children}
+        </p>
+      );
+    }
+
+    // Handle heading nodes
+    if (node.type === "heading") {
+      const tag = node.tag || 1;
+      const content = node.children?.map((child: any, childIndex: number) =>
+        renderNode(child, childIndex)
+      );
+
+      const baseClasses = "font-bold tracking-tight text-foreground";
+
+      switch (tag) {
+        case 1:
+          return (
+            <h1 key={index} className={`text-4xl ${baseClasses} mb-6 mt-8`}>
+              {content}
+            </h1>
+          );
+        case 2:
+          return (
+            <h2 key={index} className={`text-3xl ${baseClasses} mb-5 mt-7`}>
+              {content}
+            </h2>
+          );
+        case 3:
+          return (
+            <h3 key={index} className={`text-2xl ${baseClasses} mb-4 mt-6`}>
+              {content}
+            </h3>
+          );
+        case 4:
+          return (
+            <h4 key={index} className={`text-xl ${baseClasses} mb-3 mt-5`}>
+              {content}
+            </h4>
+          );
+        case 5:
+          return (
+            <h5 key={index} className={`text-lg ${baseClasses} mb-2 mt-4`}>
+              {content}
+            </h5>
+          );
+        case 6:
+          return (
+            <h6 key={index} className={`text-base ${baseClasses} mb-2 mt-3`}>
+              {content}
+            </h6>
+          );
+        default:
+          return (
+            <h2 key={index} className={`text-3xl ${baseClasses} mb-5 mt-7`}>
+              {content}
+            </h2>
+          );
+      }
+    }
+
+    // Handle list nodes
+    if (node.type === "list") {
+      const isOrdered = node.listType === "number";
+      const ListComponent = isOrdered ? "ol" : "ul";
+
+      return (
+        <ListComponent
+          key={index}
+          className={`mb-6 ml-6 space-y-1 ${
+            isOrdered ? "list-decimal" : "list-disc"
+          }`}
+        >
+          {node.children?.map((child: any, childIndex: number) =>
+            renderNode(child, childIndex)
+          )}
+        </ListComponent>
+      );
+    }
+
+    // Handle list item nodes
+    if (node.type === "listitem") {
+      return (
+        <li key={index} className="leading-relaxed">
+          {node.children?.map((child: any, childIndex: number) =>
+            renderNode(child, childIndex)
+          )}
+        </li>
+      );
+    }
+
+    // Handle quote nodes
+    if (node.type === "quote") {
+      return (
+        <blockquote
+          key={index}
+          className="border-l-4 border-border pl-6 py-2 my-6 italic text-muted-foreground bg-muted/30 rounded-r-lg"
+        >
+          <div className="space-y-2">
+            {node.children?.map((child: any, childIndex: number) =>
+              renderNode(child, childIndex)
+            )}
+          </div>
+        </blockquote>
+      );
+    }
+
+    // Handle code block nodes
+    if (node.type === "code") {
+      return (
+        <pre
+          key={index}
+          className="bg-muted border rounded-lg p-4 overflow-x-auto my-6"
+        >
+          <code className="text-sm font-mono text-foreground">
+            {node.children
+              ?.map((child: any, childIndex: number) => {
+                // For code blocks, we want to preserve exact text without formatting
+                if (child.type === "text") {
+                  return child.text || "";
+                }
+                return renderNode(child, childIndex);
+              })
+              .join("")}
+          </code>
+        </pre>
+      );
+    }
+
+    // Handle line break
+    if (node.type === "linebreak") {
+      return <br key={index} />;
+    }
+
+    // Handle horizontal rule
+    if (node.type === "horizontalrule") {
+      return <hr key={index} className="my-8 border-border" />;
+    }
+
+    // Default: render children if they exist
+    if (node.children) {
+      return (
+        <div key={index} className="my-2">
+          {node.children.map((child: any, childIndex: number) =>
+            renderNode(child, childIndex)
+          )}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <article className="prose prose-lg max-w-none">
+      <div className="space-y-1">
+        {content.root.children.map((node: any, index: number) =>
+          renderNode(node, index)
+        )}
+      </div>
+    </article>
+  );
+};
 
 export default function ViewBlogPage() {
   const params = useParams();
@@ -262,10 +479,7 @@ export default function ViewBlogPage() {
                 <CardTitle>Blog Content</CardTitle>
               </CardHeader>
               <CardContent>
-                <div
-                  className="prose prose-lg max-w-none"
-                  dangerouslySetInnerHTML={{ __html: post.content }}
-                />
+                <RenderLexicalContent content={post.content} />
               </CardContent>
             </Card>
           </div>
