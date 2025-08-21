@@ -286,11 +286,12 @@ export default function CreateBlogPage() {
   const onSubmit = async (values: BlogFormData) => {
     try {
       setIsSubmitting(true);
-
+      console.log("Submitting blog post with values:", values);
+      
       const blogData = {
         ...values,
-        content: JSON.stringify(values.content), // Serialize the editor state for storage
-        publishedAt: values.publishedAt || "null",
+        content: values.content, // Serialize the editor state for storage
+        publishedAt: values.publishedAt || null,
       };
 
       console.log("Submitting blog data:", blogData);

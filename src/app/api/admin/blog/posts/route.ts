@@ -4,7 +4,7 @@ import { z } from "zod";
 import prisma from "@/lib/db";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 
-// Schema for creating a blog post
+// Update the schema
 const createBlogPostSchema = z.object({
   title: z
     .string()
@@ -21,7 +21,21 @@ const createBlogPostSchema = z.object({
     .string()
     .max(500, "Excerpt must be less than 500 characters")
     .optional(),
-  content: z.any(), // JSON content from the editor
+  // Updated content validation to handle both string and JSON
+  content: z.union([
+    z.string(), // For legacy HTML content
+    z.object({   // For new rich JSON content
+      root: z.object({
+        children: z.array(z.any()),
+        direction: z.string().optional(),
+        format: z.string().optional(),
+        indent: z.number().optional(),
+        type: z.string().optional(),
+        version: z.number().optional(),
+        textFormat: z.number().optional(),
+      }),
+    }),
+  ]),
   coverImage: z
     .string()
     .url("Must be a valid URL")
@@ -94,6 +108,7 @@ export async function GET() {
       },
     });
 
+    // No need to parse content - Prisma handles JSON automatically
     return NextResponse.json({
       posts,
       message: "Blog posts fetched successfully",
@@ -120,6 +135,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log("Request body:", body);
+    console.log("Content type:", typeof body.content);
+    console.log("Content value:", body.content);
 
     // Validate the request body
     const validationResult = createBlogPostSchema.safeParse(body);
@@ -153,6 +171,10 @@ export async function POST(request: NextRequest) {
       published,
       publishedAt,
     } = validationResult.data;
+
+    // NO NEED to process content - Prisma Json field handles this automatically
+    // Just use the content as-is, whether it's a string or object
+    console.log("Content will be stored as:", content);
 
     // Check if slug is unique
     const existingPost = await prisma.blogPost.findUnique({
@@ -221,7 +243,7 @@ export async function POST(request: NextRequest) {
         title,
         slug,
         excerpt: excerpt || null,
-        content,
+        content, // Use content directly - Prisma handles JSON conversion
         coverImage: coverImage || null,
         coverImageAlt: coverImageAlt || null,
         ogImage: ogImage || null,
