@@ -20,7 +20,7 @@ export async function GET(
         const post = await prisma.blogPost.findUnique({
             where: { id },
             include: {
-                author: {
+                Author: {
                     select: {
                         name: true,
                         bio: true,
