@@ -173,10 +173,6 @@ export default function BlogsPage() {
                                                               }
                                                           )}`}
                                                 </span>
-                                                <span className="text-xs ml-auto">
-                                                    {post._count?.views ?? 0}{" "}
-                                                    views
-                                                </span>
                                             </div>
                                             {/* Excerpt */}
                                             {post.excerpt && (
