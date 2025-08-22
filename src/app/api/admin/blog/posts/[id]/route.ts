@@ -161,7 +161,7 @@ export async function PUT(
                 updatedAt: new Date(),
             },
             include: {
-                author: true,
+                Author: true,
                 categories: true,
                 tags: true,
                 views: true,
@@ -194,6 +194,7 @@ export async function DELETE(
         }
 
         const { id } = params;
+        console.log(`Deleting blog post with ID: ${id}`);
 
         // Check if post exists
         const existingPost = await prisma.blogPost.findUnique({

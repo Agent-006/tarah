@@ -86,7 +86,7 @@ const RenderLexicalContent = (contentRoot: any) => {
 
     // Handle text nodes
     if (node.type === "text") {
-      let text = node.text || "";
+      const text = node.text || "";
       let element: React.ReactNode = text;
 
       // Apply text formatting using bitwise operations

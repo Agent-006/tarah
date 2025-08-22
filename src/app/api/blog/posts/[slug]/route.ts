@@ -14,7 +14,7 @@ export async function GET(
                 published: true // Only return published posts
             },
             include: {
-                author: true,
+                Author: true,
                 categories: true,
                 tags: true,
                 _count: { 

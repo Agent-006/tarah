@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { BlogPostWithRelations } from "@/store/blog/blogStore";
 
 interface PopularPostCardProps {
     id: string;
@@ -13,10 +12,10 @@ interface PopularPostCardProps {
     coverImageAlt?: string | null;
     publishedAt?: Date | null;
     createdAt: Date;
-    author: {
+    author?: {
         name: string;
         avatarUrl?: string | null;
-    };
+    } | null;
     categories: Array<{ name: string }>;
     _count: {
         views: number;
@@ -24,7 +23,6 @@ interface PopularPostCardProps {
 }
 
 export default function PopularPostCard({
-    id,
     title,
     slug,
     excerpt,
@@ -54,6 +52,10 @@ export default function PopularPostCard({
             month: 'short',
             day: 'numeric'
         });
+
+    // Handle author safely
+    const authorName = author?.name || "Anonymous";
+    const authorAvatar = author?.avatarUrl || "/avatar.jpg";
 
     return (
         <Link href={`/blogs/${slug}`} className="group block">
@@ -91,15 +93,15 @@ export default function PopularPostCard({
                     <div className="flex items-center gap-2">
                         <div className="relative w-6 h-6 rounded-full overflow-hidden">
                             <Image
-                                src={author.avatarUrl || "/avatar.jpg"}
-                                alt={author.name}
+                                src={authorAvatar}
+                                alt={authorName}
                                 fill
                                 sizes="24px"
                                 className="object-cover"
                             />
                         </div>
                         <span className="text-sm text-gray-700 font-medium">
-                            {author.name}
+                            {authorName}
                         </span>
                     </div>
                 </div>
