@@ -5,6 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 
 // Get a single blog post by ID
 export async function GET(
+    request: NextRequest,
     { params }: { params: { id: string } }
 ) {
     try {
