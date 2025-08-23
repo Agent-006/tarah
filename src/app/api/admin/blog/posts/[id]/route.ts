@@ -5,7 +5,6 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 
 // Get a single blog post by ID
 export async function GET(
-    request: NextRequest,
     { params }: { params: { id: string } }
 ) {
     try {
@@ -139,7 +138,43 @@ export async function PUT(
             }
         }
 
-        // Update the blog post
+        // Process categories - create if they don't exist
+        const categoryConnections = [];
+        if (categories && categories.length > 0) {
+            for (const categoryName of categories) {
+                // Create category if it doesn't exist
+                const categorySlug = categoryName.toLowerCase().replace(/\s+/g, '-');
+                const category = await prisma.blogCategory.upsert({
+                    where: { slug: categorySlug },
+                    update: {},
+                    create: {
+                        name: categoryName,
+                        slug: categorySlug,
+                    },
+                });
+                categoryConnections.push({ id: category.id });
+            }
+        }
+
+        // Process tags - create if they don't exist
+        const tagConnections = [];
+        if (tags && tags.length > 0) {
+            for (const tagName of tags) {
+                // Create tag if it doesn't exist
+                const tagSlug = tagName.toLowerCase().replace(/\s+/g, '-');
+                const tag = await prisma.blogTag.upsert({
+                    where: { slug: tagSlug },
+                    update: {},
+                    create: {
+                        name: tagName,
+                        slug: tagSlug,
+                    },
+                });
+                tagConnections.push({ id: tag.id });
+            }
+        }
+
+        // Update the blog post with relationships
         const updatedPost = await prisma.blogPost.update({
             where: { id },
             data: {
@@ -159,6 +194,14 @@ export async function PUT(
                 published: published || false,
                 publishedAt: publishedAt ? new Date(publishedAt) : null,
                 updatedAt: new Date(),
+                // Update categories relationship
+                categories: {
+                    set: categoryConnections, // This replaces all existing connections
+                },
+                // Update tags relationship
+                tags: {
+                    set: tagConnections, // This replaces all existing connections
+                },
             },
             include: {
                 Author: true,

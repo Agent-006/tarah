@@ -103,7 +103,7 @@ export default function BlogsPage() {
                                     key={post.id}
                                     className="no-underline group h-full"
                                 >
-                                    <Card className="overflow-hidden border-none border-gray-200 bg-secondary rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
+                                    <Card className="-py-6 overflow-hidden border-none border-gray-200 bg-secondary rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
                                         {/* Cover Image */}
                                         {post.coverImage && (
                                             <div className="relative aspect-video bg-gray-100 rounded-t-2xl overflow-hidden">
