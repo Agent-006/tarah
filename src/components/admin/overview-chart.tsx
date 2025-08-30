@@ -1,5 +1,4 @@
 import { format } from "date-fns";
-
 import {
   CartesianGrid,
   Tooltip,
@@ -10,7 +9,6 @@ import {
   BarChart,
   XAxis,
 } from "recharts";
-
 import { Order } from "@/store/admin/adminOrderStore";
 
 interface OverviewChartProps {
@@ -48,19 +46,19 @@ export function OverviewChart({ orders }: OverviewChartProps) {
   return (
     <ResponsiveContainer width="100%" height={350}>
       <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis
           dataKey="name"
-          stroke="#888888"
+          stroke="#6b7280"
           fontSize={12}
-          tickLine={false}
-          axisLine={false}
+          tickLine={{ stroke: '#d1d5db' }}
+          axisLine={{ stroke: '#d1d5db' }}
         />
         <YAxis
-          stroke="#888888"
+          stroke="#6b7280"
           fontSize={12}
-          tickLine={false}
-          axisLine={false}
+          tickLine={{ stroke: '#d1d5db' }}
+          axisLine={{ stroke: '#d1d5db' }}
           tickFormatter={(value) => `₹${value}`}
         />
         <Tooltip
@@ -70,9 +68,10 @@ export function OverviewChart({ orders }: OverviewChartProps) {
         <Legend />
         <Bar
           dataKey="total"
-          fill="currentColor"
+          fill="#3b82f6"
           radius={[4, 4, 0, 0]}
-          className="fill-primary"
+          stroke="#1d4ed8"
+          strokeWidth={1}
         />
       </BarChart>
     </ResponsiveContainer>
