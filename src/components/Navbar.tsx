@@ -5,8 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Heart, Menu, ShoppingCart, User } from "lucide-react";
-
-import { Input } from "@/components/ui/input";
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -32,24 +30,26 @@ import {
 } from "@/components/ui/select";
 import { useCartStore } from "@/store/user/cartStore";
 import { useProductStore } from "@/store/product/productsStore";
+import { useCategoryStore } from "@/store/category/categoryStore";
 
 const Navbar = () => {
     const router = useRouter();
     const pathname = usePathname();
     const { fetchProducts } = useProductStore();
+    const { categories, fetchCategories } = useCategoryStore();
     const cartQuantity = useCartStore((state) =>
         state.items.reduce((total, item) => total + item.quantity, 0)
     );
 
-    const handleCategoryClick = (category: string) => {
-        if (pathname === "/products") {
-            fetchProducts({
-                page: 1,
-                category,
-            });
-        } else {
-            router.push(`/products?category=${encodeURIComponent(category)}`);
+    // Fetch categories on component mount
+    React.useEffect(() => {
+        if (categories.length === 0) {
+            fetchCategories();
         }
+    }, [categories.length, fetchCategories]);
+
+    const handleCategoryClick = (categorySlug: string) => {
+        router.push(`/category/${categorySlug}`);
     };
 
     const closeDrawer = () => {
@@ -101,28 +101,17 @@ const Navbar = () => {
                                             All Products
                                         </div>
                                     </li>
-                                    {/* Category Mobile Nav Items */}
-                                    {[
-                                        "New Arrivals",
-                                        "Jewellery & Accessories",
-                                        "Indian",
-                                        "Western",
-                                        "Plus Size - Indian",
-                                        "Plus Size - Western",
-                                        "Night Dress",
-                                        "माँ + Beti",
-                                    ].map((category) => (
-                                        <li key={category}>
+                                    {/* Dynamic Category Mobile Nav Items */}
+                                    {categories.map((category) => (
+                                        <li key={category.id}>
                                             <div
                                                 className="cursor-pointer"
                                                 onClick={() => {
-                                                    handleCategoryClick(
-                                                        category
-                                                    );
+                                                    handleCategoryClick(category.slug);
                                                     closeDrawer();
                                                 }}
                                             >
-                                                {category}
+                                                {category.name}
                                             </div>
                                         </li>
                                     ))}
@@ -195,7 +184,7 @@ const Navbar = () => {
                 </div>
 
                 {/* Search (Desktop only) */}
-                <div className="hidden md:flex items-center gap-2 absolute left-4 bg-white rounded-none px-2 py-1 shadow-md border-[1px]">
+                {/* <div className="hidden md:flex items-center gap-2 absolute left-4 bg-white rounded-none px-2 py-1 shadow-md border-[1px]">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-5 w-5 text-gray-400"
@@ -216,15 +205,16 @@ const Navbar = () => {
                         placeholder="Search for products, brands and more"
                         className="w-72 border-0 focus:ring-0 outline-none bg-transparent text-sm"
                         aria-label="Search"
+                        suppressHydrationWarning
                     />
-                </div>
+                </div> */}
 
                 {/* Right icons (Desktop only) */}
                 <div className="hidden md:flex items-center gap-4 absolute right-4">
                     <span className="hidden md:flex items-center gap-2">
                         <div className="flex items-center">
                             <Select defaultValue="INR">
-                                <SelectTrigger className="w-[140px]">
+                                <SelectTrigger className="w-[140px]" suppressHydrationWarning>
                                     <SelectValue placeholder="Select currency" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -286,68 +276,50 @@ const Navbar = () => {
                             </NavigationMenuLink>
                         </NavigationMenuItem>
 
-                        {/* Category Navigation Items */}
-                        {[
-                            { label: "New Arrivals", category: "New Arrivals" },
-                            {
-                                label: "Jewellery & Accessories",
-                                category: "Jewellery & Accessories",
-                            },
-                            { label: "Indian", category: "Indian" },
-                            { label: "Western", category: "Western" },
-                            { label: "Night Dress", category: "Night Dress" },
-                            { label: "माँ + Beti", category: "माँ + Beti" },
-                        ].map((item) => (
-                            <NavigationMenuItem key={item.category}>
+                        {/* Dynamic Category Navigation Items */}
+                        {categories.filter(category => !category.parentId).map((category) => (
+                            <NavigationMenuItem key={category.id}>
                                 <NavigationMenuLink
                                     asChild
                                     className={navigationMenuTriggerStyle()}
-                                    onClick={() =>
-                                        handleCategoryClick(item.category)
-                                    }
+                                    onClick={() => handleCategoryClick(category.slug)}
                                 >
                                     <div className="cursor-pointer">
-                                        {item.label}
+                                        {category.name}
                                     </div>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
                         ))}
 
-                        <NavigationMenuItem>
-                            <NavigationMenuTrigger className="relative">
-                                Plus Size
-                            </NavigationMenuTrigger>
-                            <NavigationMenuContent>
-                                <ul className="grid w-[200px] gap-4">
-                                    <li>
-                                        <NavigationMenuLink asChild>
-                                            <div
-                                                className="cursor-pointer p-2"
-                                                onClick={() =>
-                                                    handleCategoryClick(
-                                                        "Plus Size - Indian"
-                                                    )
-                                                }
-                                            >
-                                                Indian
-                                            </div>
-                                        </NavigationMenuLink>
-                                        <NavigationMenuLink asChild>
-                                            <div
-                                                className="cursor-pointer p-2"
-                                                onClick={() =>
-                                                    handleCategoryClick(
-                                                        "Plus Size - Western"
-                                                    )
-                                                }
-                                            >
-                                                Western
-                                            </div>
-                                        </NavigationMenuLink>
-                                    </li>
-                                </ul>
-                            </NavigationMenuContent>
-                        </NavigationMenuItem>
+                        {/* Plus Size Dropdown (if it has children) */}
+                        {categories.find(cat => cat.name.toLowerCase().includes('plus size')) && (
+                            <NavigationMenuItem>
+                                <NavigationMenuTrigger className="relative">
+                                    Plus Size
+                                </NavigationMenuTrigger>
+                                <NavigationMenuContent>
+                                    <ul className="grid w-[200px] gap-4">
+                                        {categories
+                                            .filter(category => 
+                                                category.name.toLowerCase().includes('plus size') &&
+                                                !category.parentId
+                                            )
+                                            .map((category) => (
+                                                <li key={category.id}>
+                                                    <NavigationMenuLink asChild>
+                                                        <div
+                                                            className="cursor-pointer p-2"
+                                                            onClick={() => handleCategoryClick(category.slug)}
+                                                        >
+                                                            {category.name.replace('Plus Size - ', '')}
+                                                        </div>
+                                                    </NavigationMenuLink>
+                                                </li>
+                                            ))}
+                                    </ul>
+                                </NavigationMenuContent>
+                            </NavigationMenuItem>
+                        )}
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>

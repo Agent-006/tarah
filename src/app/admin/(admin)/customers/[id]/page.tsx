@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, use as usePromise } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState, use as usePromise } from "react";
+import Link from "next/link";
 import {
     Loader2,
     ArrowLeft,
@@ -18,7 +18,6 @@ import {
     CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -117,14 +116,15 @@ export default function CustomerDetailsPage({
     const { id } = usePromise(params);
 
     useEffect(() => {
-        if (
-            sessionStatus === "authenticated" &&
-            session?.user?.role === "CUSTOMER"
-        ) {
+        if (sessionStatus === "unauthenticated") {
+            router.replace("/admin/sign-in");
+            return;
+        }
+        if (sessionStatus === "authenticated" && session?.user?.role === "CUSTOMER") {
             router.replace("/");
         }
     }, [sessionStatus, session?.user?.role, router]);
-
+    
     const fetchCustomer = async () => {
         try {
             setLoading(true);

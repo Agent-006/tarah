@@ -2,7 +2,6 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-
 import AllProductsPage from '@/components/AllProducts';
 
 function ProductsPageContent() {

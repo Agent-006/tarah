@@ -2,11 +2,11 @@
 
 
 import { useEffect, useState, use as usePromise } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
 import { ProductForm } from "@/components/admin/products/product-form";
 import { TAdminProductsSchema } from "@/schemas/adminSchema/adminProductsSchema";
 import { Button } from "@/components/ui/button";
@@ -43,10 +43,18 @@ export default function EditProductPage({
         }
     };
 
+    const { data: session, status: sessionStatus } = useSession();
     useEffect(() => {
+        if (sessionStatus === "unauthenticated") {
+            router.replace("/admin/sign-in");
+            return;
+        }
+        if (sessionStatus === "authenticated" && session?.user?.role === "CUSTOMER") {
+            router.replace("/");
+        }
         loadProduct();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [sessionStatus, session?.user?.role, router]);
 
     const handleSubmit = async (data: TAdminProductsSchema) => {
         try {

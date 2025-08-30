@@ -15,7 +15,6 @@ import {
     Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -159,6 +158,10 @@ export default function OrderDetailsPage({
     const { id } = usePromise(params);
 
     useEffect(() => {
+        if (sessionStatus === "unauthenticated") {
+            router.replace("/admin/sign-in");
+            return;
+        }
         if (
             sessionStatus === "authenticated" &&
             session?.user?.role === "CUSTOMER"

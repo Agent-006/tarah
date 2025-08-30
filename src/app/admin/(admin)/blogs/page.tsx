@@ -12,20 +12,14 @@ export default function AdminBlogsPage() {
     const router = useRouter();
 
     useEffect(() => {
-        if (
-            sessionStatus === "authenticated" &&
-            session?.user?.role === "CUSTOMER"
-        ) {
+        if (sessionStatus === "unauthenticated") {
+            router.replace("/admin/sign-in");
+            return;
+        }
+        if (sessionStatus === "authenticated" && session?.user?.role === "CUSTOMER") {
             router.replace("/");
         }
     }, [sessionStatus, session?.user?.role, router]);
-
-    if (
-        sessionStatus === "authenticated" &&
-        session?.user?.role === "CUSTOMER"
-    ) {
-        router.replace("/");
-    }
 
     const [searchSlug, setSearchSlug] = useState("");
     const [currentPage, setCurrentPage] = useState(1);

@@ -5,9 +5,7 @@ import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
 import { Heart } from "lucide-react";
 import Link from "next/link";
-
 import { useWishlistStore } from "@/store/user/wishlistStore";
-
 import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
 import { Button } from "./ui/button";
 
@@ -194,7 +192,7 @@ const ProductCarousel = ({
                                 ))}
                         </CarouselContent>
                     </Carousel>
-                    <Button className="mt-6 rounded-none bg-primary text-secondary cursor-pointer px-8 py-6 text-lg hover:bg-primary/90 transform transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-primary/50">
+                    <Button className="mt-6 rounded-none bg-primary text-secondary cursor-pointer px-8 py-6 text-lg hover:bg-primary/90 transform transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-primary/50" suppressHydrationWarning>
                         <Link
                             href="/products"
                             className="flex items-center justify-center gap-2"

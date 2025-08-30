@@ -69,6 +69,10 @@ export default function AdminDashboard() {
     } = useAdminUserStore();
 
     useEffect(() => {
+        if (sessionStatus === "unauthenticated") {
+            router.replace("/admin/sign-in");
+            return;
+        }
         if (
             sessionStatus === "authenticated" &&
             session?.user?.role === "CUSTOMER"

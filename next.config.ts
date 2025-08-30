@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  // Suppress hydration warnings caused by browser extensions
+  reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: ['@radix-ui/react-navigation-menu', '@radix-ui/react-select']
+  }
 };
 
 export default nextConfig;

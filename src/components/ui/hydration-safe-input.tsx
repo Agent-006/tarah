@@ -1,7 +1,9 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+"use client";
 
-function Input({ 
+import * as React from "react";
+import { cn } from "@/lib/utils";
+
+function HydrationSafeInput({ 
   className, 
   type, 
   suppressHydrationWarning = true,
@@ -20,7 +22,7 @@ function Input({
       )}
       {...props}
     />
-  )
+  );
 }
 
-export { Input }
+export { HydrationSafeInput };
