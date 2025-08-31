@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-
 import prisma from "@/lib/db";
-
 import { authOptions } from "../../../auth/[...nextauth]/options";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -16,7 +14,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Check if category exists
     const category = await prisma.category.findUnique({
@@ -69,7 +67,7 @@ export async function DELETE(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -78,7 +76,7 @@ export async function PUT(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { name, description, parentId, imageUrl, featured } = body;
 

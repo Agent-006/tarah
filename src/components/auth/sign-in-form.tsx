@@ -1,6 +1,5 @@
 "use client";
 
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
@@ -8,9 +7,7 @@ import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
 import { signInSchema, TSignInSchema } from "@/schemas/signInSchema";
-
 import {
     Form,
     FormControl,
@@ -36,18 +33,74 @@ const SignInForm = () => {
     });
 
     const onSubmit = async (data: TSignInSchema) => {
-        try {
-            const signInResponse = await signIn("credentials", {
-                email: data.email,
-                password: data.password,
-                redirect: false,
-            });
+        console.log("Starting sign in attempt...");
 
-            if (signInResponse?.error) {
-                throw new Error(signInResponse.error);
+        const signInResponse = await signIn("credentials", {
+            email: data.email,
+            password: data.password,
+            redirect: false,
+        });
+
+        console.log("SignIn response:", signInResponse);
+
+        // Handle error case
+        if (signInResponse?.error) {
+            console.log("SignIn error detected:", signInResponse.error);
+
+            let errorMessage = "An unexpected error occurred during sign in.";
+
+            // Handle specific NextAuth error messages
+            switch (signInResponse.error) {
+                case "CredentialsSignin":
+                    errorMessage =
+                        "Invalid email or password. Please check your credentials and try again.";
+                    break;
+                case "Invalid password":
+                    errorMessage =
+                        "The password you entered is incorrect. Please try again.";
+                    break;
+                case "User not found":
+                    errorMessage =
+                        "No account found with this email address. Please check your email or register.";
+                    break;
+                case "Configuration":
+                    errorMessage =
+                        "There was a configuration error. Please try again later.";
+                    break;
+                case "AccessDenied":
+                    errorMessage =
+                        "Access denied. Please contact support if you believe this is an error.";
+                    break;
+                case "Verification":
+                    errorMessage =
+                        "Please verify your account before signing in.";
+                    break;
+                default:
+                    // For any other error, still show user-friendly message
+                    if (
+                        signInResponse.error.toLowerCase().includes("password")
+                    ) {
+                        errorMessage =
+                            "The password you entered is incorrect. Please try again.";
+                    } else if (
+                        signInResponse.error.toLowerCase().includes("email")
+                    ) {
+                        errorMessage =
+                            "No account found with this email address. Please check your email or register.";
+                    } else {
+                        errorMessage = signInResponse.error;
+                    }
             }
 
-            if (signInResponse?.ok) {
+            console.log("Showing error message:", errorMessage);
+            toast.error(errorMessage);
+            return; // Exit early on error
+        }
+
+        // Handle success case
+        if (signInResponse?.ok) {
+            console.log("SignIn successful, fetching session...");
+            try {
                 // Fetch session to get user role
                 const res = await fetch("/api/auth/session");
                 const session = await res.json();
@@ -63,15 +116,18 @@ const SignInForm = () => {
                 toast.success("Sign in successful!");
                 router.push(redirectTo);
                 router.refresh();
+            } catch (sessionError) {
+                console.error("Error fetching session:", sessionError);
+                toast.error(
+                    "Sign in successful, but couldn't fetch user details. Please refresh the page."
+                );
             }
-        } catch (error) {
-            console.error("Sign in error");
-            toast.error(
-                error instanceof Error
-                    ? error.message
-                    : "An unexpected error occurred during sign in."
-            );
+            return;
         }
+
+        // If we get here, something unexpected happened
+        console.log("Unexpected sign in response:", signInResponse);
+        toast.error("Sign in failed for unknown reason. Please try again.");
     };
 
     return (
@@ -150,7 +206,6 @@ const SignInForm = () => {
                         </a>
                     </p>
 
-                    
                     <p className="text-center text-sm text-muted-foreground">
                         Forgot your password?{" "}
                         <a

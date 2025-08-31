@@ -94,6 +94,10 @@ export default function CategoriesPage() {
 
             if (!response.ok) {
                 const errorData = await response.json();
+                if (errorData.error === "A category with this name already exists") {
+                    toast.error("A category with this name already exists. Please choose a different name.");
+                    return;
+                }
                 throw new Error(errorData.error || "Failed to save category");
             }
 

@@ -55,7 +55,13 @@ const Navbar = () => {
     const closeDrawer = () => {
         const openDialog = document.querySelector('[role="dialog"]');
         if (openDialog) {
-            const escEvent = new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, which: 27, bubbles: true });
+            const escEvent = new KeyboardEvent("keydown", {
+                key: "Escape",
+                code: "Escape",
+                keyCode: 27,
+                which: 27,
+                bubbles: true,
+            });
             openDialog.dispatchEvent(escEvent);
         }
     };
@@ -81,14 +87,11 @@ const Navbar = () => {
                             </DrawerHeader>
 
                             <div className="space-y-4 p-4 h-[900px] overflow-y-auto">
-                                {/* <h4 className="text-lg font-semibold">
-                                    Categories
-                                </h4> */}
                                 <ul className="space-y-2">
                                     {/* All Products Mobile Nav Item */}
                                     <li key="all-products">
                                         <div
-                                            className="cursor-pointer"
+                                            className="cursor-pointer py-2 text-base font-medium"
                                             onClick={() => {
                                                 if (pathname === "/products") {
                                                     fetchProducts({ page: 1 });
@@ -102,19 +105,86 @@ const Navbar = () => {
                                         </div>
                                     </li>
                                     {/* Dynamic Category Mobile Nav Items */}
-                                    {categories.map((category) => (
-                                        <li key={category.id}>
-                                            <div
-                                                className="cursor-pointer"
-                                                onClick={() => {
-                                                    handleCategoryClick(category.slug);
-                                                    closeDrawer();
-                                                }}
-                                            >
-                                                {category.name}
-                                            </div>
-                                        </li>
-                                    ))}
+                                    {categories
+                                        .filter(
+                                            (category) => !category.parentId
+                                        )
+                                        .map((parentCategory) => {
+                                            const subcategories =
+                                                categories.filter(
+                                                    (cat) =>
+                                                        cat.parentId ===
+                                                        parentCategory.id
+                                                );
+
+                                            return (
+                                                <li
+                                                    key={parentCategory.id}
+                                                    className="space-y-1"
+                                                >
+                                                    {/* Parent Category */}
+                                                    <div
+                                                        className="cursor-pointer py-2 text-base font-medium relative"
+                                                        onClick={() => {
+                                                            handleCategoryClick(
+                                                                parentCategory.slug
+                                                            );
+                                                            closeDrawer();
+                                                        }}
+                                                    >
+                                                        <span className="relative">
+                                                            {
+                                                                parentCategory.name
+                                                            }
+                                                            {parentCategory.featured && (
+                                                                <span className="ml-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-700 text-xs font-bold text-white shadow border border-blue-500 animate-pulse">
+                                                                    Featured
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Subcategories (if any) */}
+                                                    {subcategories.length >
+                                                        0 && (
+                                                        <ul className="ml-4 space-y-1">
+                                                            {subcategories.map(
+                                                                (
+                                                                    subcategory
+                                                                ) => (
+                                                                    <li
+                                                                        key={
+                                                                            subcategory.id
+                                                                        }
+                                                                    >
+                                                                        <div
+                                                                            className="cursor-pointer py-1 text-sm text-gray-600 relative"
+                                                                            onClick={() => {
+                                                                                handleCategoryClick(
+                                                                                    subcategory.slug
+                                                                                );
+                                                                                closeDrawer();
+                                                                            }}
+                                                                        >
+                                                                            <span className="relative">
+                                                                                {
+                                                                                    subcategory.name
+                                                                                }
+                                                                                {subcategory.featured && (
+                                                                                    <span className="ml-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-700 text-xs font-bold text-white shadow border border-blue-500 animate-pulse">
+                                                                                        Featured
+                                                                                    </span>
+                                                                                )}
+                                                                            </span>
+                                                                        </div>
+                                                                    </li>
+                                                                )
+                                                            )}
+                                                        </ul>
+                                                    )}
+                                                </li>
+                                            );
+                                        })}
                                 </ul>
 
                                 <hr className="my-4" />
@@ -125,15 +195,30 @@ const Navbar = () => {
                                 <ul className="space-y-2">
                                     <li className="flex items-center gap-2">
                                         <User className="w-4 h-4" />
-                                        <Link href="/profile" onClick={closeDrawer}>Profile</Link>
+                                        <Link
+                                            href="/profile"
+                                            onClick={closeDrawer}
+                                        >
+                                            Profile
+                                        </Link>
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <Heart className="w-4 h-4" />
-                                        <Link href="/wishlist" onClick={closeDrawer}>Wishlist</Link>
+                                        <Link
+                                            href="/wishlist"
+                                            onClick={closeDrawer}
+                                        >
+                                            Wishlist
+                                        </Link>
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <ShoppingCart className="w-4 h-4" />
-                                        <Link href="/cart" onClick={closeDrawer}>Cart</Link>
+                                        <Link
+                                            href="/cart"
+                                            onClick={closeDrawer}
+                                        >
+                                            Cart
+                                        </Link>
                                     </li>
                                 </ul>
 
@@ -214,7 +299,10 @@ const Navbar = () => {
                     <span className="hidden md:flex items-center gap-2">
                         <div className="flex items-center">
                             <Select defaultValue="INR">
-                                <SelectTrigger className="w-[140px]" suppressHydrationWarning>
+                                <SelectTrigger
+                                    className="w-[140px]"
+                                    suppressHydrationWarning
+                                >
                                     <SelectValue placeholder="Select currency" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -277,49 +365,127 @@ const Navbar = () => {
                         </NavigationMenuItem>
 
                         {/* Dynamic Category Navigation Items */}
-                        {categories.filter(category => !category.parentId).map((category) => (
-                            <NavigationMenuItem key={category.id}>
-                                <NavigationMenuLink
-                                    asChild
-                                    className={navigationMenuTriggerStyle()}
-                                    onClick={() => handleCategoryClick(category.slug)}
-                                >
-                                    <div className="cursor-pointer">
-                                        {category.name}
-                                    </div>
-                                </NavigationMenuLink>
-                            </NavigationMenuItem>
-                        ))}
+                        {categories
+                            .filter((category) => !category.parentId)
+                            .map((parentCategory) => {
+                                // Find subcategories for this parent
+                                const subcategories = categories.filter(
+                                    (cat) => cat.parentId === parentCategory.id
+                                );
 
-                        {/* Plus Size Dropdown (if it has children) */}
-                        {categories.find(cat => cat.name.toLowerCase().includes('plus size')) && (
-                            <NavigationMenuItem>
-                                <NavigationMenuTrigger className="relative">
-                                    Plus Size
-                                </NavigationMenuTrigger>
-                                <NavigationMenuContent>
-                                    <ul className="grid w-[200px] gap-4">
-                                        {categories
-                                            .filter(category => 
-                                                category.name.toLowerCase().includes('plus size') &&
-                                                !category.parentId
-                                            )
-                                            .map((category) => (
-                                                <li key={category.id}>
-                                                    <NavigationMenuLink asChild>
-                                                        <div
-                                                            className="cursor-pointer p-2"
-                                                            onClick={() => handleCategoryClick(category.slug)}
+                                // If has subcategories, render dropdown
+                                if (subcategories.length > 0) {
+                                    return (
+                                        <NavigationMenuItem
+                                            key={parentCategory.id}
+                                        >
+                                            <NavigationMenuTrigger className="relative">
+                                                <span className="relative">
+                                                    {parentCategory.name}
+                                                    {parentCategory.featured && (
+                                                        <span className="ml-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-700 text-xs font-bold text-white shadow border border-blue-500 animate-pulse">
+                                                            Featured
+                                                        </span>
+                                                    )}
+                                                </span>
+                                            </NavigationMenuTrigger>
+                                            <NavigationMenuContent>
+                                                <ul className="grid w-[200px] gap-2 p-2">
+                                                    {/* Parent category as first option */}
+                                                    <li>
+                                                        <NavigationMenuLink
+                                                            asChild
                                                         >
-                                                            {category.name.replace('Plus Size - ', '')}
-                                                        </div>
-                                                    </NavigationMenuLink>
-                                                </li>
-                                            ))}
-                                    </ul>
-                                </NavigationMenuContent>
-                            </NavigationMenuItem>
-                        )}
+                                                            <div
+                                                                className="cursor-pointer p-2 hover:bg-gray-100 rounded relative"
+                                                                onClick={() =>
+                                                                    handleCategoryClick(
+                                                                        parentCategory.slug
+                                                                    )
+                                                                }
+                                                            >
+                                                                <span className="relative">
+                                                                    All{" "}
+                                                                    {
+                                                                        parentCategory.name
+                                                                    }
+                                                                    {parentCategory.featured && (
+                                                                        <span className="ml-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-700 text-xs font-bold text-white shadow border border-blue-500 animate-pulse">
+                                                                            Featured
+                                                                        </span>
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </NavigationMenuLink>
+                                                    </li>
+                                                    {/* Subcategories */}
+                                                    {subcategories.map(
+                                                        (subcategory) => (
+                                                            <li
+                                                                key={
+                                                                    subcategory.id
+                                                                }
+                                                            >
+                                                                <NavigationMenuLink
+                                                                    asChild
+                                                                >
+                                                                    <div
+                                                                        className="cursor-pointer p-2 hover:bg-gray-100 rounded relative"
+                                                                        onClick={() =>
+                                                                            handleCategoryClick(
+                                                                                subcategory.slug
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <span className="relative">
+                                                                            {
+                                                                                subcategory.name
+                                                                            }
+                                                                            {subcategory.featured && (
+                                                                                <span className="ml-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-700 text-xs font-bold text-white shadow border border-blue-500 animate-pulse">
+                                                                                    Featured
+                                                                                </span>
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
+                                                                </NavigationMenuLink>
+                                                            </li>
+                                                        )
+                                                    )}
+                                                </ul>
+                                            </NavigationMenuContent>
+                                        </NavigationMenuItem>
+                                    );
+                                } else {
+                                    // If no subcategories, render as simple link
+                                    return (
+                                        <NavigationMenuItem
+                                            key={parentCategory.id}
+                                        >
+                                            <NavigationMenuLink
+                                                asChild
+                                                className={`${navigationMenuTriggerStyle()} relative`}
+                                                onClick={() =>
+                                                    handleCategoryClick(
+                                                        parentCategory.slug
+                                                    )
+                                                }
+                                            >
+                                                <div className="cursor-pointer">
+                                                    <span className="relative">
+                                                        {parentCategory.name}
+                                                        {parentCategory.featured && (
+                                                            <span className="ml-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-700 text-xs font-bold text-white shadow border border-blue-500 animate-pulse">
+                                                                Featured
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </NavigationMenuLink>
+                                        </NavigationMenuItem>
+                                    );
+                                }
+                            })}
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>

@@ -1,8 +1,3 @@
-import * as dotenv from 'dotenv';
-
-// Load environment variables from .env.local
-dotenv.config({ path: '.env.local' });
-
 import {
   PrismaClient,
   PaymentProvider,
@@ -72,10 +67,6 @@ async function main() {
   const wellnessTag = await prisma.blogTag.findUnique({ where: { slug: "wellness" } });
   const habitsTag = await prisma.blogTag.findUnique({ where: { slug: "habits" } });
 
-  // Blog post seeding is disabled
-  console.log("ℹ️ Blog post seeding skipped");
-
-  /*
   // Seed Blog Posts
   await prisma.blogPost.createMany({
     data: [
@@ -89,7 +80,7 @@ async function main() {
         ogImage: "https://picsum.photos/1200/600?random=1",
         published: true,
         publishedAt: new Date(),
-        authorName: author.name,
+        authorId: author.id,
         seoTitle: "Next.js 15 Beginner Guide",
         seoDescription: "Step-by-step guide to build modern web apps with Next.js 15.",
         seoKeywords: "Next.js, React, Fullstack, Web Development",
@@ -104,7 +95,7 @@ async function main() {
         ogImage: "https://picsum.photos/1200/600?random=2",
         published: true,
         publishedAt: new Date(),
-        authorName: author.name,
+        authorId: author.id,
         seoTitle: "Essential React Hooks",
         seoDescription: "Learn the top 10 React hooks with examples.",
         seoKeywords: "React, Hooks, JavaScript",
@@ -119,7 +110,7 @@ async function main() {
         ogImage: "https://picsum.photos/1200/600?random=3",
         published: true,
         publishedAt: new Date(),
-        authorName: author.name,
+        authorId: author.id,
         seoTitle: "Morning Habits for Success",
         seoDescription: "Practical habits to boost productivity every morning.",
         seoKeywords: "Productivity, Habits, Wellness",
@@ -159,120 +150,98 @@ async function main() {
     }
   }
 
-  */
-
   console.log("✅ Blog data seeded successfully!");
 
-  console.log("🌱 Seeding categories...");
+  // console.log("Seeded admin user:", adminUser);
 
-  // Create categories using upsert to handle existing records
-  const newArrivals = await prisma.category.upsert({
-    where: { slug: "new-arrivals" },
-    update: {},
-    create: {
-      name: "New Arrivals",
-      slug: "new-arrivals",
-      featured: true,
-      description: "Our latest fashion arrivals",
-    },
-  });
+  // console.log("🌱 Seeding categories...");
 
-  const jewellery = await prisma.category.upsert({
-    where: { slug: "jewellery-accessories" },
-    update: {},
-    create: {
-      name: "Jewellery & Accessories",
-      slug: "jewellery-accessories",
-      description: "Beautiful jewellery and fashion accessories",
-    },
-  });
+  // Clear existing categories (optional - remove if you want to keep existing data)
+  // await prisma.category.deleteMany();
 
-  const indian = await prisma.category.upsert({
-    where: { slug: "indian-wear" },
-    update: {},
-    create: {
-      name: "Indian Wear",
-      slug: "indian-wear",
-      description: "Traditional Indian clothing and wear",
-    },
-  });
+  // Create parent categories
+  // const newArrivals = await prisma.category.create({
+  //   data: {
+  //     name: "New Arrivals",
+  //     slug: "new-arrivals",
+  //     featured: true,
+  //     description: "Our latest fashion arrivals",
+  //   },
+  // });
 
-  const western = await prisma.category.upsert({
-    where: { slug: "western-wear" },
-    update: {},
-    create: {
-      name: "Western Wear",
-      slug: "western-wear",
-      description: "Contemporary western fashion",
-    },
-  });
+  // const jewellery = await prisma.category.create({
+  //   data: {
+  //     name: "Jewellery & Accessories",
+  //     slug: "jewellery-accessories",
+  //     description: "Beautiful jewellery and fashion accessories",
+  //   },
+  // });
 
-  const nightDress = await prisma.category.upsert({
-    where: { slug: "night-dress" },
-    update: {},
-    create: {
-      name: "Night Dress",
-      slug: "night-dress",
-      description: "Comfortable nightwear and sleepwear",
-    },
-  });
+  // const indian = await prisma.category.create({
+  //   data: {
+  //     name: "Indian",
+  //     slug: "indian",
+  //     description: "Traditional Indian clothing and wear",
+  //   },
+  // });
 
-  const maaBeti = await prisma.category.upsert({
-    where: { slug: "maa-beti" },
-    update: {},
-    create: {
-      name: "माँ + Beti",
-      slug: "maa-beti",
-      description: "Matching outfits for mothers and daughters",
-    },
-  });
+  // const western = await prisma.category.create({
+  //   data: {
+  //     name: "Western",
+  //     slug: "western",
+  //     description: "Contemporary western fashion",
+  //   },
+  // });
 
-  // Create Plus Size category with subcategories using upsert
-  const plusSize = await prisma.category.upsert({
-    where: { slug: "plus-size" },
-    update: {},
-    create: {
-      name: "Plus Size",
-      slug: "plus-size",
-      description: "Fashion for plus size women",
-    },
-  });
+  // const nightDress = await prisma.category.create({
+  //   data: {
+  //     name: "Night Dress",
+  //     slug: "night-dress",
+  //     description: "Comfortable nightwear and sleepwear",
+  //   },
+  // });
 
-  // Create Plus Size subcategories
-  await prisma.category.upsert({
-    where: { slug: "plus-size-indian" },
-    update: {},
-    create: {
-      name: "Plus Size - Indian",
-      slug: "plus-size-indian",
-      description: "Traditional Indian wear in plus sizes",
-      parentId: plusSize.id,
-    },
-  });
+  // const maaBeti = await prisma.category.create({
+  //   data: {
+  //     name: "माँ + Beti",
+  //     slug: "maa-beti",
+  //     description: "Matching outfits for mothers and daughters",
+  //   },
+  // });
 
-  await prisma.category.upsert({
-    where: { slug: "plus-size-western" },
-    update: {},
-    create: {
-      name: "Plus Size - Western",
-      slug: "plus-size-western",
-      description: "Western fashion in plus sizes",
-      parentId: plusSize.id,
-    },
-  });
+  // // Create Plus Size category with subcategories
+  // const plusSize = await prisma.category.create({
+  //   data: {
+  //     name: "Plus Size",
+  //     slug: "plus-size",
+  //     description: "Fashion for plus size women",
+  //     children: {
+  //       create: [
+  //         {
+  //           name: "Indian",
+  //           slug: "plus-size-indian",
+  //           description: "Traditional Indian wear in plus sizes",
+  //         },
+  //         {
+  //           name: "Western",
+  //           slug: "plus-size-western",
+  //           description: "Western fashion in plus sizes",
+  //         },
+  //       ],
+  //     },
+  //   },
+  // });
 
-  console.log("Successfully seeded categories:");
-  console.log("- New Arrivals");
-  console.log("- Jewellery & Accessories");
-  console.log("- Indian");
-  console.log("- Western");
-  console.log("- Night Dress");
-  console.log("- माँ + Beti");
-  console.log("- Plus Size");
-  console.log("  - Plus Size - Indian");
-  console.log("  - Plus Size - Western");
-
-  console.log("✅ Categories seeded successfully!");
+  // console.log("Successfully seeded categories:");
+  // console.log("- New Arrivals");
+  // console.log("- Jewellery & Accessories");
+  // console.log("- Indian");
+  // console.log("- Western");
+  // console.log("- Night Dress");
+  // console.log("- माँ + Beti");
+  // console.log("- Plus Size");
+  // console.log("  - Indian");
+  // console.log("  - Western");
 
   // // Clear existing data
   // await prisma.productImage.deleteMany();
