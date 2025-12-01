@@ -285,7 +285,7 @@ const RenderLexicalContent = (contentRoot: any) => {
 };
 
 export default function ViewBlogPage() {
-  const params = useParams();
+  const params = useParams() as any;
   const router = useRouter();
   const { data: session, status } = useSession();
   const [post, setPost] = useState<BlogPost | null>(null);
@@ -327,7 +327,12 @@ export default function ViewBlogPage() {
   }, [params?.id, status, session?.user?.role, router]);
 
   const handleDelete = async () => {
-    if (!post || !confirm("Are you sure you want to delete this blog post? This action cannot be undone.")) {
+    if (
+      !post ||
+      !confirm(
+        "Are you sure you want to delete this blog post? This action cannot be undone."
+      )
+    ) {
       return;
     }
 
@@ -358,7 +363,9 @@ export default function ViewBlogPage() {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen">
         <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
-        <p className="text-gray-600">You don&apos;t have permission to access this page.</p>
+        <p className="text-gray-600">
+          You don&apos;t have permission to access this page.
+        </p>
         <Button onClick={() => router.push("/")} className="mt-4">
           Go Home
         </Button>
@@ -369,8 +376,12 @@ export default function ViewBlogPage() {
   if (!post) {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen">
-        <h1 className="text-2xl font-bold text-red-600 mb-2">Blog Post Not Found</h1>
-        <p className="text-gray-600">The blog post you&apos;re looking for doesn&apos;t exist.</p>
+        <h1 className="text-2xl font-bold text-red-600 mb-2">
+          Blog Post Not Found
+        </h1>
+        <p className="text-gray-600">
+          The blog post you&apos;re looking for doesn&apos;t exist.
+        </p>
         <Button onClick={() => router.push("/admin/blogs")} className="mt-4">
           Back to Blog List
         </Button>
@@ -514,7 +525,9 @@ export default function ViewBlogPage() {
                 </div>
                 {post.canonicalUrl && (
                   <div>
-                    <strong className="text-sm font-medium">Canonical URL:</strong>
+                    <strong className="text-sm font-medium">
+                      Canonical URL:
+                    </strong>
                     <a
                       href={post.canonicalUrl}
                       target="_blank"
@@ -556,7 +569,9 @@ export default function ViewBlogPage() {
                     <div>
                       <h3 className="font-medium">{post.author.name}</h3>
                       {post.author.bio && (
-                        <p className="text-sm text-gray-600 mt-1">{post.author.bio}</p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {post.author.bio}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -618,13 +633,17 @@ export default function ViewBlogPage() {
                 <CardContent className="space-y-3">
                   {post.seoTitle && (
                     <div>
-                      <strong className="text-sm font-medium">SEO Title:</strong>
+                      <strong className="text-sm font-medium">
+                        SEO Title:
+                      </strong>
                       <p className="text-sm mt-1">{post.seoTitle}</p>
                     </div>
                   )}
                   {post.seoDescription && (
                     <div>
-                      <strong className="text-sm font-medium">Meta Description:</strong>
+                      <strong className="text-sm font-medium">
+                        Meta Description:
+                      </strong>
                       <p className="text-sm mt-1">{post.seoDescription}</p>
                     </div>
                   )}
@@ -677,13 +696,17 @@ export default function ViewBlogPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm">Total Views:</span>
-                    <span className="text-sm font-medium">{post.views.length}</span>
+                    <span className="text-sm font-medium">
+                      {post.views.length}
+                    </span>
                   </div>
                   {post.views.length > 0 && (
                     <div className="flex justify-between">
                       <span className="text-sm">Latest View:</span>
                       <span className="text-sm">
-                        {formatDate(post.views[post.views.length - 1].createdAt)}
+                        {formatDate(
+                          post.views[post.views.length - 1].createdAt
+                        )}
                       </span>
                     </div>
                   )}

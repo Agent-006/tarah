@@ -1,8 +1,13 @@
 import prisma from "@/lib/db";
 import ClientPost from "./post-client";
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = await prisma.blogPost.findUnique({ where: { slug: params.slug } });
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const post = await prisma.blogPost.findUnique({ where: { slug } });
   if (!post) return { title: "Post not found" };
 
   const title = post.seoTitle || post.title;
@@ -28,7 +33,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function Page({ params }: { params: { slug: string } }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  // Await params (app router may provide them as a promise in this codebase)
+  const { slug } = await params;
   // Render with client component to reuse your Zustand store + layout
-  return <ClientPost slug={params.slug} />;
+  return <ClientPost slug={slug} />;
 }

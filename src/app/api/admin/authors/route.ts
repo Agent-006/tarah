@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/db";
+import { v4 as uuid } from "uuid";
 import { authOptions } from "../../auth/[...nextauth]/options";
 
 // GET /api/admin/authors - Fetch all authors
@@ -62,9 +63,13 @@ export async function POST(request: NextRequest) {
     // Create the author
     const author = await prisma.author.create({
       data: {
+        id: uuid(),
         name: name.trim(),
         bio: bio && typeof bio === "string" ? bio.trim() || null : null,
-        avatarUrl: avatarUrl && typeof avatarUrl === "string" ? avatarUrl.trim() || null : null,
+        avatarUrl:
+          avatarUrl && typeof avatarUrl === "string"
+            ? avatarUrl.trim() || null
+            : null,
       },
     });
 

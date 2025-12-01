@@ -6,7 +6,7 @@ import { authOptions } from "../../../auth/[...nextauth]/options";
 // DELETE /api/admin/authors/[name] - Delete a specific author
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,7 +15,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const authorName = decodeURIComponent(params.name);
+    const { name } = await params;
+    const authorName = decodeURIComponent(name);
 
     // Check if author exists
     const existingAuthor = await prisma.author.findUnique({
@@ -23,10 +24,7 @@ export async function DELETE(
     });
 
     if (!existingAuthor) {
-      return NextResponse.json(
-        { error: "Author not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Author not found" }, { status: 404 });
     }
 
     // Check if author has blog posts

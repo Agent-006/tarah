@@ -31,9 +31,24 @@ async function main() {
 
   const categories = await prisma.blogCategory.createMany({
     data: [
-      { id: uuid(), name: "Technology", slug: "technology", description: "Latest updates in tech and software." },
-      { id: uuid(), name: "Lifestyle", slug: "lifestyle", description: "Tips on living a better life." },
-      { id: uuid(), name: "Productivity", slug: "productivity", description: "Work smarter, not harder." },
+      {
+        id: uuid(),
+        name: "Technology",
+        slug: "technology",
+        description: "Latest updates in tech and software.",
+      },
+      {
+        id: uuid(),
+        name: "Lifestyle",
+        slug: "lifestyle",
+        description: "Tips on living a better life.",
+      },
+      {
+        id: uuid(),
+        name: "Productivity",
+        slug: "productivity",
+        description: "Work smarter, not harder.",
+      },
     ],
     skipDuplicates: true,
   });
@@ -57,15 +72,31 @@ async function main() {
   }
 
   // Fetch categories and tags for relations
-  const techCategory = await prisma.blogCategory.findUnique({ where: { slug: "technology" } });
-  const lifestyleCategory = await prisma.blogCategory.findUnique({ where: { slug: "lifestyle" } });
-  const productivityCategory = await prisma.blogCategory.findUnique({ where: { slug: "productivity" } });
+  const techCategory = await prisma.blogCategory.findUnique({
+    where: { slug: "technology" },
+  });
+  const lifestyleCategory = await prisma.blogCategory.findUnique({
+    where: { slug: "lifestyle" },
+  });
+  const productivityCategory = await prisma.blogCategory.findUnique({
+    where: { slug: "productivity" },
+  });
 
-  const nextjsTag = await prisma.blogTag.findUnique({ where: { slug: "nextjs" } });
-  const reactTag = await prisma.blogTag.findUnique({ where: { slug: "react" } });
-  const prismaTag = await prisma.blogTag.findUnique({ where: { slug: "prisma" } });
-  const wellnessTag = await prisma.blogTag.findUnique({ where: { slug: "wellness" } });
-  const habitsTag = await prisma.blogTag.findUnique({ where: { slug: "habits" } });
+  const nextjsTag = await prisma.blogTag.findUnique({
+    where: { slug: "nextjs" },
+  });
+  const reactTag = await prisma.blogTag.findUnique({
+    where: { slug: "react" },
+  });
+  const prismaTag = await prisma.blogTag.findUnique({
+    where: { slug: "prisma" },
+  });
+  const wellnessTag = await prisma.blogTag.findUnique({
+    where: { slug: "wellness" },
+  });
+  const habitsTag = await prisma.blogTag.findUnique({
+    where: { slug: "habits" },
+  });
 
   // Seed Blog Posts
   await prisma.blogPost.createMany({
@@ -74,28 +105,54 @@ async function main() {
         id: uuid(),
         title: "Getting Started with Next.js 15",
         slug: "getting-started-with-nextjs-15",
-        excerpt: "Learn the basics of Next.js 15 with routing, layouts, and new app features.",
-        content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Next.js 15 introduces powerful new features..." }] }] },
+        excerpt:
+          "Learn the basics of Next.js 15 with routing, layouts, and new app features.",
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Next.js 15 introduces powerful new features...",
+                },
+              ],
+            },
+          ],
+        },
         coverImage: "https://picsum.photos/800/400?random=1",
         ogImage: "https://picsum.photos/1200/600?random=1",
         published: true,
         publishedAt: new Date(),
-        authorId: author.id,
+        authorName: author.fullName || author.email,
         seoTitle: "Next.js 15 Beginner Guide",
-        seoDescription: "Step-by-step guide to build modern web apps with Next.js 15.",
+        seoDescription:
+          "Step-by-step guide to build modern web apps with Next.js 15.",
         seoKeywords: "Next.js, React, Fullstack, Web Development",
       },
       {
         id: uuid(),
         title: "Top 10 React Hooks You Should Know",
         slug: "top-10-react-hooks",
-        excerpt: "A list of essential React hooks every developer should master.",
-        content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "React hooks have revolutionized..." }] }] },
+        excerpt:
+          "A list of essential React hooks every developer should master.",
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                { type: "text", text: "React hooks have revolutionized..." },
+              ],
+            },
+          ],
+        },
         coverImage: "https://picsum.photos/800/400?random=2",
         ogImage: "https://picsum.photos/1200/600?random=2",
         published: true,
         publishedAt: new Date(),
-        authorId: author.id,
+        authorName: author.fullName || author.email,
         seoTitle: "Essential React Hooks",
         seoDescription: "Learn the top 10 React hooks with examples.",
         seoKeywords: "React, Hooks, JavaScript",
@@ -104,13 +161,27 @@ async function main() {
         id: uuid(),
         title: "Building a Productive Morning Routine",
         slug: "productive-morning-routine",
-        excerpt: "Small habits that can transform your mornings and increase productivity.",
-        content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Morning routines set the tone for the day..." }] }] },
+        excerpt:
+          "Small habits that can transform your mornings and increase productivity.",
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Morning routines set the tone for the day...",
+                },
+              ],
+            },
+          ],
+        },
         coverImage: "https://picsum.photos/800/400?random=3",
         ogImage: "https://picsum.photos/1200/600?random=3",
         published: true,
         publishedAt: new Date(),
-        authorId: author.id,
+        authorName: author.fullName || author.email,
         seoTitle: "Morning Habits for Success",
         seoDescription: "Practical habits to boost productivity every morning.",
         seoKeywords: "Productivity, Habits, Wellness",
@@ -128,7 +199,13 @@ async function main() {
         where: { id: post.id },
         data: {
           categories: { connect: { id: techCategory!.id } },
-          tags: { connect: [{ id: nextjsTag!.id }, { id: reactTag!.id }, { id: prismaTag!.id }] },
+          tags: {
+            connect: [
+              { id: nextjsTag!.id },
+              { id: reactTag!.id },
+              { id: prismaTag!.id },
+            ],
+          },
         },
       });
     } else if (post.slug.includes("react-hooks")) {
