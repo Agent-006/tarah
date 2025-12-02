@@ -4,6 +4,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, use as usePromise } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -17,7 +19,6 @@ import {
   Layers,
   Image as ImageIcon,
 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,18 +29,32 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useAdminProductStore } from "@/store/admin/adminProductStore";
 
+
 export default function ViewProductPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { fetchProduct, product, isLoading, error } = useAdminProductStore();
-
-  // Unwrap params using React.use()
   const { id } = usePromise(params);
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
+  // Auth/role redirect logic
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session) {
+      router.replace("/admin/sign-in");
+      return;
+    }
+    if (session.user?.role === "CUSTOMER") {
+      router.replace("/");
+      return;
+    }
+  }, [session, status, router]);
 
   useEffect(() => {
+    if (!id) return;
     const loadProduct = async () => {
       try {
         await fetchProduct(id);
@@ -49,7 +64,6 @@ export default function ViewProductPage({
         console.error(error);
       }
     };
-
     loadProduct();
   }, [id, fetchProduct]);
 

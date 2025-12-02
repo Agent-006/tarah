@@ -1,129 +1,214 @@
+// app/api/blog/posts/route.ts
 
-
-
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { NextResponse } from "next/server";
-
-import { blogPostSchema } from "@/schemas/blog/blogSchema";
 import prisma from "@/lib/db";
 
-import { authOptions } from "../../auth/[...nextauth]/options";
+const listQuery = z.object({
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(50).default(9),
+  category: z.string().optional(),
+  tag: z.string().optional(),
+  search: z.string().optional(),
+  sort: z.enum(["latest", "views"]).default("latest"),
+  published: z.enum(["true", "false"]).optional(),
+});
 
-export async function GET(req: Request) {
-    try {
-        const { searchParams } = new URL(req.url);
-        const page = parseInt(searchParams.get("page") || "1");
-        const limit = parseInt(searchParams.get("limit") || "10");
-        const category = searchParams.get("category") || "";
-        const tag = searchParams.get("tag") || "";
-        const search = searchParams.get("search") || "";
+// Public blog post submission schema (for contact forms, guest posts, etc.)
+const publicBlogSubmissionSchema = z.object({
+  title: z.string().min(1, "Title is required").max(200),
+  content: z.string().min(1, "Content is required"),
+  authorName: z.string().min(1, "Author name is required"),
+  authorEmail: z.string().email("Valid email is required"),
+  excerpt: z.string().max(500).optional(),
+  seoKeywords: z.string().optional(),
+});
 
-        const skip = (page - 1) * limit;
+// list query for /api/blog/posts
+export async function GET(req: NextRequest) {
+  try {
+    const q = listQuery.parse(Object.fromEntries(req.nextUrl.searchParams));
 
-        // Filter directly on categories and tags arrays
-        const where: Record<string, unknown> = {
-            published: true,
-            ...(category && {
-                categories: { some: { slug: category } },
-            }),
-            ...(tag && {
-                tags: { some: { slug: tag } },
-            }),
-            ...(search && {
-                OR: [
-                    { title: { contains: search, mode: "insensitive" } },
-                    { excerpt: { contains: search, mode: "insensitive" } },
-                ],
-            }),
-        };
+    const where: any = {};
 
-        const [posts, total] = await Promise.all([
-            prisma.blogPost.findMany({
-                where,
-                include: {
-                    author: { select: { id: true, fullName: true } },
-                    categories: true,
-                    tags: true,
-                },
-                orderBy: { publishedAt: "desc" },
-                skip,
-                take: limit,
-            }),
-            prisma.blogPost.count({
-                where,
-            }),
-        ]);
-
-        return NextResponse.json({
-            data: posts,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            },
-        });
-    } catch (error) {
-        console.error("Failed to fetch blog posts:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch blog posts" },
-            { status: 500 }
-        );
+    // Filter by published status
+    if (q.published === "true") {
+      where.published = true;
     }
+    if (q.published === "false") {
+      where.published = false;
+    }
+
+    // Search functionality
+    if (q.search) {
+      where.OR = [
+        { title: { contains: q.search, mode: "insensitive" } },
+        { excerpt: { contains: q.search, mode: "insensitive" } },
+      ];
+    }
+
+    // Filter by category
+    if (q.category) {
+      where.categories = {
+        some: {
+          slug: q.category,
+        },
+      };
+    }
+
+    // Filter by tag
+    if (q.tag) {
+      where.tags = {
+        some: {
+          slug: q.tag,
+        },
+      };
+    }
+
+    // Sorting
+    const orderBy =
+      q.sort === "views"
+        ? { views: { _count: "desc" } }
+        : { publishedAt: "desc" as const };
+
+    // Fetch total count and posts
+    const [total, posts] = await Promise.all([
+      prisma.blogPost.count({ where }),
+      prisma.blogPost.findMany({
+        where,
+        orderBy: orderBy as any,
+        skip: (q.page - 1) * q.limit,
+        take: q.limit,
+        include: {
+          Author: true,
+          categories: true,
+          tags: true,
+          _count: { select: { views: true } },
+        },
+      }),
+    ]);
+
+    const meta = {
+      total,
+      page: q.page,
+      limit: q.limit,
+      pages: Math.ceil(total / q.limit),
+    };
+
+    return NextResponse.json({
+      posts,
+      meta,
+    });
+  } catch (error: any) {
+    console.error("Error fetching blog posts:", error);
+    return NextResponse.json(
+      {
+        message: "Failed to fetch blog posts",
+        error: error.message,
+      },
+      { status: 500 }
+    );
+  }
 }
 
-export async function POST(req: Request) {
-    const session = await getServerSession(authOptions);
+// Public blog post submission endpoint (for guest posts, submissions, etc.)
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
 
-    if (!session?.user || session.user.role !== "ADMIN") {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Validate the request body
+    const validationResult = publicBlogSubmissionSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          error: "Validation failed",
+          details: validationResult.error.errors,
+        },
+        { status: 400 }
+      );
     }
 
-    try {
-        const body = await req.json();
-        const data = blogPostSchema.parse(body);
+    const { title, content, authorName, authorEmail, excerpt, seoKeywords } =
+      validationResult.data;
 
-        const post = await prisma.blogPost.create({
-            data: {
-                title: data.title,
-                slug: data.slug,
-                excerpt: data.excerpt,
-                content: data.content,
-                coverImage: data.coverImage,
-                published: data.published,
-                publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
-                author: { connect: { id: session.user.id } },
-                seoTitle: data.seoTitle,
-                seoDescription: data.seoDescription,
-                ...(data.categories && {
-                    categories: {
-                        connect: data.categories.map((catId) => ({
-                            id: catId,
-                        })),
-                    },
-                }),
-                ...(data.tags && {
-                    tags: {
-                        connect: data.tags.map((tagId) => ({
-                            id: tagId,
-                        })),
-                    },
-                }),
-            },
-        });
+    // Generate slug from title
+    const slug = title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .trim()
+      .replace(/^-|-$/g, "");
 
-        return NextResponse.json(post, { status: 201 });
-    } catch (error) {
-        if (error instanceof z.ZodError) {
-            return NextResponse.json(
-                { error: "Invalid data", details: error.errors },
-                { status: 400 }
-            );
-        }
-        return NextResponse.json(
-            { error: "Failed to create blog post" },
-            { status: 500 }
-        );
+    // Check if slug is unique
+    const existingPost = await prisma.blogPost.findUnique({
+      where: { slug },
+    });
+
+    let finalSlug = slug;
+    if (existingPost) {
+      finalSlug = `${slug}-${Date.now()}`;
     }
+
+    // Check if author exists, create if not
+    let author = await prisma.author.findUnique({
+      where: { name: authorName },
+    });
+
+    if (!author) {
+      author = await prisma.author.create({
+        data: {
+          id: `author-${Date.now()}`,
+          name: authorName,
+          bio: `Guest author: ${authorEmail}`,
+        },
+      });
+    }
+
+    // Create the blog post as draft (unpublished)
+    const post = await prisma.blogPost.create({
+      data: {
+        title,
+        slug: finalSlug,
+        excerpt: excerpt || null,
+        content: content, // Store as plain text for now
+        authorName: author.name,
+        published: false, // Always create as draft for review
+        seoKeywords: seoKeywords || null,
+        createdAt: new Date(),
+      },
+      include: {
+        Author: {
+          select: {
+            name: true,
+            bio: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(
+      {
+        message:
+          "Blog post submission received successfully! It will be reviewed before publication.",
+        post: {
+          id: post.id,
+          title: post.title,
+          slug: post.slug,
+          status: "under_review",
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    console.error("Error creating blog post submission:", error);
+    return NextResponse.json(
+      {
+        message: "Failed to submit blog post",
+        error: error.message,
+      },
+      { status: 500 }
+    );
+  }
 }

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import AuthProvider from "@/providers/AuthProvider";
@@ -22,7 +21,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={`antialiased`}>
+            <body className={`antialiased`} suppressHydrationWarning>
                 <AuthProvider>
                         {children}
                 </AuthProvider>

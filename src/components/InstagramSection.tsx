@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { Instagram } from "lucide-react";
 import { motion } from "framer-motion";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -105,10 +104,12 @@ const InstagramSection = () => {
                             type="email"
                             placeholder="Enter your email"
                             className="bg-secondary rounded-none text-primary p-5 border-none focus:ring-2 focus:ring-secondary/50 shadow"
+                            suppressHydrationWarning
                         />
                         <Button
                             type="submit"
                             className="bg-secondary rounded-none text-primary font-semibold px-8 py-5 hover:bg-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+                            suppressHydrationWarning
                         >
                             Subscribe Now
                         </Button>

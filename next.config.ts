@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
       'utfs.io',
       'z5bvwccrbg.ufs.sh',
       'source.unsplash.com',
+      'images.unsplash.com',
+      'randomuser.me',
       ...(process.env.NEXT_PUBLIC_UPLOADTHING_URL ? [process.env.NEXT_PUBLIC_UPLOADTHING_URL.replace('https://', '')] : [])
     ],
     
@@ -19,6 +21,11 @@ const nextConfig: NextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  // Suppress hydration warnings caused by browser extensions
+  reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: ['@radix-ui/react-navigation-menu', '@radix-ui/react-select']
+  }
 };
 
 export default nextConfig;

@@ -4,7 +4,6 @@ import React from "react";
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
 import Link from "next/link";
-
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import Hero from "@/components/Hero";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,6 @@ import TestimonialCarousel from "@/components/TestimonialCarousel";
 import InstagramSection from "@/components/InstagramSection";
 import Footer from "@/components/Footer";
 import SummerCollection from "@/components/SummerCollection";
-
 import FamilyCoupleGoals from "../../components/FamilyCoupleGoals";
 
 
@@ -77,7 +75,7 @@ export default function Home() {
                                 ))}
                             </CarouselContent>
                         </Carousel>
-                        <Button className="rounded-none cursor-pointer py-6 px-8 text-lg bg-primary hover:bg-primary/90 text-secondary shadow-lg hover:shadow-primary/50 transition-all duration-300 mt-10">
+                        <Button className="rounded-none cursor-pointer py-6 px-8 text-lg bg-primary hover:bg-primary/90 text-secondary shadow-lg hover:shadow-primary/50 transition-all duration-300 mt-10" suppressHydrationWarning>
                             <Link
                                 href={"/products"}
                                 className="flex items-center justify-center gap-2"

@@ -3,44 +3,59 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  parentId?: string | null;
+  parent?: {
     id: string;
     name: string;
-    slug: string;
-    description?: string | null;
-    parentId?: string | null;
-    parent?: Category | null;
-    children?: Category[];
-    imageUrl?: string | null;
-    featured: boolean;
-    createdAt: Date;
-    updatedAt: Date;
+  } | null;
+  children?: Category[];
+  imageUrl?: string | null;
+  featured: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  _count?: {
+    products: number;
+    children: number;
+  };
 }
 
 export const useCategories = () => {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const { data } = await axios.get(`${process.env.NEXTAUTH_URL}/api/admin/categories`);
-                setCategories(data);
-            } catch (error) {
-                setError(
-                    error instanceof Error ? error.message : "Failed to fetch categories"
-                );
-            } finally {
-                setIsLoading(false);
-            }
-        };
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // Use the admin categories endpoint which includes parent/children info
+        const { data } = await axios.get("/api/admin/categories");
+        setCategories(data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          setError("Please sign in as an admin to access categories");
+        } else {
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch categories"
+          );
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-        fetchCategories();
-    }, []);
+    fetchCategories();
+  }, []);
 
-    return {
-        data: categories, 
-        isLoading,
-        error
-    }
+  return {
+    data: categories,
+    isLoading,
+    error,
+  };
 };

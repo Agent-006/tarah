@@ -1,7 +1,6 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-
 import { Button } from "./ui/button";
 
 const FamilyCoupleGoals = () => {
@@ -29,6 +28,7 @@ const FamilyCoupleGoals = () => {
                             variant="default"
                             size="sm"
                             className="cursor-pointer rounded-none px-6 py-4 bg-primary hover:bg-primary/90 text-secondary shadow-md transition-all duration-300 group-hover:scale-105"
+                            suppressHydrationWarning
                         >
                             <Link
                                 href="/products"
@@ -61,6 +61,7 @@ const FamilyCoupleGoals = () => {
                             variant="default"
                             size="sm"
                             className="cursor-pointer rounded-none px-6 py-4 bg-primary hover:bg-primary/90 text-secondary shadow-md transition-all duration-300 group-hover:scale-105"
+                            suppressHydrationWarning
                         >
                             <Link
                                 href="/products"

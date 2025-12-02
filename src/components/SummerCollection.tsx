@@ -2,7 +2,6 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-
 import { Button } from "./ui/button";
 
 const SummerCollection = () => {
@@ -26,6 +25,7 @@ const SummerCollection = () => {
                     <Button
                         variant="outline"
                         className="rounded-none text-primary bg-secondary hover:bg-secondary/90 border-2 border-secondary/50 hover:border-secondary/80 px-10 py-6 text-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-secondary/20 animate-fade-in animate-delay-1000"
+                        suppressHydrationWarning
                     >
                         <Link
                             href="/products"

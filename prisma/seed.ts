@@ -1,116 +1,324 @@
-import { PrismaClient, PaymentProvider, PaymentStatus, OrderStatus, TransactionStatus, TransactionType } from '@prisma/client';
-import { hash } from 'bcryptjs';
+import {
+  PrismaClient,
+  PaymentProvider,
+  PaymentStatus,
+  OrderStatus,
+  TransactionStatus,
+  TransactionType,
+} from "@prisma/client";
+import { hash } from "bcryptjs";
+import { v4 as uuid } from "uuid";
+
 const prisma = new PrismaClient();
 
 async function main() {
   // Seed admin user
-    // const adminEmail = 'admin@example.com';
-    // const adminPassword = await hash('SecurePassword123!', 12);
+  // const adminEmail = "admin@example.com";
+  // const adminPassword = await hash("SecurePassword123!", 12);
 
-    // const adminUser = await prisma.user.upsert({
-    //     where: { email: adminEmail },
-    //     update: {},
-    //     create: {
-    //         email: adminEmail,
-    //         password: adminPassword,
-    //         firstName: 'Admin',
-    //         lastName: 'User',
-    //         fullName: 'Admin User',
-    //         role: 'ADMIN'
-    //     }
-    // });
+  // const adminUser = await prisma.user.upsert({
+  //   where: { email: adminEmail },
+  //   update: {},
+  //   create: {
+  //     email: adminEmail,
+  //     password: adminPassword,
+  //     firstName: "Admin",
+  //     lastName: "User",
+  //     fullName: "Admin User",
+  //     role: "ADMIN",
+  //   },
+  // });
 
-    // console.log('Seeded admin user:', adminUser);
+  const categories = await prisma.blogCategory.createMany({
+    data: [
+      {
+        id: uuid(),
+        name: "Technology",
+        slug: "technology",
+        description: "Latest updates in tech and software.",
+      },
+      {
+        id: uuid(),
+        name: "Lifestyle",
+        slug: "lifestyle",
+        description: "Tips on living a better life.",
+      },
+      {
+        id: uuid(),
+        name: "Productivity",
+        slug: "productivity",
+        description: "Work smarter, not harder.",
+      },
+    ],
+    skipDuplicates: true,
+  });
 
-    console.log('🌱 Seeding categories...');
+  // Seed Tags
+  const tags = await prisma.blogTag.createMany({
+    data: [
+      { id: uuid(), name: "Next.js", slug: "nextjs" },
+      { id: uuid(), name: "React", slug: "react" },
+      { id: uuid(), name: "Prisma", slug: "prisma" },
+      { id: uuid(), name: "Wellness", slug: "wellness" },
+      { id: uuid(), name: "Habits", slug: "habits" },
+    ],
+    skipDuplicates: true,
+  });
 
-  // // Clear existing categories (optional - remove if you want to keep existing data)
+  // Get one user (replace with your actual seeded user id)
+  const author = await prisma.user.findFirst();
+  if (!author) {
+    throw new Error("No users found. Please seed a User first.");
+  }
+
+  // Fetch categories and tags for relations
+  const techCategory = await prisma.blogCategory.findUnique({
+    where: { slug: "technology" },
+  });
+  const lifestyleCategory = await prisma.blogCategory.findUnique({
+    where: { slug: "lifestyle" },
+  });
+  const productivityCategory = await prisma.blogCategory.findUnique({
+    where: { slug: "productivity" },
+  });
+
+  const nextjsTag = await prisma.blogTag.findUnique({
+    where: { slug: "nextjs" },
+  });
+  const reactTag = await prisma.blogTag.findUnique({
+    where: { slug: "react" },
+  });
+  const prismaTag = await prisma.blogTag.findUnique({
+    where: { slug: "prisma" },
+  });
+  const wellnessTag = await prisma.blogTag.findUnique({
+    where: { slug: "wellness" },
+  });
+  const habitsTag = await prisma.blogTag.findUnique({
+    where: { slug: "habits" },
+  });
+
+  // Seed Blog Posts
+  await prisma.blogPost.createMany({
+    data: [
+      {
+        id: uuid(),
+        title: "Getting Started with Next.js 15",
+        slug: "getting-started-with-nextjs-15",
+        excerpt:
+          "Learn the basics of Next.js 15 with routing, layouts, and new app features.",
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Next.js 15 introduces powerful new features...",
+                },
+              ],
+            },
+          ],
+        },
+        coverImage: "https://picsum.photos/800/400?random=1",
+        ogImage: "https://picsum.photos/1200/600?random=1",
+        published: true,
+        publishedAt: new Date(),
+        authorName: author.fullName || author.email,
+        seoTitle: "Next.js 15 Beginner Guide",
+        seoDescription:
+          "Step-by-step guide to build modern web apps with Next.js 15.",
+        seoKeywords: "Next.js, React, Fullstack, Web Development",
+      },
+      {
+        id: uuid(),
+        title: "Top 10 React Hooks You Should Know",
+        slug: "top-10-react-hooks",
+        excerpt:
+          "A list of essential React hooks every developer should master.",
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                { type: "text", text: "React hooks have revolutionized..." },
+              ],
+            },
+          ],
+        },
+        coverImage: "https://picsum.photos/800/400?random=2",
+        ogImage: "https://picsum.photos/1200/600?random=2",
+        published: true,
+        publishedAt: new Date(),
+        authorName: author.fullName || author.email,
+        seoTitle: "Essential React Hooks",
+        seoDescription: "Learn the top 10 React hooks with examples.",
+        seoKeywords: "React, Hooks, JavaScript",
+      },
+      {
+        id: uuid(),
+        title: "Building a Productive Morning Routine",
+        slug: "productive-morning-routine",
+        excerpt:
+          "Small habits that can transform your mornings and increase productivity.",
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Morning routines set the tone for the day...",
+                },
+              ],
+            },
+          ],
+        },
+        coverImage: "https://picsum.photos/800/400?random=3",
+        ogImage: "https://picsum.photos/1200/600?random=3",
+        published: true,
+        publishedAt: new Date(),
+        authorName: author.fullName || author.email,
+        seoTitle: "Morning Habits for Success",
+        seoDescription: "Practical habits to boost productivity every morning.",
+        seoKeywords: "Productivity, Habits, Wellness",
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  // Add categories and tags relations
+  const posts = await prisma.blogPost.findMany();
+
+  for (const post of posts) {
+    if (post.slug.includes("nextjs")) {
+      await prisma.blogPost.update({
+        where: { id: post.id },
+        data: {
+          categories: { connect: { id: techCategory!.id } },
+          tags: {
+            connect: [
+              { id: nextjsTag!.id },
+              { id: reactTag!.id },
+              { id: prismaTag!.id },
+            ],
+          },
+        },
+      });
+    } else if (post.slug.includes("react-hooks")) {
+      await prisma.blogPost.update({
+        where: { id: post.id },
+        data: {
+          categories: { connect: { id: techCategory!.id } },
+          tags: { connect: [{ id: reactTag!.id }] },
+        },
+      });
+    } else if (post.slug.includes("morning-routine")) {
+      await prisma.blogPost.update({
+        where: { id: post.id },
+        data: {
+          categories: { connect: { id: productivityCategory!.id } },
+          tags: { connect: [{ id: wellnessTag!.id }, { id: habitsTag!.id }] },
+        },
+      });
+    }
+  }
+
+  console.log("✅ Blog data seeded successfully!");
+
+  // console.log("Seeded admin user:", adminUser);
+
+  // console.log("🌱 Seeding categories...");
+
+  // Clear existing categories (optional - remove if you want to keep existing data)
   // await prisma.category.deleteMany();
 
-  // // Create parent categories
+  // Create parent categories
   // const newArrivals = await prisma.category.create({
   //   data: {
-  //     name: 'New Arrivals',
-  //     slug: 'new-arrivals',
+  //     name: "New Arrivals",
+  //     slug: "new-arrivals",
   //     featured: true,
-  //     description: 'Our latest fashion arrivals'
-  //   }
+  //     description: "Our latest fashion arrivals",
+  //   },
   // });
 
   // const jewellery = await prisma.category.create({
   //   data: {
-  //     name: 'Jewellery & Accessories',
-  //     slug: 'jewellery-accessories',
-  //     description: 'Beautiful jewellery and fashion accessories'
-  //   }
+  //     name: "Jewellery & Accessories",
+  //     slug: "jewellery-accessories",
+  //     description: "Beautiful jewellery and fashion accessories",
+  //   },
   // });
 
   // const indian = await prisma.category.create({
   //   data: {
-  //     name: 'Indian',
-  //     slug: 'indian',
-  //     description: 'Traditional Indian clothing and wear'
-  //   }
+  //     name: "Indian",
+  //     slug: "indian",
+  //     description: "Traditional Indian clothing and wear",
+  //   },
   // });
 
   // const western = await prisma.category.create({
   //   data: {
-  //     name: 'Western',
-  //     slug: 'western',
-  //     description: 'Contemporary western fashion'
-  //   }
+  //     name: "Western",
+  //     slug: "western",
+  //     description: "Contemporary western fashion",
+  //   },
   // });
 
   // const nightDress = await prisma.category.create({
   //   data: {
-  //     name: 'Night Dress',
-  //     slug: 'night-dress',
-  //     description: 'Comfortable nightwear and sleepwear'
-  //   }
+  //     name: "Night Dress",
+  //     slug: "night-dress",
+  //     description: "Comfortable nightwear and sleepwear",
+  //   },
   // });
 
   // const maaBeti = await prisma.category.create({
   //   data: {
-  //     name: 'माँ + Beti',
-  //     slug: 'maa-beti',
-  //     description: 'Matching outfits for mothers and daughters'
-  //   }
+  //     name: "माँ + Beti",
+  //     slug: "maa-beti",
+  //     description: "Matching outfits for mothers and daughters",
+  //   },
   // });
 
   // // Create Plus Size category with subcategories
   // const plusSize = await prisma.category.create({
   //   data: {
-  //     name: 'Plus Size',
-  //     slug: 'plus-size',
-  //     description: 'Fashion for plus size women',
+  //     name: "Plus Size",
+  //     slug: "plus-size",
+  //     description: "Fashion for plus size women",
   //     children: {
   //       create: [
   //         {
-  //           name: 'Indian',
-  //           slug: 'plus-size-indian',
-  //           description: 'Traditional Indian wear in plus sizes'
+  //           name: "Indian",
+  //           slug: "plus-size-indian",
+  //           description: "Traditional Indian wear in plus sizes",
   //         },
   //         {
-  //           name: 'Western',
-  //           slug: 'plus-size-western',
-  //           description: 'Western fashion in plus sizes'
-  //         }
-  //       ]
-  //     }
-  //   }
+  //           name: "Western",
+  //           slug: "plus-size-western",
+  //           description: "Western fashion in plus sizes",
+  //         },
+  //       ],
+  //     },
+  //   },
   // });
 
-  // console.log('Successfully seeded categories:');
-  // console.log('- New Arrivals');
-  // console.log('- Jewellery & Accessories');
-  // console.log('- Indian');
-  // console.log('- Western');
-  // console.log('- Night Dress');
-  // console.log('- माँ + Beti');
-  // console.log('- Plus Size');
-  // console.log('  - Indian');
-  // console.log('  - Western');
-  
+  // console.log("Successfully seeded categories:");
+  // console.log("- New Arrivals");
+  // console.log("- Jewellery & Accessories");
+  // console.log("- Indian");
+  // console.log("- Western");
+  // console.log("- Night Dress");
+  // console.log("- माँ + Beti");
+  // console.log("- Plus Size");
+  // console.log("  - Indian");
+  // console.log("  - Western");
 
   // // Clear existing data
   // await prisma.productImage.deleteMany();
@@ -529,7 +737,6 @@ async function main() {
   //   console.log(`Created product: ${createdProduct.name}`);
   // }
 
-
   // const customer = await prisma.user.findUnique({
   //   where: { email: 'sagarghosh0610@gmail.com' }
   // });
@@ -790,14 +997,14 @@ async function main() {
   //   )
   // );
 
-  console.log('✅ Categories seeded successfully!');
+  // console.log("✅ Categories seeded successfully!");
 }
 
 main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

@@ -1,0 +1,156 @@
+export const blogs = [
+    {
+        id: 1,
+        title: "Train Or Bus Journey? Which one suits?",
+        excerpt:
+            "The choice between a train or bus journey depends on various factors such as the distance of the journey, the time available, the cost, and... Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.",
+        category: "Travel",
+        date: "18 March 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "Nilanjan Joarder",
+        slug: "train-or-bus-journey",
+    },
+    {
+        id: 2,
+        title: "Best Website to research for your next project",
+        excerpt:
+            "Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs...",
+        category: "Technology",
+        date: "15 March 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "Nilanjan Joarder",
+        slug: "best-website-for-research",
+    },
+    {
+        id: 3,
+        title: "How to Be a Dancer in 2023 with proper skills?",
+        excerpt:
+            "Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment. Survival strategies to ensure...",
+        category: "Sports",
+        date: "10 March 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "Nilanjan Joarder",
+        slug: "become-a-dancer-in-2023",
+    },
+    {
+        id: 4,
+        title: "The Future of Electric Vehicles",
+        excerpt:
+            "The electric vehicle (EV) industry has been gaining momentum over the past decade, with many countries investing heavily in EV infrastructure and incentivizing citizens to switch to electric vehicles.",
+        category: "Technology",
+        date: "22 March 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "John Doe",
+        slug: "future-of-electric-vehicles",
+    },
+    {
+        id: 5,
+        title: "The Benefits of Meditation for Mental Health",
+        excerpt:
+            "Meditation has been practiced for centuries, originating from ancient Eastern cultures. It has been proven to have numerous benefits for both physical and mental health.",
+        category: "Health",
+        date: "25 March 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "Jane Smith",
+        slug: "benefits-of-meditation",
+    },
+    {
+        id: 6,
+        title: "The Impact of Social Media on Society",
+        excerpt:
+            "Social media has become an integral part of modern life, with billions of people around the world using platforms like Facebook, Twitter, and Instagram to connect with others.",
+        category: "Social Media",
+        date: "28 March 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "Emily Johnson",
+        slug: "impact-of-social-media",
+    },
+    {
+        id: 7,
+        title: "The Rise of Artificial Intelligence",
+        excerpt:
+            "Artificial Intelligence (AI) has been a hot topic in recent years, with many industries investing heavily in AI technology to improve efficiency and productivity.",
+        category: "Technology",
+        date: "1 April 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "John Smith",
+        slug: "rise-of-artificial-intelligence",
+    },
+    {
+        id: 8,
+        title: "The Importance of Cybersecurity in the Digital Age",
+        excerpt:
+            "With the increasing reliance on digital technology, the need for robust cybersecurity measures has never been more important.",
+        category: "Technology",
+        date: "5 April 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "Jane Doe",
+        slug: "importance-of-cybersecurity",
+    },
+    {
+        id: 9,
+        title: "The Future of Space Exploration",
+        excerpt:
+            "With the advancements in technology, space exploration has become more feasible and affordable. This has led to a new era of space exploration.",
+        category: "Science",
+        date: "10 April 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "John Doe",
+        slug: "future-of-space-exploration",
+    },
+    {
+        id: 10,
+        title: "The Power of Storytelling in Marketing",
+        excerpt:
+            "Storytelling has been a crucial element in marketing strategies, allowing businesses to connect with their audience on a deeper level.",
+        category: "Marketing",
+        date: "15 April 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "Michael Brown",
+        slug: "power-of-storytelling",
+    },
+    {
+        id: 11,
+        title: "The Benefits of Sustainable Living",
+        excerpt:
+            "Sustainable living has become a growing concern in recent years, with individuals and businesses alike striving to reduce their environmental impact.",
+        category: "Environment",
+        date: "20 April 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "Sarah Taylor",
+        slug: "benefits-of-sustainable-living",
+    },
+    {
+        id: 12,
+        title: "The Role of AI in Healthcare",
+        excerpt:
+            "Artificial Intelligence (AI) has been increasingly used in healthcare to improve diagnosis, treatment, and patient outcomes.",
+        category: "Health",
+        date: "25 April 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "David Lee",
+        slug: "role-of-ai-in-healthcare",
+    },
+    {
+        id: 13,
+        title: "The Impact of Climate Change on Global Economies",
+        excerpt:
+            "Climate change has been identified as one of the most pressing issues of our time, with far-reaching consequences for global economies.",
+        category: "Economy",
+        date: "1 May 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "Emily Chen",
+        slug: "impact-of-climate-change",
+    },
+    {
+        id: 14,
+        title: "The Future of Education in the Digital Age",
+        excerpt:
+            "The digital age has brought about significant changes in the way we learn, with technology playing an increasingly important role in education.",
+        category: "Education",
+        date: "5 May 2023",
+        image: "https://images.unsplash.com/photo-1753724223372-9a1df8eb5212?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8",
+        author: "James Wilson",
+        slug: "future-of-education",
+    },
+];

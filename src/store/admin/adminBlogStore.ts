@@ -64,7 +64,7 @@ export const useAdminBlogStore = create<BlogState>((set) => ({
         try {
             const response = await axios.get('/api/admin/blog/posts');
             set({
-                allPosts: response.data,
+                allPosts: response.data.posts,
             });
         } catch (error) {
             set({

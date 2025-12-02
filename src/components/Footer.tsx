@@ -1,28 +1,24 @@
 "use client";
 
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Instagram, Facebook, MessageCircle, Twitter } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
-
-import { useProductStore } from "@/store/product/productsStore";
+import { useRouter } from "next/navigation";
+import { useCategoryStore } from "@/store/category/categoryStore";
 
 const Footer = () => {
     const router = useRouter();
-    const pathname = usePathname();
+    const { categories, fetchCategories } = useCategoryStore();
 
-    const { fetchProducts } = useProductStore();
-
-    const handleCategoryClick = (category: string) => {
-        if (pathname === "/products") {
-            fetchProducts({
-                page: 1,
-                category,
-            });
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        } else {
-            router.push(`/products?category=${encodeURIComponent(category)}`);
+    React.useEffect(() => {
+        if (categories.length === 0) {
+            fetchCategories();
         }
+    }, [categories.length, fetchCategories]);
+
+    const handleCategoryClick = (categorySlug: string) => {
+        router.push(`/category/${categorySlug}`);
     };
 
     return (
@@ -82,40 +78,17 @@ const Footer = () => {
                     <div>
                         <h4 className="font-semibold mb-2">Quick Links</h4>
                         <ul className="space-y-1 text-gray-700">
-                            {[
-                                {
-                                    label: "New Arrivals",
-                                    category: "New Arrivals",
-                                },
-                                {
-                                    label: "Jewellery & Accessories",
-                                    category: "Jewellery & Accessories",
-                                },
-                                { label: "Indian", category: "Indian" },
-                                { label: "Western", category: "Western" },
-                                {
-                                    label: "Plus Size - Indian",
-                                    category: "Plus Size - Indian",
-                                },
-                                {
-                                    label: "Plus Size - Western",
-                                    category: "Plus Size - Western",
-                                },
-                                {
-                                    label: "Night Dress",
-                                    category: "Night Dress",
-                                },
-                                { label: "माँ + Beti", category: "माँ + Beti" },
-                            ].map((item) => (
-                                <li key={item.category}>
+                            {categories.slice(0, 8).map((category) => (
+                                <li key={category.id}>
                                     <button
                                         type="button"
                                         className="hover:text-primary transition bg-transparent border-0 p-0 m-0 text-left cursor-pointer"
                                         onClick={() =>
-                                            handleCategoryClick(item.category)
+                                            handleCategoryClick(category.slug)
                                         }
+                                        suppressHydrationWarning
                                     >
-                                        {item.label}
+                                        {category.name}
                                     </button>
                                 </li>
                             ))}

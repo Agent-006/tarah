@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
 import { ProductList } from "@/components/admin/products/product-list";
 import { Button } from "@/components/ui/button";
 import { useAdminProductStore } from "@/store/admin/adminProductStore";
@@ -16,6 +15,10 @@ export default function ProductsPage() {
   const { products, fetchProducts } = useAdminProductStore();
 
   useEffect(() => {
+    if (sessionStatus === "unauthenticated") {
+      router.replace("/admin/sign-in");
+      return;
+    }
     if (sessionStatus === "authenticated" && session?.user?.role === "CUSTOMER") {
       router.replace("/");
     }

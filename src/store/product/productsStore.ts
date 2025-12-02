@@ -48,7 +48,7 @@ interface ProductStore {
     fetchProducts: (params: {
         page?: number;
         size?: string | null;
-        category?: string | null;
+        categorySlug?: string | null;
         inStockOnly?: boolean;
     }) => Promise<void>;
 }
@@ -64,22 +64,22 @@ export const useProductStore = create<ProductStore>((set) => ({
         set({ isLoading: true, error: null });
 
         try {
-            const { page = 1, size, inStockOnly, category } = params;
+            const { page = 1, size, inStockOnly, categorySlug } = params;
             const response = await axios.get('/api/products', {
                 params: {
                     page,
                     size,
                     inStockOnly,
-                    category,
+                    categorySlug,
                     limit: 8
                 }
             });
 
-            const transformedProducts = response.data.products.map((product: any) => ({
+            const transformedProducts = response.data.products.map((product: Product) => ({
                 ...product,
-                status: product.variants.some((v: any) => v.inventory?.stock > 0)
-                    ? 'available'
-                    : 'soldout',
+                status: product.variants?.some((v: Variant) => v.inventory && v.inventory.stock > 0)
+                    ? 'available' as const
+                    : 'soldout' as const,
             }));
 
             set({

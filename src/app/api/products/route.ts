@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-
 import prisma from "@/lib/db";
 
 export async function GET(request: Request) {
@@ -10,18 +9,18 @@ export async function GET(request: Request) {
         const limit = parseInt(searchParams.get('limit') || '8');
         const size = searchParams.get('size');
         const inStockOnly = searchParams.get('inStockOnly') === 'true';
-        const category = searchParams.get('category');
+        const categorySlug = searchParams.get('categorySlug');
         
         const where: Record<string, unknown> = {
             published: true,
         }
 
-        // Fixed category filter
-        if (category) {
+        // Fixed category filter using slug
+        if (categorySlug) {
             where.categories = {
                 some: {
                     category: {
-                        name: category
+                        slug: categorySlug
                     }
                 }
             };

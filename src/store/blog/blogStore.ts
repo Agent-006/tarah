@@ -1,21 +1,14 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import { BlogPost, BlogCategory, BlogTag } from '@prisma/client';
+import { BlogPost, BlogCategory, BlogTag, Author } from '@prisma/client';
 
 interface BlogPostWithRelations extends BlogPost {
-    author: { 
-        id: string;
-        fullName: string | null;
-    }
-    categories: {
-        category: BlogCategory;
-    }[];
-    tags: {
-        tag: BlogTag;
-    }[];
-    views: {
-        id: string;
-    }[];
+    author: Author;
+    categories: BlogCategory[];
+    tags: BlogTag[];
+    _count: {
+        views: number;
+    };
 }
 
 interface BlogState {
@@ -36,14 +29,15 @@ interface BlogState {
         category?: string;
         tag?: string;
         search?: string;
+        published?: string;
     }) => Promise<void>;
     fetchPostBySlug: (slug: string) => Promise<void>;
     fetchPopularPosts: () => Promise<void>;
     clearCurrentPost: () => void;
-    incrementViewCount: (slug: string) => Promise<void>;
+    incrementViewCount: (slug: string) => Promise<number>;
 }
 
-export const useBlogStore = create<BlogState>((set) => ({
+export const useBlogStore = create<BlogState>((set, get) => ({
     posts: [],
     popularPosts: [],
     currentPost: null,
@@ -60,7 +54,7 @@ export const useBlogStore = create<BlogState>((set) => ({
         set({ isLoading: true, error: null });
 
         try {
-            const { page = 1, limit = 9, category, tag, search } = params;
+            const { page = 1, limit = 9, category, tag, search, published = "true" } = params;
 
             const response = await axios.get('/api/blog/posts', {
                 params: {
@@ -68,16 +62,22 @@ export const useBlogStore = create<BlogState>((set) => ({
                     limit,
                     category,
                     tag,
-                    search
+                    search,
+                    published
                 },
             });
 
             set({
                 posts: response.data.posts,
-                meta: response.data.meta,
-                isLoading: false,
+                meta: {
+                    total: response.data.meta.total,
+                    page: response.data.meta.page,
+                    limit: response.data.meta.limit,
+                    totalPages: response.data.meta.pages,
+                },
             });
         } catch (error) {
+            console.error('Fetch posts error:', error);
             set({ 
                 error: axios.isAxiosError(error) 
                     ? error.response?.data.message || error.message
@@ -97,6 +97,7 @@ export const useBlogStore = create<BlogState>((set) => ({
                 currentPost: response.data,
             });
         } catch (error) {
+            console.error('Fetch post by slug error:', error);
             set({
                 error: axios.isAxiosError(error) 
                     ? error.response?.data.message || error.message
@@ -116,12 +117,12 @@ export const useBlogStore = create<BlogState>((set) => ({
                 params: {
                     limit: 3, 
                     sort: 'views', 
+                    published: 'true',
                 },
             });
-            set({
-                popularPosts: response.data.data,
-            });
+            set({ popularPosts: response.data.posts });
         } catch (error) {
+            console.error('Fetch popular posts error:', error);
             set({
                 error: axios.isAxiosError(error) 
                     ? error.response?.data.message || error.message
@@ -133,21 +134,16 @@ export const useBlogStore = create<BlogState>((set) => ({
     },
 
     clearCurrentPost: () => {
-        set({ currentPost: null, error: null, isLoading: false });
+        set({ currentPost: null, error: null });
     },
 
     incrementViewCount: async (slug: string) => {
         try {
-            set({ isLoading: true, error: null });
-            await axios.post(`/api/blog/posts/${slug}/views`);
+            const response = await axios.post(`/api/blog/posts/${slug}/views`);
+            return response.data.views as number;
         } catch (error) {
-            set({ 
-                error: axios.isAxiosError(error) 
-                    ? error.response?.data.message || error.message
-                    : 'An unexpected error occurred while incrementing view count.',
-            });
-        } finally {
-            set({ isLoading: false });
+            console.error('Increment view count error:', error);
+            return 0;
         }
     },
 }));

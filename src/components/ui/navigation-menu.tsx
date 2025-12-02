@@ -2,7 +2,6 @@ import * as React from "react"
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
 import { cva } from "class-variance-authority"
 import { ChevronDownIcon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 
 function NavigationMenu({
@@ -65,11 +64,15 @@ const navigationMenuTriggerStyle = cva(
 function NavigationMenuTrigger({
   className,
   children,
+  suppressHydrationWarning = true,
   ...props
-}: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger>) {
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger> & {
+  suppressHydrationWarning?: boolean
+}) {
   return (
     <NavigationMenuPrimitive.Trigger
       data-slot="navigation-menu-trigger"
+      suppressHydrationWarning={suppressHydrationWarning}
       className={cn(navigationMenuTriggerStyle(), "group", className)}
       {...props}
     >
