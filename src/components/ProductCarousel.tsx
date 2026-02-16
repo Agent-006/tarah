@@ -1,3 +1,4 @@
+"use client";
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -8,6 +9,8 @@ import Link from "next/link";
 import { useWishlistStore } from "@/store/user/wishlistStore";
 import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
 import { Button } from "./ui/button";
+import { formatCurrency } from "@/lib/utils";
+import { useCurrencyStore } from "@/store/currency/currencyStore";
 
 interface Product {
     id: string;
@@ -38,6 +41,14 @@ const ProductCarousel = ({
         removeFromWishlist,
         isInWishlist,
     } = useWishlistStore();
+    const { selected: selectedCurrency, rates, fetchRates } = useCurrencyStore();
+    
+    // Ensure rates are fetched
+    React.useEffect(() => {
+        if (!rates) {
+            fetchRates();
+        }
+    }, [rates, fetchRates]);
 
     useEffect(() => {
         const fetchTopProducts = async () => {
@@ -174,16 +185,21 @@ const ProductCarousel = ({
                                                 <div className="text-sm text-primary">
                                                     {product.basePrice && (
                                                         <span className="line-through mr-2 text-primary/40">
-                                                            {
-                                                                product.basePrice
-                                                            }{" "}
-                                                            INR
+                                                            {formatCurrency(
+                                                                product.basePrice,
+                                                                selectedCurrency,
+                                                                rates,
+                                                                'INR'
+                                                            )}
                                                         </span>
                                                     )}
                                                     <span className="font-medium">
-                                                        {product.discountedPrice ||
-                                                            product.basePrice}{" "}
-                                                        INR
+                                                        {formatCurrency(
+                                                            product.discountedPrice || product.basePrice,
+                                                            selectedCurrency,
+                                                            rates,
+                                                            'INR'
+                                                        )}
                                                     </span>
                                                 </div>
                                             </div>

@@ -2,15 +2,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
-import { signUpSchema, TSignUpSchema } from "@/schemas/signUpSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
+import { signUpSchema, TSignUpSchema } from "@/schemas/signUpSchema";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import {
     Form,
     FormControl,
@@ -62,7 +62,9 @@ export function SignUpForm() {
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 const errorMessage =
-                    error.response?.data?.message || error.message;
+                    error.response?.data?.error || 
+                    error.response?.data?.message || 
+                    error.message;
                 toast.error(errorMessage);
             } else if (error instanceof Error) {
                 toast.error(error.message);
@@ -172,6 +174,7 @@ export function SignUpForm() {
                 />
 
                 <FormField
+                    control={form.control}
                     name="confirmPassword"
                     render={({ field }) => (
                         <FormItem>
@@ -181,7 +184,7 @@ export function SignUpForm() {
                             <FormControl>
                                 <Input
                                     type="password"
-                                    placeholder="Create your password"
+                                    placeholder="Confirm your password"
                                     {...field}
                                 />
                             </FormControl>
