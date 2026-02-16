@@ -7,6 +7,8 @@ import { Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useWishlistStore } from "@/store/user/wishlistStore";
+import { formatCurrency } from "@/lib/utils";
+import { useCurrencyStore } from "@/store/currency/currencyStore";
 
 interface ProductCardProps {
     product: any;
@@ -15,6 +17,14 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     const { isInWishlist, addToWishlist, removeFromWishlist } =
         useWishlistStore();
+    const { selected: selectedCurrency, rates, fetchRates } = useCurrencyStore();
+    
+    // Ensure rates are fetched
+    React.useEffect(() => {
+        if (!rates) {
+            fetchRates();
+        }
+    }, [rates, fetchRates]);
 
     const primaryImage = product.coverImage?.[0] ||
         product.variants?.[0]?.images?.[0] || {
@@ -103,15 +113,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     {product.discountedPrice &&
                         Number(product.discountedPrice) > 0 && (
                             <span className="line-through mr-2 text-primary/40">
-                                ₹{Number(product.basePrice).toFixed(2)}
+                                {formatCurrency(Number(product.basePrice), selectedCurrency, rates, 'INR')}
                             </span>
                         )}
                     <span className="font-medium">
-                        ₹
-                        {(
+                        {formatCurrency(
                             Number(product.discountedPrice) ||
-                            Number(product.basePrice)
-                        ).toFixed(2)}
+                            Number(product.basePrice),
+                            selectedCurrency,
+                            rates,
+                            'INR'
+                        )}
                     </span>
                 </div>
             </div>

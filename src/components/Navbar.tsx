@@ -31,12 +31,14 @@ import {
 import { useCartStore } from "@/store/user/cartStore";
 import { useProductStore } from "@/store/product/productsStore";
 import { useCategoryStore } from "@/store/category/categoryStore";
+import { useCurrencyStore } from "@/store/currency/currencyStore";
 
 const Navbar = () => {
     const router = useRouter();
     const pathname = usePathname();
     const { fetchProducts } = useProductStore();
     const { categories, fetchCategories } = useCategoryStore();
+    const { selected, setSelected, fetchRates, rates } = useCurrencyStore();
     const cartQuantity = useCartStore((state) =>
         state.items.reduce((total, item) => total + item.quantity, 0)
     );
@@ -47,6 +49,13 @@ const Navbar = () => {
             fetchCategories();
         }
     }, [categories.length, fetchCategories]);
+
+    // Fetch exchange rates once on mount
+    React.useEffect(() => {
+        if (!rates) {
+            fetchRates();
+        }
+    }, [rates, fetchRates]);
 
     const handleCategoryClick = (categorySlug: string) => {
         router.push(`/category/${categorySlug}`);
@@ -229,16 +238,16 @@ const Navbar = () => {
                                     <h4 className="text-lg font-semibold">
                                         Currency
                                     </h4>
-                                    <Select defaultValue="INR">
-                                        <SelectTrigger className="w-full">
+                                    <Select value={selected} onValueChange={(v) => setSelected(v)}>
+                                        <SelectTrigger className="w-full" suppressHydrationWarning>
                                             <SelectValue placeholder="Select currency" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="INR">
-                                                India (INR ₹)
-                                            </SelectItem>
                                             <SelectItem value="USD">
                                                 USA (USD $)
+                                            </SelectItem>
+                                            <SelectItem value="INR">
+                                                India (INR ₹)
                                             </SelectItem>
                                             <SelectItem value="EUR">
                                                 Europe (EUR €)
@@ -298,7 +307,7 @@ const Navbar = () => {
                 <div className="hidden md:flex items-center gap-4 absolute right-4">
                     <span className="hidden md:flex items-center gap-2">
                         <div className="flex items-center">
-                            <Select defaultValue="INR">
+                            <Select value={selected} onValueChange={(v) => setSelected(v)}>
                                 <SelectTrigger
                                     className="w-[140px]"
                                     suppressHydrationWarning
@@ -306,11 +315,11 @@ const Navbar = () => {
                                     <SelectValue placeholder="Select currency" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="INR">
-                                        India (INR ₹)
-                                    </SelectItem>
                                     <SelectItem value="USD">
                                         USA (USD $)
+                                    </SelectItem>
+                                    <SelectItem value="INR">
+                                        India (INR ₹)
                                     </SelectItem>
                                     <SelectItem value="EUR">
                                         Europe (EUR €)
